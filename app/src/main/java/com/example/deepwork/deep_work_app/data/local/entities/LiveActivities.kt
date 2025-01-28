@@ -1,4 +1,4 @@
-package com.example.deepwork.deep_work_app.data.model
+package com.example.deepwork.deep_work_app.data.local.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
