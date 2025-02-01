@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import java.util.Date
 
 @Entity(tableName = "sessions_table",
     foreignKeys = [
@@ -18,7 +19,7 @@ data class Sessions(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "session_id") val sessionId: Int,
     @ColumnInfo(name = "tag_id") val tagId: Int,
-    @ColumnInfo(name = "start_time") val startTime: Int,
-    @ColumnInfo(name = "duration") val duration: Int,
+    @ColumnInfo(name = "start_time") val startTime: Date ,
+    @ColumnInfo(name = "duration") val duration: Long,
     @ColumnInfo(name = "session_emoji") val sessionEmoji: String
 )
