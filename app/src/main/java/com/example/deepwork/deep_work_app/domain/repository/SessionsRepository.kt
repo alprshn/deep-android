@@ -2,6 +2,7 @@ package com.example.deepwork.deep_work_app.domain.repository
 
 import com.example.deepwork.deep_work_app.data.local.entities.Sessions
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 
 interface SessionsRepository {
 
@@ -12,4 +13,16 @@ interface SessionsRepository {
     suspend fun deleteSession(session: Sessions)
 
     fun getAllSessions(): Flow<List<Sessions>>
+
+    suspend fun getSessionsById(sessionId: Int): Sessions?
+
+    suspend fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
+
+    suspend fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
+
+    suspend fun getTotalFocusTime(): Long
+
+    suspend fun getSessionCount(): Int
+
+    suspend fun getAverageSessionDuration(): Double
 }
