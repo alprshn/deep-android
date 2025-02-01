@@ -4,18 +4,21 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.deepwork.deep_work_app.data.local.dao.SessionsDao
 import com.example.deepwork.deep_work_app.data.local.dao.TagsDao
 import com.example.deepwork.deep_work_app.data.local.entities.LiveActivities
 import com.example.deepwork.deep_work_app.data.local.entities.Sessions
 import com.example.deepwork.deep_work_app.data.local.entities.Tags
 import com.example.deepwork.deep_work_app.data.local.entities.UserPreferences
+import com.example.deepwork.deep_work_app.data.util.DateConverter
 
 @Database(
     entities = [Tags::class, Sessions::class, UserPreferences::class, LiveActivities::class],
     version = 1,
     exportSchema = false
 )
+@TypeConverters(DateConverter::class)
 abstract class DeepWorkDatabase : RoomDatabase() {
     abstract fun tagsDao(): TagsDao
     abstract fun sessionsDao(): SessionsDao
