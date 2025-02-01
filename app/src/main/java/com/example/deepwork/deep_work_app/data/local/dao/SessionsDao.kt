@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.deepwork.deep_work_app.data.local.entities.Sessions
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 
 @Dao
 interface SessionsDao{
@@ -21,4 +22,22 @@ interface SessionsDao{
 
     @Delete
     fun deleteSessions(session:Sessions)
+
+    @Query("SELECT * FROM sessions_table WHERE session_id = :sessionId")
+    suspend fun getSessionsById(sessionId: Int): Sessions
+
+    @Query("SELECT * FROM sessions_table WHERE tag_id = :tagId ORDER BY start_time DESC")
+    suspend fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
+
+    @Query("SELECT * FROM sessions_table WHERE start_time BETWEEN :startDate AND :endDate")
+    suspend fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
+
+    @Query("SELECT SUM(duration) FROM sessions_table")
+    suspend fun getTotalFocusTime(): Long
+
+    @Query("SELECT COUNT(*) FROM sessions_table")
+    suspend fun getSessionCount(): Int
+
+    @Query("SELECT AVG(duration) FROM sessions_table")
+    suspend fun getAverageSessionDuration(): Double
 }
