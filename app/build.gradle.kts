@@ -88,6 +88,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")
 
+    //Material Icons
+    implementation("androidx.compose.material:material-icons-extended:1.7.7")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
