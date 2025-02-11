@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Deep Work</string>
+    <string name="timer_icon_description">Timer Icon</string>
+
 </resources>
