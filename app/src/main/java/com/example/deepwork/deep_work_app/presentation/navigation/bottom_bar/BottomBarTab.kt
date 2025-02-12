@@ -1,4 +1,4 @@
-package com.example.deepwork.deep_work_app.presentation.components.bottom_bar
+package com.example.deepwork.deep_work_app.presentation.navigation.bottom_bar
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AvTimer
