@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -49,7 +50,7 @@ fun BottomBarTabs(
         LocalContentColor provides Color.White
     ) {
         Row (
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.height(64.dp),
         ) {
             for (tab in tabs) {
                 val alpha by animateFloatAsState(
@@ -79,7 +80,7 @@ fun BottomBarTabs(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}")
+                    Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}", modifier = Modifier.size(30.dp))
                 }
             }
         }
@@ -90,7 +91,7 @@ fun BottomBarTabs(
 @Preview
 @Composable
 fun BottomBarTabsPreview() {
-    var selectedTabIndex by remember { mutableIntStateOf(1) }
+    var selectedTabIndex by remember { mutableIntStateOf(2) }
     Box(
         modifier = Modifier
             .padding(vertical = 24.dp, horizontal = 64.dp)
