@@ -1,4 +1,4 @@
-package com.example.deepwork.deep_work_app.presentation.components.bottom_bar
+package com.example.deepwork.deep_work_app.presentation.navigation.bottom_bar
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -80,7 +80,6 @@ fun BottomBarTabs(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}")
-                    Text(text = tab.title)
                 }
             }
         }
