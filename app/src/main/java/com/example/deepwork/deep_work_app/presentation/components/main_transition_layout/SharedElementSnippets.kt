@@ -1,11 +1,14 @@
 package com.example.deepwork.deep_work_app.presentation.components.main_transition_layout
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,33 +18,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun MainApp() {
     var showDetails by remember { mutableStateOf(false) } // Ekran durumunu yönetir
-
-    SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
+    SharedTransitionLayout(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
         AnimatedContent(
             showDetails,
             label = "basic_transition",
         ) { targetState ->
             if (!targetState) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     MainTagButton(
                         onShowDetails = {
                             showDetails = true
                         },
-                        60, Color.White, "❌", "Delete",
+                        50, Color.White, "❌", "Select a Tag",
                         animatedVisibilityScope = this@AnimatedContent,
                         sharedTransitionScope = this@SharedTransitionLayout
                     )
                 }
-
             } else {
                 Row(
                     modifier = Modifier.fillMaxSize(),
@@ -53,12 +59,30 @@ fun MainApp() {
                             showDetails = false
                         },
                         animatedVisibilityScope = this@AnimatedContent,
-                        sharedTransitionScope = this@SharedTransitionLayout
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        textTagTitle = "Select a Tag"
                     )
                 }
             }
         }
     }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        TimerToggleBar(
+            height = 50.dp,
+            circleButtonPadding = 4.dp,
+            circleBackgroundOnResource = Color(0xff5550e3),
+            circleBackgroundOffResource = Color.Black,
+            stateOn = 0,
+            stateOff = 1,
+            onCheckedChanged = {}
+        )
+    }
+
+
 }
 
 

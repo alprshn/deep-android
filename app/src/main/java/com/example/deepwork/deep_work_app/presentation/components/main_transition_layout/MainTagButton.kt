@@ -3,6 +3,7 @@ package com.example.deepwork.deep_work_app.presentation.components.main_transiti
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -31,25 +33,30 @@ fun MainTagButton(
     emoji: String,
     text: String,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
-) {
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    ) {
     with(sharedTransitionScope) {
         Row(
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier
+                .padding(8.dp)
                 .wrapContentWidth()
                 .height(heightButton.dp)
                 .clip(RoundedCornerShape(heightButton.dp))
-                .background(Color.Gray)
+                .background(Color(0xFF1C1E22))
                 .sharedBounds(
                     rememberSharedContentState(key = "bounds"),
                     animatedVisibilityScope = animatedVisibilityScope,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
+                    enter = fadeIn(animationSpec = tween(durationMillis = 1500)),
+                    exit = fadeOut(animationSpec = tween(durationMillis = 1500)),
                     resizeMode = SharedTransitionScope.ResizeMode.ScaleToBounds()
                 )
-                .clickable { onShowDetails() }) {
+                .clickable { onShowDetails() },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
             Row(
-                modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp),
+                modifier = Modifier
+                    .padding(horizontal = 15.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -57,10 +64,37 @@ fun MainTagButton(
                     emoji, color = textColor, modifier = Modifier.padding(end = 5.dp),
                     fontSize = 10.sp
                 )
-
                 Text(text, color = textColor)
             }
         }
     }
+}
 
+@Composable
+@Preview
+fun MainTagButtonPreview() {
+    Row(
+        modifier = Modifier
+            .padding(8.dp)
+            .wrapContentWidth()
+            .height(60.dp)
+            .clip(RoundedCornerShape(60.dp))
+            .background(Color(0xFF1C1E22)),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+
+    )
+    {
+        Row(
+            modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                "❌", modifier = Modifier.padding(end = 10.dp),
+                fontSize = 10.sp
+            )
+            Text("Select a Tag", color = Color.White)
+        }
+    }
 }
