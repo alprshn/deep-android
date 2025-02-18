@@ -5,10 +5,9 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,64 +24,60 @@ import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_
 @Composable
 fun MainApp() {
     var showDetails by remember { mutableStateOf(false) } // Ekran durumunu yönetir
-    SharedTransitionLayout(
-        modifier = Modifier
-            .fillMaxSize()
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        AnimatedContent(
-            showDetails,
-            label = "basic_transition",
-        ) { targetState ->
-            if (!targetState) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    MainTagButton(
-                        onShowDetails = {
-                            showDetails = true
-                        },
-                        50, Color.White, "❌", "Select a Tag",
-                        animatedVisibilityScope = this@AnimatedContent,
-                        sharedTransitionScope = this@SharedTransitionLayout
-                    )
-                }
-            } else {
-                Row(
+        SharedTransitionLayout {
+            AnimatedContent(
+                showDetails,
+                label = "basic_transition",
+            ) { targetState ->
+                Box(
                     modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.Center
+                    contentAlignment = Alignment.Center
                 ) {
-                    DetailsTagButton(
-                        onBack = {
-                            showDetails = false
-                        },
-                        animatedVisibilityScope = this@AnimatedContent,
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        textTagTitle = "Select a Tag"
+                    if (!targetState) {
+                        MainTagButton(
+                            onShowDetails = {
+                                showDetails = true
+                            },
+                            50, Color.White, "❌", "Select a Tag",
+                            animatedVisibilityScope = this@AnimatedContent,
+                            sharedTransitionScope = this@SharedTransitionLayout
+                        )
+                    }
+                    if (targetState) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            DetailsTagButton(
+                                onBack = {
+                                    showDetails = false
+                                },
+                                animatedVisibilityScope = this@AnimatedContent,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                textTagTitle = "Select a Tag"
+                            )
+                        }
+                    }
+                    TimerToggleBar(
+                        height = 50.dp,
+                        circleButtonPadding = 4.dp,
+                        circleBackgroundOnResource = Color(0xff5550e3),
+                        circleBackgroundOffResource = Color.Black,
+                        stateOn = 0,
+                        stateOff = 1,
+                        onCheckedChanged = {}
                     )
+
                 }
+
             }
         }
     }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        TimerToggleBar(
-            height = 50.dp,
-            circleButtonPadding = 4.dp,
-            circleBackgroundOnResource = Color(0xff5550e3),
-            circleBackgroundOffResource = Color.Black,
-            stateOn = 0,
-            stateOff = 1,
-            onCheckedChanged = {}
-        )
-    }
-
-
 }
 
 

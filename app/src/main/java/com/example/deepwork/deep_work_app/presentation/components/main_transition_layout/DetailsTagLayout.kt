@@ -40,19 +40,18 @@ fun DetailsTagButton(
     onBack: () -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    textTagTitle:String
+    textTagTitle: String
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         with(sharedTransitionScope) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(500.dp)
+                    .align(Alignment.BottomCenter) // Navigation Bar'ın altında kalacak şekilde hizalandı
                     .clip(RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp))
                     .sharedBounds(
                         rememberSharedContentState(key = "bounds"),
@@ -60,7 +59,7 @@ fun DetailsTagButton(
                         resizeMode = SharedTransitionScope.ResizeMode.ScaleToBounds()
                     )
             ) {
-                // Arka Plan (Bulanık)
+                // **ARKA PLAN (BULANIK)**
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -72,7 +71,14 @@ fun DetailsTagButton(
                         }
                 )
 
-                // İçerik (Buton ve Başlık)
+                // **ÖN PLAN (BULANIK)**
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.05f))
+                        .blur(radius = 25.dp) // Ön plan da bulanık
+                )
+                // **İÇERİK (BULANIK OLMAYACAK)**
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -89,7 +95,6 @@ fun DetailsTagButton(
                                 .clip(RoundedCornerShape(50.dp))
                                 .background(Color(0xFF28303B)),
                             contentAlignment = Alignment.Center
-
                         ) {
                             Icon(
                                 Icons.Outlined.Add,
@@ -101,17 +106,14 @@ fun DetailsTagButton(
                             text = textTagTitle,
                             color = Color(0xFFb6bcc6),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically)
                         )
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(50.dp))
                                 .background(Color(0xFF28303B))
-                                .clickable {
-                                    onBack()
-                                },
+                                .clickable { onBack() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -122,8 +124,9 @@ fun DetailsTagButton(
                         }
                     }
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                        , verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 15.dp).padding(bottom = 25.dp),
@@ -142,16 +145,25 @@ fun DetailsTagButton(
                             tint = Color(0xFF5c626a),
                             modifier = Modifier.size(60.dp)
                         )
-                        Text("No Tags Yet", color = Color.White, fontSize = 20.sp, modifier = Modifier.padding(top = 15.dp))
-                        Text("Tap + to add a tag", color =  Color(0xFF5c626a), fontSize = 15.sp, modifier = Modifier.padding(top = 15.dp))
-
+                        Text(
+                            "No Tags Yet",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(top = 15.dp)
+                        )
+                        Text(
+                            "Tap + to add a tag",
+                            color = Color(0xFF5c626a),
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(top = 15.dp)
+                        )
                     }
                 }
-
             }
         }
     }
 }
+
 
 
 @Composable
