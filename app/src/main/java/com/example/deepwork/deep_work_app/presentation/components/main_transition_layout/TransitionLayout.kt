@@ -8,6 +8,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.EaseInOutQuart
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 
 
@@ -61,67 +67,107 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Preview
 @Composable
-public fun AnimatedVisibilitySharedElementShortenedExample() {
-    // [START android_compose_shared_elements_animated_visibility]
+fun AnimatedVisibilitySharedElementShortenedExample() {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
 
     SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
-        Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                // [START_EXCLUDE]
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-                // [END_EXCLUDE]
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Progress Indicator - En üst katmanda ve merkezde
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                items(listSnacks) { snack ->
-                    AnimatedVisibility(
-                        visible = snack != selectedSnack,
-                        enter = fadeIn() + scaleIn(),
-                        exit = fadeOut() + scaleOut(),
-                        modifier = Modifier.animateItem()
+                CustomCircularProgressIndicator(
+                    modifier = Modifier
+                        .size(300.dp)
+                        .background(Color.Transparent),
+                    initialValue = 67,
+                    primaryColor = Color.Blue,
+                    secondaryColor = Color.DarkGray,
+                    minValue = 0,
+                    maxValue = 100,
+                    circleRadiusStroke = 450f,
+                    circleRadiusGradient = 270f,
+                    onPositionChange = {}
+                )
+            }
+
+            // Diğer içerikler
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 50.dp)
+            ) {
+                // Tag seçimi ve Timer Toggle Bar
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .sharedBounds(
-                                    sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),
-                                    // Using the scope provided by AnimatedVisibility
-                                    animatedVisibilityScope = this,
-                                    clipInOverlayDuringTransition = OverlayClip(
-                                        shapeForSharedElement
+                        items(listSnacks) { snack ->
+                            AnimatedVisibility(
+                                visible = snack != selectedSnack,
+                                enter = fadeIn() + scaleIn(),
+                                exit = fadeOut() + scaleOut(),
+                                modifier = Modifier.animateItem()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .sharedBounds(
+                                            sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),
+                                            animatedVisibilityScope = this,
+                                            clipInOverlayDuringTransition = OverlayClip(
+                                                shapeForSharedElement
+                                            )
+                                        )
+                                        .background(Color.Transparent, shapeForSharedElement)
+                                        .clip(shapeForSharedElement)
+                                ) {
+                                    SnackContents(
+                                        snack = snack,
+                                        modifier = Modifier.sharedElement(
+                                            state = rememberSharedContentState(key = snack.name),
+                                            animatedVisibilityScope = this@AnimatedVisibility
+                                        ),
+                                        onClick = {
+                                            selectedSnack = snack
+                                        },
+                                        heightButton = 50,
+                                        textColor = Color.White,
+                                        emoji = "\uD83D\uDCCD"
                                     )
-                                )
-                                .background(Color.Transparent, shapeForSharedElement)
-                                .clip(shapeForSharedElement)
-                        ) {
-                            SnackContents(
-                                snack = snack,
-                                modifier = Modifier.sharedElement(
-                                    state = rememberSharedContentState(key = snack.name),
-                                    animatedVisibilityScope = this@AnimatedVisibility
-                                ),
-                                onClick = {
-                                    selectedSnack = snack
-                                },
-                                50, Color.White, "❌"
-                            )
+                                }
+                            }
                         }
                     }
+
+                    // Timer Toggle Bar - Tag seçiminin hemen altında
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TimerToggleBar(
+                        height = 50.dp,
+                        circleButtonPadding = 4.dp,
+                        circleBackgroundOnResource = Color(0xff5550e3),
+                        circleBackgroundOffResource = Color.Black,
+                        stateOn = 0,
+                        stateOff = 1,
+                        onCheckedChanged = {}
+                    )
                 }
             }
-            TimerToggleBar(
-                height = 50.dp,
-                circleButtonPadding = 4.dp,
-                circleBackgroundOnResource = Color(0xff5550e3),
-                circleBackgroundOffResource = Color.Black,
-                stateOn = 0,
-                stateOff = 1,
-                onCheckedChanged = {}
-            )
         }
-        // Contains matching AnimatedContent with sharedBounds modifiers.
+
+        // Details overlay
         SnackEditDetails(
             snack = selectedSnack,
             onConfirmClick = {
@@ -129,8 +175,8 @@ public fun AnimatedVisibilitySharedElementShortenedExample() {
             }
         )
     }
-    // [END android_compose_shared_elements_animated_visibility]
 }
+
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -143,7 +189,27 @@ fun SharedTransitionScope.SnackEditDetails(
         modifier = modifier,
         targetState = snack,
         transitionSpec = {
-            fadeIn() togetherWith fadeOut()
+            (slideInVertically(
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = EaseInOutQuart
+                )
+            ) + fadeIn(
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = EaseInOutQuart
+                )
+            )) togetherWith (slideOutVertically(
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = EaseInOutQuart
+                )
+            ) + fadeOut(
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = EaseInOutQuart
+                )
+            ))
         },
         label = "SnackEditDetails"
     ) { targetSnack ->
@@ -158,21 +224,37 @@ fun SharedTransitionScope.SnackEditDetails(
                         .clickable {
                             onConfirmClick()
                         }
-                        .background(Color.Black.copy(alpha = 0.5f))
+                        .background(Color.Black.copy(alpha = 0.6f))
                 )
                 Column(
-                    modifier = Modifier.fillMaxWidth().height(500.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
                         .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = "${targetSnack.name}-bounds"),
                             animatedVisibilityScope = this@AnimatedContent,
                             clipInOverlayDuringTransition = OverlayClip(shapeForSharedElement)
                         )
-                        .background(Color.White.copy(alpha = 0.1f),shapeForSharedElement)
+                        .background(Color.Black.copy(alpha = 0.6f), shapeForSharedElement)
                         .graphicsLayer {
-                            alpha = 0.8f
+                            alpha = 0.9f
                             shadowElevation = 5.dp.toPx()
                         }
-                        .clip(shapeForSharedElement),
+                        .clip(shapeForSharedElement)
+                        .animateEnterExit(
+                            enter = slideInVertically(
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = EaseInOutQuart
+                                )
+                            ),
+                            exit = slideOutVertically(
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = EaseInOutQuart
+                                )
+                            )
+                        ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -211,7 +293,8 @@ fun SharedTransitionScope.SnackEditDetails(
                                 modifier = Modifier
                                     .size(25.dp)
                                     .clip(RoundedCornerShape(50.dp))
-                                    .background(Color(0xFF28303B)).clickable {
+                                    .background(Color(0xFF28303B))
+                                    .clickable {
                                         onConfirmClick()
                                     },
                                 contentAlignment = Alignment.Center
@@ -231,7 +314,8 @@ fun SharedTransitionScope.SnackEditDetails(
                             Row(
                                 modifier = Modifier
                                     .padding(horizontal = 15.dp)
-                                    .padding(bottom = 25.dp).sharedElement(
+                                    .padding(bottom = 25.dp)
+                                    .sharedElement(
                                         state = rememberSharedContentState(key = targetSnack.name),
                                         animatedVisibilityScope = this@AnimatedContent,
                                     ),
@@ -239,7 +323,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    "❌", modifier = Modifier.padding(end = 10.dp),
+                                    "\uD83D\uDCCD", modifier = Modifier.padding(end = 10.dp),
                                     fontSize = 20.sp
                                 )
                                 Text("Select a Tag", color = Color.White, fontSize = 30.sp)
@@ -281,11 +365,10 @@ fun SnackContents(
     textColor: Color,
     emoji: String,
 ) {
-
     Row(
         modifier = modifier
             .padding(8.dp)
-            .wrapContentWidth()
+            .fillMaxWidth(0.7f) // Genişliği sınırlandır
             .height(heightButton.dp)
             .clip(RoundedCornerShape(heightButton.dp))
             .background(Color(0xFF1C1E22))
@@ -305,11 +388,9 @@ fun SnackContents(
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                emoji, color = textColor, modifier = Modifier.padding(end = 5.dp),
-                fontSize = 10.sp
+                emoji, color = textColor, modifier = Modifier.padding(end = 5.dp)
             )
             Text(snack.name, color = textColor)
         }
     }
-
 }

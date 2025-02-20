@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
             val navController: NavHostController = rememberNavController()
             var selectedIndex by remember { mutableIntStateOf(0) }
             DeepWorkTheme {
-                Scaffold(modifier = Modifier.fillMaxSize().background(Color.Black),  bottomBar = {
+                Scaffold(modifier = Modifier.fillMaxSize(), containerColor = Color.Black, bottomBar = {
                     BottomBarTabs(tabs = tabs, selectedTab = selectedIndex, onTabSelected = {
                         selectedIndex = tabs.indexOf(it)
                         navController.navigate(it.title) {
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         }
                     })
                 }) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding).background(color = Color.Black)) { }
+                    Box(modifier = Modifier.padding(innerPadding)) { }
                     RootNavigationGraph(navController = navController)
                 }
             }
