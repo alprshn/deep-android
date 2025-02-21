@@ -36,6 +36,8 @@ fun CustomCircularProgressIndicator(
     maxValue: Int,
     circleRadiusStroke: Float,
     circleRadiusGradient: Float,
+    colorBackgroundGradient: Color = Color.Blue,
+    colorBackgroundGradientValue: Float = 0.2f,
     onPositionChange: (Int) -> Unit
 ) {
     var circleCenter by remember { mutableStateOf(Offset.Zero) }
@@ -53,7 +55,7 @@ fun CustomCircularProgressIndicator(
             // Radial Gradient Effect
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(Color.Blue.copy(0.4f), Color.Transparent),
+                    colors = listOf(colorBackgroundGradient.copy(colorBackgroundGradientValue), Color.Transparent),
                     center = circleCenter,
                     radius = circleRadiusGradient
                 ),
@@ -120,8 +122,8 @@ fun CustomCircularProgressIndicatorPreview() {
         secondaryColor = Color.DarkGray,
         minValue = 0,
         maxValue = 100,
-        circleRadiusStroke = 450f,
-        circleRadiusGradient = 350f,
+        circleRadiusStroke = 400f,
+        circleRadiusGradient = 700f,
         onPositionChange = {
 
         }
