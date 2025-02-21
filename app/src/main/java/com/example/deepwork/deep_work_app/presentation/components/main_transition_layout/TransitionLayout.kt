@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.deepwork.deep_work_app.presentation.components.StartButton
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 
@@ -71,103 +71,89 @@ fun AnimatedVisibilitySharedElementShortenedExample() {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
 
     SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
-        Box(
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
         ) {
-            // Progress Indicator - En üst katmanda ve merkezde
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CustomCircularProgressIndicator(
-                    modifier = Modifier
-                        .size(300.dp)
-                        .background(Color.Transparent),
-                    initialValue = 67,
-                    primaryColor = Color.Blue,
-                    secondaryColor = Color.DarkGray,
-                    minValue = 0,
-                    maxValue = 100,
-                    circleRadiusStroke = 450f,
-                    circleRadiusGradient = 270f,
-                    onPositionChange = {}
-                )
-            }
-
-            // Diğer içerikler
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 50.dp)
+                    .fillMaxWidth()
+                    .height(70.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Tag seçimi ve Timer Toggle Bar
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                items(listSnacks) { snack ->
+                    AnimatedVisibility(
+                        visible = snack != selectedSnack,
+                        enter = fadeIn() + scaleIn(),
+                        exit = fadeOut() + scaleOut(),
+                        modifier = Modifier.animateItem()
                     ) {
-                        items(listSnacks) { snack ->
-                            AnimatedVisibility(
-                                visible = snack != selectedSnack,
-                                enter = fadeIn() + scaleIn(),
-                                exit = fadeOut() + scaleOut(),
-                                modifier = Modifier.animateItem()
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .sharedBounds(
-                                            sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),
-                                            animatedVisibilityScope = this,
-                                            clipInOverlayDuringTransition = OverlayClip(
-                                                shapeForSharedElement
-                                            )
-                                        )
-                                        .background(Color.Transparent, shapeForSharedElement)
-                                        .clip(shapeForSharedElement)
-                                ) {
-                                    SnackContents(
-                                        snack = snack,
-                                        modifier = Modifier.sharedElement(
-                                            state = rememberSharedContentState(key = snack.name),
-                                            animatedVisibilityScope = this@AnimatedVisibility
-                                        ),
-                                        onClick = {
-                                            selectedSnack = snack
-                                        },
-                                        heightButton = 50,
-                                        textColor = Color.White,
-                                        emoji = "\uD83D\uDCCD"
+                        Box(
+                            modifier = Modifier
+                                .sharedBounds(
+                                    sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),
+                                    animatedVisibilityScope = this,
+                                    clipInOverlayDuringTransition = OverlayClip(
+                                        shapeForSharedElement
                                     )
-                                }
-                            }
+                                )
+                                .background(Color.Transparent, shapeForSharedElement)
+                                .clip(shapeForSharedElement)
+                        ) {
+                            SnackContents(
+                                snack = snack,
+                                modifier = Modifier.sharedElement(
+                                    state = rememberSharedContentState(key = snack.name),
+                                    animatedVisibilityScope = this@AnimatedVisibility
+                                ),
+                                onClick = {
+                                    selectedSnack = snack
+                                },
+                                heightButton = 50,
+                                textColor = Color.White,
+                                emoji = "\uD83D\uDCCD"
+                            )
                         }
                     }
-
-                    // Timer Toggle Bar - Tag seçiminin hemen altında
-                    Spacer(modifier = Modifier.height(16.dp))
-                    TimerToggleBar(
-                        height = 50.dp,
-                        circleButtonPadding = 4.dp,
-                        circleBackgroundOnResource = Color(0xff5550e3),
-                        circleBackgroundOffResource = Color.Black,
-                        stateOn = 0,
-                        stateOff = 1,
-                        onCheckedChanged = {}
-                    )
                 }
             }
+
+            // Timer Toggle Bar - Tag seçiminin hemen altında
+            Spacer(modifier = Modifier.height(16.dp))
+            TimerToggleBar(
+                height = 50.dp,
+                circleButtonPadding = 4.dp,
+                circleBackgroundOnResource = Color(0xff5550e3),
+                circleBackgroundOffResource = Color.Black,
+                stateOn = 0,
+                stateOff = 1,
+                onCheckedChanged = {}
+            )
+
+            CustomCircularProgressIndicator(
+                modifier = Modifier
+                    .padding(vertical = 50.dp)
+                    .size(350.dp)
+                    .background(Color.Transparent),
+                initialValue = 67,
+                primaryColor = Color.Blue,
+                secondaryColor = Color.DarkGray,
+                minValue = 0,
+                maxValue = 100,
+                circleRadiusStroke = 450f,
+                circleRadiusGradient = 450f,
+                onPositionChange = {}
+            )
+
+            StartButton(onClick = {
+                // Buton tıklandığında yapılacak işlem
+            })
         }
 
-        // Details overlay
+
         SnackEditDetails(
             snack = selectedSnack,
             onConfirmClick = {
@@ -175,6 +161,10 @@ fun AnimatedVisibilitySharedElementShortenedExample() {
             }
         )
     }
+
+
+    // Details overlay
+
 }
 
 

@@ -39,18 +39,29 @@ fun CustomCircularProgressIndicator(
     onPositionChange: (Int) -> Unit
 ) {
     var circleCenter by remember { mutableStateOf(Offset.Zero) }
-
     var positionValue by remember { mutableStateOf(initialValue) }
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Canvas(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             val width = size.width
             val height = size.height
             val circleThickness = width / 30f
             circleCenter = Offset(x = width / 2, y = height / 2)
+
+            // Radial Gradient Effect
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.Blue.copy(0.4f), Color.Transparent),
+                    center = circleCenter,
+                    radius = circleRadiusGradient
+                ),
+                radius = circleRadiusGradient,
+                center = circleCenter
+            )
+
+            // Secondary Circle
             drawCircle(
                 style = Stroke(width = circleThickness),
                 color = secondaryColor,
@@ -58,6 +69,7 @@ fun CustomCircularProgressIndicator(
                 center = circleCenter
             )
 
+            // Primary Progress Arc
             drawArc(
                 color = primaryColor,
                 startAngle = 90f,
@@ -74,6 +86,7 @@ fun CustomCircularProgressIndicator(
                 )
             )
 
+            // Text in the Center
             drawContext.canvas.nativeCanvas.apply {
                 drawIntoCanvas {
                     drawText(
@@ -86,11 +99,9 @@ fun CustomCircularProgressIndicator(
                             textAlign = Paint.Align.CENTER
                             isFakeBoldText = true
                         }
-
                     )
                 }
             }
-
         }
     }
 
@@ -110,7 +121,7 @@ fun CustomCircularProgressIndicatorPreview() {
         minValue = 0,
         maxValue = 100,
         circleRadiusStroke = 450f,
-        circleRadiusGradient = 270f,
+        circleRadiusGradient = 350f,
         onPositionChange = {
 
         }
