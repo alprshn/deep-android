@@ -29,6 +29,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Tab
@@ -49,8 +51,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.deepwork.deep_work_app.presentation.components.StartButton
+import com.example.deepwork.deep_work_app.presentation.components.TimeEditButtons
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
+import androidx.compose.animation.core.animateFloatAsState
 
 
 data class Snack(
@@ -69,13 +73,33 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 @Composable
 fun AnimatedVisibilitySharedElementShortenedExample() {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
+    var isStarted by remember { mutableStateOf(false) }
+    var circleRadiusStroke by remember { mutableStateOf(400f) }
+    var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
+
+    // Animate circle radius
+    val animatedCircleRadius by animateFloatAsState(
+        targetValue = circleRadiusStroke,
+        animationSpec = tween(
+            durationMillis = 500,
+            easing = EaseInOutQuart
+        )
+    )
+
+    // Animate background gradient
+    val animatedGradientValue by animateFloatAsState(
+        targetValue = colorBackgroundGradientValue,
+        animationSpec = tween(
+            durationMillis = 500,
+            easing = EaseInOutQuart
+        )
+    )
 
     SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -143,16 +167,91 @@ fun AnimatedVisibilitySharedElementShortenedExample() {
                 secondaryColor = Color.DarkGray,
                 minValue = 0,
                 maxValue = 100,
-                circleRadiusStroke = 450f,
-                circleRadiusGradient = 450f,
+                circleRadiusStroke = animatedCircleRadius,
+                circleRadiusGradient = 700f,
+                colorBackgroundGradientValue = animatedGradientValue,
                 onPositionChange = {}
             )
 
-            StartButton(onClick = {
-                // Buton tıklandığında yapılacak işlem
-            })
-        }
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AnimatedVisibility(
+                    visible = isStarted,
+                    enter = fadeIn(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseInOutQuart
+                        )
+                    ) + scaleIn(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseInOutQuart
+                        ),
+                        initialScale = 0.7f
+                    ),
+                    exit = fadeOut(
+                        animationSpec = tween(
+                            durationMillis = 300,
+                            easing = EaseInOutQuart
+                        )
+                    ) + scaleOut(
+                        animationSpec = tween(
+                            durationMillis = 300,
+                            easing = EaseInOutQuart
+                        ),
+                        targetScale = 0.7f
+                    )
+                ) {
+                    TimeEditButtons(
+                        onClick = { /* Tıklama işlemi */ },
+                        baseColor = Color.Gray,
+                        icon = Icons.Filled.Replay
+                    )
+                }
 
+                StartButton(onClick = {
+                    isStarted = !isStarted
+                    circleRadiusStroke = if (isStarted) 450f else 400f
+                    colorBackgroundGradientValue = if (isStarted) 0.4f else 0.2f
+                })
+
+                AnimatedVisibility(
+                    visible = isStarted,
+                    enter = fadeIn(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseInOutQuart
+                        )
+                    ) + scaleIn(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseInOutQuart
+                        ),
+                        initialScale = 0.7f
+                    ),
+                    exit = fadeOut(
+                        animationSpec = tween(
+                            durationMillis = 300,
+                            easing = EaseInOutQuart
+                        )
+                    ) + scaleOut(
+                        animationSpec = tween(
+                            durationMillis = 300,
+                            easing = EaseInOutQuart
+                        ),
+                        targetScale = 0.7f
+                    )
+                ) {
+                    TimeEditButtons(
+                        onClick = { /* Tıklama işlemi */ },
+                        baseColor = Color.Gray,
+                        icon = Icons.Default.Stop
+                    )
+                }
+            }
+        }
 
         SnackEditDetails(
             snack = selectedSnack,
@@ -161,10 +260,6 @@ fun AnimatedVisibilitySharedElementShortenedExample() {
             }
         )
     }
-
-
-    // Details overlay
-
 }
 
 
