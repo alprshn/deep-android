@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.hilt.common)
 
     val room_version = "2.6.1"
 
@@ -94,6 +95,11 @@ dependencies {
 
     //Navigation Component
     implementation("androidx.navigation:navigation-compose:2.8.6")
+
+    //Work Manager
+    val work_version = "2.10.0"
+    implementation("androidx.work:work-runtime-ktx:$work_version")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
