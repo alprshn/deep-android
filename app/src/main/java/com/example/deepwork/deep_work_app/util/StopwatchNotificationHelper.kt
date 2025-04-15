@@ -13,7 +13,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.example.deepwork.MainActivity
 import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_IS_PLAYING
+import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_LAP_ACTION
 import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_LAST_INDEX
+import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_RESET_ACTION
 import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_TIME
 import com.example.deepwork.deep_work_app.data.receiver.StopwatchNotificationBroadcastReceiver
 import com.example.deepwork.deep_work_app.util.GlobalProperties.pendingIntentFlags
