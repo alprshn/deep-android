@@ -22,4 +22,5 @@ data class Sessions(
     @ColumnInfo(name = "start_time") val startTime: Date ,
     @ColumnInfo(name = "duration") val duration: Long,
     @ColumnInfo(name = "session_emoji") val sessionEmoji: String
+    //Buraya finish time eklenebilir incele
 )
