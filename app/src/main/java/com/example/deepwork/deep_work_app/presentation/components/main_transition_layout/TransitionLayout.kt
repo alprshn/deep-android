@@ -1,12 +1,8 @@
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.EaseInOutQuart
@@ -14,254 +10,35 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Replay
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Tab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.deepwork.deep_work_app.presentation.components.StartButton
-import com.example.deepwork.deep_work_app.presentation.components.TimeEditButtons
-import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
-import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
-import androidx.compose.animation.core.animateFloatAsState
+import com.example.deepwork.deep_work_app.presentation.timer_screen.Snack
 
-
-data class Snack(
-    val name: String,
-    val description: String
-)
-
-private val listSnacks = listOf(
-    Snack("Select a Tag", ""),
-)
 
 private val shapeForSharedElement = RoundedCornerShape(16.dp)
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Preview
-@Composable
-fun AnimatedVisibilitySharedElementShortenedExample() {
-    var selectedSnack by remember { mutableStateOf<Snack?>(null) }
-    var isStarted by remember { mutableStateOf(false) }
-    var circleRadiusStroke by remember { mutableStateOf(400f) }
-    var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
-
-    // Animate circle radius
-    val animatedCircleRadius by animateFloatAsState(
-        targetValue = circleRadiusStroke,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = EaseInOutQuart
-        )
-    )
-
-    // Animate background gradient
-    val animatedGradientValue by animateFloatAsState(
-        targetValue = colorBackgroundGradientValue,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = EaseInOutQuart
-        )
-    )
-
-    SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                items(listSnacks) { snack ->
-                    AnimatedVisibility(
-                        visible = snack != selectedSnack,
-                        enter = fadeIn() + scaleIn(),
-                        exit = fadeOut() + scaleOut(),
-                        modifier = Modifier.animateItem()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .sharedBounds(
-                                    sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),
-                                    animatedVisibilityScope = this,
-                                    clipInOverlayDuringTransition = OverlayClip(
-                                        shapeForSharedElement
-                                    )
-                                )
-                                .background(Color.Transparent, shapeForSharedElement)
-                                .clip(shapeForSharedElement)
-                        ) {
-                            SnackContents(
-                                snack = snack,
-                                modifier = Modifier.sharedElement(
-                                    state = rememberSharedContentState(key = snack.name),
-                                    animatedVisibilityScope = this@AnimatedVisibility
-                                ),
-                                onClick = {
-                                    selectedSnack = snack
-                                },
-                                heightButton = 50,
-                                textColor = Color.White,
-                                emoji = "\uD83D\uDCCD"
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Timer Toggle Bar - Tag seçiminin hemen altında
-            Spacer(modifier = Modifier.height(16.dp))
-            TimerToggleBar(
-                height = 50.dp,
-                circleButtonPadding = 4.dp,
-                circleBackgroundOnResource = Color(0xff5550e3),
-                circleBackgroundOffResource = Color(0xFF1C1E22),
-                stateOn = 0,
-                stateOff = 1,
-                onCheckedChanged = {}
-            )
-
-            CustomCircularProgressIndicator(
-                modifier = Modifier
-                    .padding(vertical = 50.dp)
-                    .size(350.dp)
-                    .background(Color.Transparent),
-                initialValue = 67,
-                primaryColor = Color.Blue,
-                secondaryColor = Color.DarkGray,
-                minValue = 0,
-                maxValue = 100,
-                circleRadiusStroke = animatedCircleRadius,
-                circleRadiusGradient = 700f,
-                colorBackgroundGradientValue = animatedGradientValue,
-                onPositionChange = {}
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AnimatedVisibility(
-                    visible = isStarted,
-                    enter = fadeIn(
-                        animationSpec = tween(
-                            durationMillis = 500,
-                            easing = EaseInOutQuart
-                        )
-                    ) + scaleIn(
-                        animationSpec = tween(
-                            durationMillis = 500,
-                            easing = EaseInOutQuart
-                        ),
-                        initialScale = 0.7f
-                    ),
-                    exit = fadeOut(
-                        animationSpec = tween(
-                            durationMillis = 300,
-                            easing = EaseInOutQuart
-                        )
-                    ) + scaleOut(
-                        animationSpec = tween(
-                            durationMillis = 300,
-                            easing = EaseInOutQuart
-                        ),
-                        targetScale = 0.7f
-                    )
-                ) {
-                    TimeEditButtons(
-                        onClick = { /* Tıklama işlemi */ },
-                        baseColor = Color.Gray,
-                        icon = Icons.Filled.Replay
-                    )
-                }
-
-                StartButton(onClick = {
-                    isStarted = !isStarted
-                    circleRadiusStroke = if (isStarted) 450f else 400f
-                    colorBackgroundGradientValue = if (isStarted) 0.4f else 0.2f
-                })
-
-                AnimatedVisibility(
-                    visible = isStarted,
-                    enter = fadeIn(
-                        animationSpec = tween(
-                            durationMillis = 500,
-                            easing = EaseInOutQuart
-                        )
-                    ) + scaleIn(
-                        animationSpec = tween(
-                            durationMillis = 500,
-                            easing = EaseInOutQuart
-                        ),
-                        initialScale = 0.7f
-                    ),
-                    exit = fadeOut(
-                        animationSpec = tween(
-                            durationMillis = 300,
-                            easing = EaseInOutQuart
-                        )
-                    ) + scaleOut(
-                        animationSpec = tween(
-                            durationMillis = 300,
-                            easing = EaseInOutQuart
-                        ),
-                        targetScale = 0.7f
-                    )
-                ) {
-                    TimeEditButtons(
-                        onClick = { /* Tıklama işlemi */ },
-                        baseColor = Color.Gray,
-                        icon = Icons.Default.Stop
-                    )
-                }
-            }
-        }
-
-        SnackEditDetails(
-            snack = selectedSnack,
-            onConfirmClick = {
-                selectedSnack = null
-            }
-        )
-    }
-}
-
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -449,6 +226,7 @@ fun SnackContents(
     heightButton: Int,
     textColor: Color,
     emoji: String,
+
 ) {
     Row(
         modifier = modifier
@@ -457,10 +235,7 @@ fun SnackContents(
             .height(heightButton.dp)
             .clip(RoundedCornerShape(heightButton.dp))
             .background(Color(0xFF1C1E22))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
+            .clickable{
                 onClick()
             },
         verticalAlignment = Alignment.CenterVertically,

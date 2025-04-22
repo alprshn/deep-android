@@ -57,6 +57,10 @@ dependencies {
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.hilt.common)
 
+    //For Compose Animation
+    implementation("androidx.compose.animation:animation:1.7.8")
+
+
     val room_version = "2.6.1"
 
     implementation("androidx.room:room-runtime:$room_version")

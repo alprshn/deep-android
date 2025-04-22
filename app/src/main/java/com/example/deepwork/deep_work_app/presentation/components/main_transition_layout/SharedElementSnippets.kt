@@ -63,16 +63,6 @@ fun MainApp() {
                             )
                         }
                     }
-                    TimerToggleBar(
-                        height = 50.dp,
-                        circleButtonPadding = 4.dp,
-                        circleBackgroundOnResource = Color(0xff5550e3),
-                        circleBackgroundOffResource = Color.Black,
-                        stateOn = 0,
-                        stateOff = 1,
-                        onCheckedChanged = {}
-                    )
-
                 }
 
             }

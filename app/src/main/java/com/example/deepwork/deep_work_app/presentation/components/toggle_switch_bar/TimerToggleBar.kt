@@ -62,9 +62,10 @@ fun TimerToggleBar(
     circleBackgroundOffResource: Color,
     stateOn: Int,
     stateOff: Int,
-    onCheckedChanged: (checked: Boolean) -> Unit
+    selectedState: Int,                       // ← Dışarıdan gelen seçili durum
+    onCheckedChanged: (isOn: Boolean) -> Unit // ← Dışarıdan tetiklenen callback
 ) {
-    var selectedState by remember { mutableStateOf(stateOn) }
+//    var selectedState by remember { mutableStateOf(stateOn) }
 
     Row(
         modifier = Modifier
@@ -82,7 +83,6 @@ fun TimerToggleBar(
                 .clip(RoundedCornerShape(50))
                 .background(if (selectedState == stateOn) circleBackgroundOnResource else circleBackgroundOffResource)
                 .clickable {
-                    selectedState = stateOn
                     onCheckedChanged(true)
                 },
             contentAlignment = Alignment.Center
@@ -109,7 +109,6 @@ fun TimerToggleBar(
                 .clip(RoundedCornerShape(50))
                 .background(if (selectedState == stateOff) circleBackgroundOnResource else circleBackgroundOffResource) // Seçili duruma göre renk
                 .clickable {
-                    selectedState = stateOff // Stopwatch seçildi
                     onCheckedChanged(false)
                 },
             contentAlignment = Alignment.Center
@@ -141,6 +140,7 @@ fun TimerToggleBarPreview() {
         circleBackgroundOffResource = Color(0xFF1C1E22),
         stateOn = 0,
         stateOff = 1,
+        selectedState = 0,
         onCheckedChanged = {}
     )
 }

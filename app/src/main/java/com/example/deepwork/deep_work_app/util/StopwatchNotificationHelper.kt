@@ -6,12 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Timer
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.example.deepwork.MainActivity
+import com.example.deepwork.R
 import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_IS_PLAYING
 import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_LAP_ACTION
 import com.example.deepwork.deep_work_app.data.receiver.STOPWATCH_LAST_INDEX
@@ -55,8 +60,8 @@ class StopwatchNotificationHelper @Inject constructor(
     fun getStopwatchBaseNotification() = //Bildirimi oluşturan fonskiyon
         NotificationCompat.Builder(applicationContext, STOPWATCH_WORKER_CHANNEL)
             .setContentTitle("Stopwatch")
-            .setSmallIcon("BURAYA ICONU EKLE")
-            .setColor(ContextCompat.getColor(applicationContext, "BURAYA RENK EKLE")))
+            .setSmallIcon(Icons.Filled.Timer.hashCode())
+            .setColor(ContextCompat.getColor(applicationContext, android.R.color.holo_blue_dark))
     .setContentIntent(openStopwatchPendingIntent)//Buraya tıklandığında açılacak intent yazılır.
     .setOngoing(true)//Burası çalışmaya devam etsin diye yazılır.
     .setAutoCancel(true)
@@ -97,9 +102,9 @@ class StopwatchNotificationHelper @Inject constructor(
 
         val lapResetIntentAction = if (isPlaying) lapIntentAction else resetIntentAction
         val lapResetLabel = if (isPlaying) "Lap" else "Reset"
-        val lapResetIcon = if (isPlaying) R.drawable.ic_close else R.drawable.ic_timer
+        val lapResetIcon = if (isPlaying) Icons.Default.Close.hashCode() else Icons.Default.Timer.hashCode()
         val stopResumeLabel = if (isPlaying) "Stop" else "Resume"
-        val stopResumeIcon = if (isPlaying) R.drawable.ic_stop else R.drawable.ic_play
+        val stopResumeIcon = if (isPlaying) Icons.Default.Stop.hashCode() else Icons.Default.PlayArrow.hashCode()
         val lastLapIndexText = if (isPlaying && lastLapIndex != -1) "\nLap  $lastLapIndex" else ""
         val isPlayingText = if (!isPlaying) "\nPaused" else ""
 
@@ -130,6 +135,12 @@ class StopwatchNotificationHelper @Inject constructor(
             pendingIntentFlags,
         )
     }
+
+
+    fun removeStopwatchNotification() {
+        notificationManager.cancel(STOPWATCH_WORKER_NOTIFICATION_ID)
+    }
+
 
 }
 

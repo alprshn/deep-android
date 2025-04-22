@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Deep Work</string>
     <string name="timer_icon_description">Timer Icon</string>
+    <string name="stopwatch_channel">Stopwatch</string>
+    <string name="stopwatch_worker_channel_description">Stopwatch Counter</string>
 
 </resources>

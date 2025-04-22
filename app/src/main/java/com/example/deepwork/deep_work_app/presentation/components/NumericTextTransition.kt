@@ -31,9 +31,8 @@ import androidx.wear.compose.material.Button
 import com.example.deepwork.deep_work_app.domain.data.DigitModel
 import com.example.deepwork.deep_work_app.domain.data.compareTo
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun NumericTextTransition(count: Int = 0) {
+fun NumericTextTransition(count: Int = 0, ) {
 
     Row (
         modifier = Modifier

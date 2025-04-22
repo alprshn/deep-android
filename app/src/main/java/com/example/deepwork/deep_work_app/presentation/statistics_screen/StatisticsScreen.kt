@@ -1,6 +1,5 @@
 package com.example.deepwork.deep_work_app.presentation.statistics_screen
 
-import AnimatedVisibilitySharedElementShortenedExample
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
