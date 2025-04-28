@@ -23,7 +23,7 @@ import com.example.deepwork.deep_work_app.data.util.DateConverter
 abstract class DeepWorkDatabase : RoomDatabase() {
     abstract fun tagsDao(): TagsDao
     abstract fun sessionsDao(): SessionsDao
-    abstract fun UserPreferencesDao(): UserPreferencesDao
+    abstract fun userPreferencesDao(): UserPreferencesDao
     companion object {
         @Volatile
         private var INSTANCE: DeepWorkDatabase? = null

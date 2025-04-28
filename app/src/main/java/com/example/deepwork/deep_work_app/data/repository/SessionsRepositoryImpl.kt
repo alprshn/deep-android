@@ -5,8 +5,9 @@ import com.example.deepwork.deep_work_app.data.local.entities.Sessions
 import com.example.deepwork.deep_work_app.domain.repository.SessionsRepository
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
+import javax.inject.Inject
 
-class SessionsRepositoryImpl(
+class SessionsRepositoryImpl @Inject constructor(
     private val sessionsDao: SessionsDao
 ): SessionsRepository {
     override suspend fun insertSession(session: Sessions) {

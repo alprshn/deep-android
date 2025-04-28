@@ -2,6 +2,7 @@ package com.example.deepwork.deep_work_app.presentation.timer_screen
 
 import SnackContents
 import SnackEditDetails
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,6 +47,8 @@ import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.layout.onGloballyPositioned // Import this
+import androidx.compose.ui.layout.positionInParent // Import this
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.roundToInt
@@ -66,43 +69,23 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 fun TimerScreen() {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
     var isStarted by remember { mutableStateOf(false) }
-    var circleRadiusStroke by remember { mutableStateOf(400f) }
     var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
     var selectedState by remember { mutableStateOf(0) }
-    var circleCenter by remember { mutableStateOf(Offset.Zero) }
-    var initialValue by remember { mutableStateOf(0) }
+    var initialValue by remember { mutableStateOf(50) }
     var positionValue by remember { mutableStateOf(initialValue) }
     var oldPositionValue by remember { mutableStateOf(initialValue) }
-    var changeAngle by remember {
-        mutableStateOf(0f)
-    }
-    var dragStartedAngle by remember {
-        mutableStateOf(180f)
-    }
-
-    val maxValue by remember {
-        mutableStateOf(100)
-    }
-    val minValue by remember {
-        mutableStateOf(0)
-    }
+    val maxValue by remember { mutableStateOf(100) }
+    val minValue by remember { mutableStateOf(0) }
 
 
-// Animate circle radius
-    val animatedCircleRadius by animateFloatAsState(
-        targetValue = circleRadiusStroke,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = EaseInOutQuart
-        )
-    )
+// Removed Animate circle radius - handled internally
     // Animate background gradient
     val animatedColorBackgroundGradientValue by animateFloatAsState(
         targetValue = colorBackgroundGradientValue,
         animationSpec = tween(
             durationMillis = 500,
             easing = EaseInOutQuart
-        )
+        ), label = "backgroundGradientAlpha"
     )
 
     Column(
@@ -150,7 +133,7 @@ fun TimerScreen() {
                                         animatedVisibilityScope = this@AnimatedVisibility
                                     ),
                                     onClick = {
-
+                                        // Handle snack click if needed, maybe set selectedSnack
                                     },
                                     heightButton = 50,
                                     textColor = Color.White,
@@ -161,7 +144,6 @@ fun TimerScreen() {
                     }
                 }
 
-                // Timer Toggle Bar - Tag seçiminin hemen altında
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TimerToggleBar(
@@ -171,7 +153,13 @@ fun TimerScreen() {
                     circleBackgroundOffResource = Color(0xFF1C1E22),
                     stateOn = 0,
                     stateOff = 1,
-                    onCheckedChanged = {},
+                    onCheckedChanged = { isSelected ->
+                        selectedState = if (isSelected) {
+                            0
+                        } else {
+                            1
+                        }
+                    },
                     selectedState = selectedState
                 )
 
@@ -180,44 +168,17 @@ fun TimerScreen() {
                         .padding(vertical = 50.dp)
                         .size(350.dp)
                         .background(Color.Transparent),
-                    initialValue = initialValue,
-                    primaryColor = Color.Blue,
-                    secondaryColor = Color.DarkGray,
+                    currentValue = initialValue,
+                    primaryColor = Color.Blue, // Replace with your theme colors
+                    secondaryColor = Color.DarkGray, // Replace with your theme colors
                     maxValue = maxValue,
                     minValue = minValue,
-                    circleRadiusStroke = animatedCircleRadius,//State
-                    circleRadiusGradient = 700f,
-                    colorBackgroundGradientValue = animatedColorBackgroundGradientValue,//State
-                    circleCenter = circleCenter,
-                    positionValue = positionValue,
-                    onDragEnd = {
-                        oldPositionValue = positionValue
-                    },
-                    onDragStart = { offset ->
-                        dragStartedAngle = -atan2(
-                            x = circleCenter.y - offset.y,
-                            y = circleCenter.x - offset.x
-                        ) * (180f / PI).toFloat()
-                        dragStartedAngle = (dragStartedAngle + 180f).mod(360f)
-                    },
-                    onDrag = { change: PointerInputChange ->
-                        var touchAngle = -atan2(
-                            x = circleCenter.y - change.position.y,
-                            y = circleCenter.x - change.position.x
-                        ) * (180f / PI).toFloat()
-                        touchAngle = (touchAngle + 180f).mod(360f)
+                    colorBackgroundGradientValue = animatedColorBackgroundGradientValue, // Pass the animated value
+                    onValueChange = { newValue ->
+                        // Indicator'dan gelen yeni değeri kendi state'imize kaydediyoruz
+                        initialValue = newValue
+                    }
 
-                        val currentAngle = oldPositionValue * 360f / (maxValue - minValue)
-                        changeAngle = (touchAngle - currentAngle).toFloat()
-
-                        val lowerThreshold = currentAngle - (360f / (maxValue - minValue) * 5)
-                        val higherThreshold = currentAngle + (360f / (maxValue - minValue) * 5)
-
-                        if (dragStartedAngle in lowerThreshold..higherThreshold) {
-                            positionValue =
-                                (oldPositionValue + (changeAngle / (360f / (maxValue - minValue))).roundToInt())
-                        }
-                    },
                 )
 
                 Row(
@@ -252,16 +213,24 @@ fun TimerScreen() {
                         )
                     ) {
                         TimeEditButtons(
-                            onClick = { /* Tıklama işlemi */ },//State
+                            onClick = {
+                                // Handle replay/reset click
+                                positionValue = initialValue // Reset timer value
+                                oldPositionValue = initialValue
+                                // Optionally stop if started
+                                // isStarted = false
+                                // colorBackgroundGradientValue = 0.2f
+                            },
                             baseColor = Color.Gray,
                             icon = Icons.Filled.Replay
                         )
                     }
 
                     StartButton(onClick = {
-                        isStarted = !isStarted//State
-                        circleRadiusStroke = if (isStarted) 450f else 400f//State
-                        colorBackgroundGradientValue = if (isStarted) 0.4f else 0.2f//State
+                        isStarted = !isStarted // Toggle start state
+                        // Animation control tied to isStarted
+                        // circleRadiusStroke animation removed
+                        colorBackgroundGradientValue = if (isStarted) 0.4f else 0.2f// Animate gradient alpha
                     })
 
                     AnimatedVisibility(
@@ -292,7 +261,14 @@ fun TimerScreen() {
                         )
                     ) {
                         TimeEditButtons(
-                            onClick = { /* Tıklama işlemi */ },//State
+                            onClick = {
+                                // Handle stop click
+                                isStarted = false // Stop timer
+                                colorBackgroundGradientValue = 0.2f // Reset gradient alpha
+                                // Optionally reset positionValue as well
+                                // positionValue = initialValue
+                                // oldPositionValue = initialValue
+                            },
                             baseColor = Color.Gray,
                             icon = Icons.Default.Stop
                         )
