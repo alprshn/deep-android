@@ -45,13 +45,11 @@ import com.example.deepwork.deep_work_app.presentation.components.TimeEditButton
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.layout.onGloballyPositioned // Import this
-import androidx.compose.ui.layout.positionInParent // Import this
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.roundToInt
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.deepwork.deep_work_app.data.model.StopwatchState
+import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
+import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 
 data class Snack(
     val name: String,
@@ -66,16 +64,24 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun TimerScreen() {
+fun TimerScreen(
+    stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
+    stopwatchActions: StopwatchActions = object : StopwatchActions {},
+    stopwatchState: StopwatchState = StopwatchState(),
+
+    ) {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
     var isStarted by remember { mutableStateOf(false) }
     var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
+
+
     var selectedState by remember { mutableStateOf(0) }
-    var initialValue by remember { mutableStateOf(50) }
+    var initialValue by remember { mutableStateOf(stopwatchState.second) }
     var positionValue by remember { mutableStateOf(initialValue) }
     var oldPositionValue by remember { mutableStateOf(initialValue) }
     val maxValue by remember { mutableStateOf(100) }
     val minValue by remember { mutableStateOf(0) }
+    Log.d("TAG", "TimerScreen: $initialValue")
 
 
 // Removed Animate circle radius - handled internally
@@ -230,7 +236,11 @@ fun TimerScreen() {
                         isStarted = !isStarted // Toggle start state
                         // Animation control tied to isStarted
                         // circleRadiusStroke animation removed
-                        colorBackgroundGradientValue = if (isStarted) 0.4f else 0.2f// Animate gradient alpha
+                        colorBackgroundGradientValue =
+                            if (isStarted) 0.4f else 0.2f// Animate gradient alpha
+
+                        stopwatchActions.start()
+
                     })
 
                     AnimatedVisibility(

@@ -7,13 +7,17 @@ import com.example.deepwork.deep_work_app.data.UiState
 import com.example.deepwork.deep_work_app.data.local.entities.Sessions
 import com.example.deepwork.deep_work_app.data.local.entities.Tags
 import com.example.deepwork.deep_work_app.data.manager.StopwatchManager
+import com.example.deepwork.deep_work_app.data.model.StopwatchState
+import com.example.deepwork.deep_work_app.domain.data.CalendarUiModel
 import com.example.deepwork.deep_work_app.domain.usecases.AddTagUseCase
 import com.example.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
 import com.example.deepwork.deep_work_app.domain.usecases.StopFocusSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 
 
@@ -30,22 +34,20 @@ class StopwatchViewModel @Inject constructor(
 
     val stopwatchState = stopwatchManager.stopwatchState.asLiveData()
 
+
     val lapTimes = stopwatchManager.lapTimes
 
-    override fun start(session: Sessions) {
+    override fun start() {
         viewModelScope.launch {
-            startFocusSession.invoke(session)
             stopwatchManager.start()
-
         }
 
     }
 
-    override fun stop(tags: Tags) {
+    override fun stop(sessions: Sessions) {
         viewModelScope.launch {
             stopwatchManager.stop()
-            addTag.invoke(tags)
-            //stopFocusSession.invoke(sessions = )
+            startFocusSession.invoke(sessions)
             stopwatchManager.reset()
         }
     }

@@ -91,8 +91,11 @@ dependencies {
     // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$room_version")
 
+    //HiltViewModel
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     //Material Icons
     implementation("androidx.compose.material:material-icons-extended:1.7.7")
@@ -103,6 +106,8 @@ dependencies {
     //Work Manager
     val work_version = "2.10.0"
     implementation("androidx.work:work-runtime-ktx:$work_version")
+
+    //
 
 
     testImplementation(libs.junit)
