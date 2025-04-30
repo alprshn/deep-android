@@ -151,6 +151,7 @@ fun TimerScreen(
                                     ),
                                     onClick = {
                                         // Handle snack click if needed, maybe set selectedSnack
+                                        selectedSnack = snack
                                     },
                                     heightButton = 50,
                                     textColor = Color.White,
@@ -322,4 +323,5 @@ fun TimerScreen(
 @Preview
 @Composable
 fun TimerScreenPreview() {
+    TimerScreen()
 }

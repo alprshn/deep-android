@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.deepwork.deep_work_app.presentation.timer_screen.Snack
@@ -86,12 +88,11 @@ fun SharedTransitionScope.SnackEditDetails(
                         .clickable {
                             onConfirmClick()
                         }
-                        .background(Color.Black.copy(alpha = 0.6f))
                 )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(500.dp)
+                        .height(400.dp)
                         .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = "${targetSnack.name}-bounds"),
                             animatedVisibilityScope = this@AnimatedContent,
@@ -231,7 +232,7 @@ fun SnackContents(
     Row(
         modifier = modifier
             .padding(8.dp)
-            .fillMaxWidth(0.7f) // Genişliği sınırlandır
+            .wrapContentWidth() // Genişliği sınırlandır
             .height(heightButton.dp)
             .clip(RoundedCornerShape(heightButton.dp))
             .background(Color(0xFF1C1E22))
@@ -254,3 +255,4 @@ fun SnackContents(
         }
     }
 }
+
