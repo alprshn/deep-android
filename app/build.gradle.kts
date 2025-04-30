@@ -59,9 +59,10 @@ dependencies {
 
     //For Compose Animation
     implementation("androidx.compose.animation:animation:1.7.8")
+    implementation(libs.androidx.runtime.livedata)
 
 
-    val room_version = "2.6.1"
+    val room_version = "2.7.1"
 
     implementation("androidx.room:room-runtime:$room_version")
 
@@ -90,6 +91,10 @@ dependencies {
 
     // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$room_version")
+
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    // See Add the KSP plugin to your project
+    ksp("androidx.room:room-compiler:$room_version")
 
     //HiltViewModel
     implementation("com.google.dagger:hilt-android:2.51.1")

@@ -46,6 +46,7 @@ import com.example.deepwork.deep_work_app.presentation.components.circular_progr
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
@@ -66,23 +67,30 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 @Composable
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
-    stopwatchActions: StopwatchActions = object : StopwatchActions {},
-    stopwatchState: StopwatchState = StopwatchState(),
-
     ) {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
     var isStarted by remember { mutableStateOf(false) }
     var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
-
+    val stopwatchState by stopWatchViewModel.stopwatchState.observeAsState(
+        StopwatchState(
+            second = "0",
+            minute = "0",
+            hour = "0",
+            isPlaying = false,
+            isReset = false
+        )
+    )
 
     var selectedState by remember { mutableStateOf(0) }
-    var initialValue by remember { mutableStateOf(stopwatchState.second) }
+    var initialValue by remember { mutableStateOf(stopwatchState.second.toInt()) }
     var positionValue by remember { mutableStateOf(initialValue) }
     var oldPositionValue by remember { mutableStateOf(initialValue) }
-    val maxValue by remember { mutableStateOf(100) }
+    val maxValue by remember { mutableStateOf(60) }
     val minValue by remember { mutableStateOf(0) }
     Log.d("TAG", "TimerScreen: $initialValue")
 
+    initialValue = stopwatchState.second.toInt()
+    Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
 
 // Removed Animate circle radius - handled internally
     // Animate background gradient
@@ -183,6 +191,7 @@ fun TimerScreen(
                     onValueChange = { newValue ->
                         // Indicator'dan gelen yeni değeri kendi state'imize kaydediyoruz
                         initialValue = newValue
+
                     }
 
                 )
@@ -239,7 +248,10 @@ fun TimerScreen(
                         colorBackgroundGradientValue =
                             if (isStarted) 0.4f else 0.2f// Animate gradient alpha
 
-                        stopwatchActions.start()
+
+                        stopWatchViewModel.start()
+
+
 
                     })
 
@@ -300,5 +312,4 @@ fun TimerScreen(
 @Preview
 @Composable
 fun TimerScreenPreview() {
-    TimerScreen()
 }

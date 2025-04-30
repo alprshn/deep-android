@@ -27,10 +27,10 @@ interface SessionsDao{
     suspend fun getSessionsById(sessionId: Int): Sessions
 
     @Query("SELECT * FROM sessions_table WHERE tag_id = :tagId ORDER BY start_time DESC")
-    suspend fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
+     fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
 
     @Query("SELECT * FROM sessions_table WHERE start_time BETWEEN :startDate AND :endDate")
-    suspend fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
+     fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
 
     @Query("SELECT SUM(duration) FROM sessions_table")
     suspend fun getTotalFocusTime(): Long

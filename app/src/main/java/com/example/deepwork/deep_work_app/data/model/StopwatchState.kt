@@ -1,7 +1,7 @@
 package com.example.deepwork.deep_work_app.data.model
 
 data class StopwatchState(
-    val second: Int = "00",
+    val second: String = "00",
     val minute: String = "00",
     val hour: String = "00",
     val isPlaying: Boolean = false,
