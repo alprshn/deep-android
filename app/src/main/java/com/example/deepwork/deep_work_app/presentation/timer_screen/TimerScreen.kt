@@ -45,6 +45,9 @@ import com.example.deepwork.deep_work_app.presentation.components.TimeEditButton
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PersonAddAlt
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -67,7 +70,7 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 @Composable
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
-    ) {
+) {
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
     var isStarted by remember { mutableStateOf(false) }
     var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
@@ -240,20 +243,26 @@ fun TimerScreen(
                             icon = Icons.Filled.Replay
                         )
                     }
+                    if (isStarted) {
+                        StartButton(
+                            onClick = {
+                                isStarted = !isStarted // Toggle start state
+                                colorBackgroundGradientValue = 0.4f//0.2f
+                                stopWatchViewModel.lap()
+                            },
+                            imageVector = Icons.Filled.Pause
+                        )
+                    } else {
+                        StartButton(
+                            onClick = {
+                                isStarted = !isStarted // Toggle start state
+                                colorBackgroundGradientValue = 0.2f
+                                stopWatchViewModel.start()
+                            },
+                            imageVector = Icons.Filled.PlayArrow
+                        )
+                    }
 
-                    StartButton(onClick = {
-                        isStarted = !isStarted // Toggle start state
-                        // Animation control tied to isStarted
-                        // circleRadiusStroke animation removed
-                        colorBackgroundGradientValue =
-                            if (isStarted) 0.4f else 0.2f// Animate gradient alpha
-
-
-                        stopWatchViewModel.start()
-
-
-
-                    })
 
                     AnimatedVisibility(
                         visible = isStarted,

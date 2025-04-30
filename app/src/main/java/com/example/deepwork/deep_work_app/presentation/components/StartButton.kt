@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.deepwork.deep_work_app.data.util.darken
@@ -24,6 +25,7 @@ import com.example.deepwork.deep_work_app.data.util.lighten
 fun StartButton(
     onClick: () -> Unit,
     baseColor: Color = Color(0xFF1278FF), // Varsayılan mavi ton
+    imageVector: ImageVector = Icons.Filled.PlayArrow
 ) {
     val gradientColors = listOf(
         baseColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
@@ -44,7 +46,7 @@ fun StartButton(
             .clickable(onClick = onClick)
     ) {
         Icon(
-            imageVector = Icons.Filled.PlayArrow,
+            imageVector = imageVector,
             contentDescription = "Play",
             tint = Color.White,
             modifier = Modifier.size(40.dp)
