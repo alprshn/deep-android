@@ -236,8 +236,9 @@ fun TimerScreen(
                                 positionValue = initialValue // Reset timer value
                                 oldPositionValue = initialValue
                                 // Optionally stop if started
-                                // isStarted = false
-                                // colorBackgroundGradientValue = 0.2f
+                                isStarted = false
+                                colorBackgroundGradientValue = 0.2f
+                                stopWatchViewModel.reset()
                             },
                             baseColor = Color.Gray,
                             icon = Icons.Filled.Replay
