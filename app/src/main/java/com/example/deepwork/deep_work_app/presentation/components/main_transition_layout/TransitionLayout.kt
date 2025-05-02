@@ -1,11 +1,14 @@
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.EaseInOutQuart
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -28,6 +31,11 @@ import androidx.compose.material.icons.outlined.Tab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,9 +46,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.deepwork.deep_work_app.presentation.timer_screen.Snack
+import kotlinx.coroutines.delay
 
 
-private val shapeForSharedElement = RoundedCornerShape(16.dp)
+private val shapeForSharedElement = RoundedCornerShape(48.dp)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -49,33 +58,27 @@ fun SharedTransitionScope.SnackEditDetails(
     modifier: Modifier = Modifier,
     onConfirmClick: () -> Unit
 ) {
+
+
     AnimatedContent(
         modifier = modifier,
         targetState = snack,
+        label = "SnackEditDetails",
         transitionSpec = {
-            (slideInVertically(
-                animationSpec = tween(
-                    durationMillis = 500,
+            (fadeIn(
+                tween(
+                    1000,
                     easing = EaseInOutQuart
                 )
-            ) + fadeIn(
-                animationSpec = tween(
-                    durationMillis = 500,
-                    easing = EaseInOutQuart
-                )
-            )) togetherWith (slideOutVertically(
-                animationSpec = tween(
-                    durationMillis = 500,
-                    easing = EaseInOutQuart
-                )
-            ) + fadeOut(
-                animationSpec = tween(
-                    durationMillis = 500,
-                    easing = EaseInOutQuart
-                )
-            ))
-        },
-        label = "SnackEditDetails"
+            ) + slideInVertically(tween(1000))) togetherWith
+                    (fadeOut(
+                        tween(
+                            1000,
+                            easing = EaseInOutQuart
+                        )
+                    ) + slideOutVertically(tween(1000)))
+        }
+
     ) { targetSnack ->
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -96,28 +99,18 @@ fun SharedTransitionScope.SnackEditDetails(
                         .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = "${targetSnack.name}-bounds"),
                             animatedVisibilityScope = this@AnimatedContent,
-                            clipInOverlayDuringTransition = OverlayClip(shapeForSharedElement)
-                        )
-                        .background(Color.Black.copy(alpha = 0.6f), shapeForSharedElement)
+                            boundsTransform = { _, _ ->
+                                tween(durationMillis = 700, easing = EaseInOutQuart)
+                            },
+                            clipInOverlayDuringTransition = OverlayClip(shapeForSharedElement),
+
+                            )
+                        .background(Color(0xFF1C1E22).copy(alpha = 0.8f), shapeForSharedElement)
                         .graphicsLayer {
                             alpha = 0.9f
                             shadowElevation = 5.dp.toPx()
                         }
-                        .clip(shapeForSharedElement)
-                        .animateEnterExit(
-                            enter = slideInVertically(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    easing = EaseInOutQuart
-                                )
-                            ),
-                            exit = slideOutVertically(
-                                animationSpec = tween(
-                                    durationMillis = 500,
-                                    easing = EaseInOutQuart
-                                )
-                            )
-                        ),
+                        .clip(shapeForSharedElement),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -134,7 +127,7 @@ fun SharedTransitionScope.SnackEditDetails(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(30.dp)
+                                    .size(45.dp)
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(Color(0xFF28303B)),
                                 contentAlignment = Alignment.Center
@@ -154,7 +147,7 @@ fun SharedTransitionScope.SnackEditDetails(
                             )
                             Box(
                                 modifier = Modifier
-                                    .size(25.dp)
+                                    .size(45.dp)
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(Color(0xFF28303B))
                                     .clickable {
@@ -172,15 +165,28 @@ fun SharedTransitionScope.SnackEditDetails(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .sharedElement(
+                                    state = rememberSharedContentState(key = targetSnack.name),
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                    boundsTransform = { _, _ ->
+                                        tween(durationMillis = 700, easing = EaseInOutQuart)
+                                    },
+                                    placeHolderSize = SharedTransitionScope.PlaceHolderSize.contentSize,
+
+                                    )
                         ) {
+
                             Row(
                                 modifier = Modifier
-                                    .padding(horizontal = 15.dp)
-                                    .padding(bottom = 25.dp)
-                                    .sharedElement(
-                                        state = rememberSharedContentState(key = targetSnack.name),
+                                    .padding(horizontal = 15.dp, vertical = 5.dp)
+                                    .sharedBounds(
+                                        sharedContentState = rememberSharedContentState(key = "${targetSnack.name}-text"),
                                         animatedVisibilityScope = this@AnimatedContent,
+                                        boundsTransform = { _, _ ->
+                                            tween(durationMillis = 700, easing = EaseInOutQuart)
+                                        },
                                     ),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
@@ -189,28 +195,57 @@ fun SharedTransitionScope.SnackEditDetails(
                                     "\uD83D\uDCCD", modifier = Modifier.padding(end = 10.dp),
                                     fontSize = 20.sp
                                 )
-                                Text("Select a Tag", color = Color.White, fontSize = 30.sp)
+                                Text(
+                                    "Select a Tag",
+                                    color = Color.White,
+                                    fontSize = 30.sp,
+                                    modifier = Modifier
+                                )
                             }
-                            Icon(
-                                Icons.Outlined.Tab,
-                                contentDescription = "tagIcon",
-                                tint = Color(0xFF5c626a),
-                                modifier = Modifier.size(60.dp)
-                            )
-                            Text(
-                                "No Tags Yet",
-                                color = Color.White,
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(top = 15.dp)
-                            )
-                            Text(
-                                "Tap + to add a tag",
-                                color = Color(0xFF5c626a),
-                                fontSize = 15.sp,
-                                modifier = Modifier.padding(top = 15.dp)
-                            )
-
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                var visible by remember { mutableStateOf(false) }
+                                LaunchedEffect(Unit) {
+                                    visible = true
+                                }
+                                AnimatedVisibility(
+                                    visible = visible,
+                                    enter = fadeIn(tween(600, easing = EaseInOutCubic)) + slideInVertically(tween(600))
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.Tab,
+                                            contentDescription = "tagIcon",
+                                            tint = Color(0xFF5c626a),
+                                            modifier = Modifier
+                                                .size(60.dp)
+                                                .padding(top = 15.dp),
+                                        )
+                                        Text(
+                                            "No Tags Yet",
+                                            color = Color.White,
+                                            fontSize = 20.sp,
+                                            modifier = Modifier.padding(top = 15.dp)
+                                        )
+                                        Text(
+                                            "Tap + to add a tag",
+                                            color = Color(0xFF5c626a),
+                                            fontSize = 15.sp,
+                                            modifier = Modifier.padding(top = 15.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
+
 
                     }
                 }
@@ -227,7 +262,7 @@ fun SnackContents(
     heightButton: Int,
     textColor: Color,
     emoji: String,
-
+    modifierText: Modifier
 ) {
     Row(
         modifier = modifier
@@ -236,14 +271,14 @@ fun SnackContents(
             .height(heightButton.dp)
             .clip(RoundedCornerShape(heightButton.dp))
             .background(Color(0xFF1C1E22))
-            .clickable{
+            .clickable {
                 onClick()
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         Row(
-            modifier = Modifier
+            modifierText
                 .padding(horizontal = 15.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center

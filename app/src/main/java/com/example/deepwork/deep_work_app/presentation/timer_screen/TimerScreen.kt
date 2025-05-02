@@ -127,8 +127,6 @@ fun TimerScreen(
                     items(listSnacks) { snack ->
                         AnimatedVisibility(
                             visible = snack != selectedSnack, //State
-                            enter = fadeIn() + scaleIn(),
-                            exit = fadeOut() + scaleOut(),
                             modifier = Modifier.animateItem()
                         ) {
                             Box(
@@ -136,26 +134,28 @@ fun TimerScreen(
                                     .sharedBounds(
                                         sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),//State
                                         animatedVisibilityScope = this,
-                                        clipInOverlayDuringTransition = OverlayClip(
-                                            shapeForSharedElement //State
-                                        )
+
                                     )
-                                    .background(Color.Transparent, shapeForSharedElement)
+                                    .background(Color.Transparent)
                                     .clip(shapeForSharedElement)
                             ) {
                                 SnackContents(
                                     snack = snack,
                                     modifier = Modifier.sharedElement(
                                         state = rememberSharedContentState(key = snack.name),//State
-                                        animatedVisibilityScope = this@AnimatedVisibility
+                                        animatedVisibilityScope = this@AnimatedVisibility,
+
                                     ),
                                     onClick = {
-                                        // Handle snack click if needed, maybe set selectedSnack
                                         selectedSnack = snack
                                     },
                                     heightButton = 50,
                                     textColor = Color.White,
-                                    emoji = "\uD83D\uDCCD"
+                                    emoji = "\uD83D\uDCCD",
+                                    modifierText = Modifier.sharedBounds(
+                                        sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),//State
+                                        animatedVisibilityScope = this@AnimatedVisibility
+                                    )
                                 )
                             }
                         }
