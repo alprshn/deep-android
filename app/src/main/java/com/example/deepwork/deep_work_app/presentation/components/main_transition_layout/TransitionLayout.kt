@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.Tab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -56,9 +57,10 @@ private val shapeForSharedElement = RoundedCornerShape(48.dp)
 fun SharedTransitionScope.SnackEditDetails(
     snack: Snack?,
     modifier: Modifier = Modifier,
-    onConfirmClick: () -> Unit
+    onConfirmClick: () -> Unit,
+    visibleTagItems: Boolean,
+    addTagClick : () -> Unit = {}
 ) {
-
 
     AnimatedContent(
         modifier = modifier,
@@ -105,7 +107,7 @@ fun SharedTransitionScope.SnackEditDetails(
                             clipInOverlayDuringTransition = OverlayClip(shapeForSharedElement),
 
                             )
-                        .background(Color(0xFF1C1E22).copy(alpha = 0.8f), shapeForSharedElement)
+                        .background(Color(0xFF1C1E22).copy(alpha = 0.9f), shapeForSharedElement)
                         .graphicsLayer {
                             alpha = 0.9f
                             shadowElevation = 5.dp.toPx()
@@ -121,13 +123,13 @@ fun SharedTransitionScope.SnackEditDetails(
                     ) {
                         Row(
                             modifier = Modifier
-                                .padding(15.dp)
+                                .padding(20.dp)
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(45.dp)
+                                    .size(36.dp)
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(Color(0xFF28303B)),
                                 contentAlignment = Alignment.Center
@@ -136,18 +138,21 @@ fun SharedTransitionScope.SnackEditDetails(
                                 Icon(
                                     Icons.Outlined.Add,
                                     contentDescription = "addButton",
-                                    tint = Color.White, modifier = Modifier.size(18.dp)
+                                    tint = Color.White, modifier = Modifier.size(20.dp).clickable {
+                                        addTagClick()
+                                    }
                                 )
                             }
                             Text(
-                                text = "Details",
+                                text = "Selected Tag",
                                 color = Color(0xFFb6bcc6),
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.align(Alignment.CenterVertically)
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                fontSize = 20.sp
                             )
                             Box(
                                 modifier = Modifier
-                                    .size(45.dp)
+                                    .size(36.dp)
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(Color(0xFF28303B))
                                     .clickable {
@@ -158,17 +163,16 @@ fun SharedTransitionScope.SnackEditDetails(
                                 Icon(
                                     Icons.Outlined.Clear,
                                     contentDescription = "closeButton",
-                                    tint = Color.White, modifier = Modifier.size(18.dp)
+                                    tint = Color.White, modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .sharedElement(
-                                    state = rememberSharedContentState(key = targetSnack.name),
+                                    sharedContentState  = rememberSharedContentState(key = targetSnack.name),
                                     animatedVisibilityScope = this@AnimatedContent,
                                     boundsTransform = { _, _ ->
                                         tween(durationMillis = 700, easing = EaseInOutQuart)
@@ -188,46 +192,40 @@ fun SharedTransitionScope.SnackEditDetails(
                                             tween(durationMillis = 700, easing = EaseInOutQuart)
                                         },
                                     ),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     "\uD83D\uDCCD", modifier = Modifier.padding(end = 10.dp),
-                                    fontSize = 20.sp
+                                    fontSize = 28.sp
                                 )
                                 Text(
                                     "Select a Tag",
                                     color = Color.White,
-                                    fontSize = 30.sp,
+                                    fontSize = 38.sp,
                                     modifier = Modifier
                                 )
                             }
                             Column(
                                 modifier = Modifier
-                                    .fillMaxSize()
+                                    .fillMaxSize().padding( vertical = 20.dp)
                                     .weight(1f),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                            ) {
-                                var visible by remember { mutableStateOf(false) }
-                                LaunchedEffect(Unit) {
-                                    visible = true
-                                }
+                                ) {
+
                                 AnimatedVisibility(
-                                    visible = visible,
-                                    enter = fadeIn(tween(600, easing = EaseInOutCubic)) + slideInVertically(tween(600))
+                                    visible = visibleTagItems,
+                                    enter = fadeIn(tween(600, easing = EaseInOutCubic)) + slideInVertically(tween(600)),
                                 ) {
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
                                     ) {
                                         Icon(
-                                            Icons.Outlined.Tab,
+                                            Icons.Outlined.Sell,
                                             contentDescription = "tagIcon",
                                             tint = Color(0xFF5c626a),
                                             modifier = Modifier
                                                 .size(60.dp)
-                                                .padding(top = 15.dp),
                                         )
                                         Text(
                                             "No Tags Yet",
@@ -238,15 +236,13 @@ fun SharedTransitionScope.SnackEditDetails(
                                         Text(
                                             "Tap + to add a tag",
                                             color = Color(0xFF5c626a),
-                                            fontSize = 15.sp,
+                                            fontSize = 18.sp,
                                             modifier = Modifier.padding(top = 15.dp)
                                         )
                                     }
                                 }
                             }
                         }
-
-
                     }
                 }
             }
@@ -287,6 +283,118 @@ fun SnackContents(
                 emoji, color = textColor, modifier = Modifier.padding(end = 5.dp)
             )
             Text(snack.name, color = textColor)
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun SnackContentsPreview() {
+    Column(
+        modifier = Modifier.height(400.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFF28303B)).clickable {
+
+                    },
+                contentAlignment = Alignment.Center
+
+            ) {
+                Icon(
+                    Icons.Outlined.Add,
+                    contentDescription = "addButton",
+                    tint = Color.White, modifier = Modifier.size(20.dp)
+                )
+            }
+            Text(
+                text = "Selected Tag",
+                color = Color(0xFFb6bcc6),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.CenterVertically),
+                fontSize = 20.sp
+            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFF28303B))
+                    .clickable {
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Clear,
+                    contentDescription = "closeButton",
+                    tint = Color.White, modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+
+            modifier = Modifier
+                .fillMaxSize(),
+        ) {
+
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 15.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "\uD83D\uDCCD", modifier = Modifier.padding(end = 10.dp),
+                    fontSize = 28.sp
+                )
+                Text(
+                    "Select a Tag",
+                    color = Color.White,
+                    fontSize = 38.sp,
+                    modifier = Modifier
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            Icons.Outlined.Sell,
+                            contentDescription = "tagIcon",
+                            tint = Color(0xFF5c626a),
+                            modifier = Modifier
+                                .size(60.dp)
+                        )
+                        Text(
+                            "No Tags Yet",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(top = 15.dp)
+                        )
+                        Text(
+                            "Tap + to add a tag",
+                            color = Color(0xFF5c626a),
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(top = 15.dp)
+                        )
+                    }
+
+            }
         }
     }
 }

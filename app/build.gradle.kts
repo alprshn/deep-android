@@ -60,6 +60,8 @@ dependencies {
     //For Compose Animation
     implementation("androidx.compose.animation:animation:1.7.8")
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.ui.viewbinding)
+    implementation(libs.androidx.emoji2.emojipicker)
 
 
     val room_version = "2.7.1"
@@ -112,7 +114,8 @@ dependencies {
     val work_version = "2.10.0"
     implementation("androidx.work:work-runtime-ktx:$work_version")
 
-    //
+    //Emoji Picker
+
 
 
     testImplementation(libs.junit)

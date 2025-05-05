@@ -48,10 +48,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PersonAddAlt
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
+import com.example.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 
@@ -66,7 +69,7 @@ private val listSnacks = listOf(
 
 private val shapeForSharedElement = RoundedCornerShape(16.dp)
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
@@ -85,12 +88,20 @@ fun TimerScreen(
     )
 
     var selectedState by remember { mutableStateOf(0) }
+
+
     var initialValue by remember { mutableStateOf(stopwatchState.second.toInt()) }
     var positionValue by remember { mutableStateOf(initialValue) }
     var oldPositionValue by remember { mutableStateOf(initialValue) }
     val maxValue by remember { mutableStateOf(60) }
     val minValue by remember { mutableStateOf(0) }
     Log.d("TAG", "TimerScreen: $initialValue")
+
+    var visibleTagItems by remember { mutableStateOf(true) }
+
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
+
 
     initialValue = stopwatchState.second.toInt()
     Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
@@ -104,7 +115,9 @@ fun TimerScreen(
             easing = EaseInOutQuart
         ), label = "backgroundGradientAlpha"
     )
-
+    if (showBottomSheet) {
+        TagBottomSheet(showBottomSheet = showBottomSheet)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -135,17 +148,16 @@ fun TimerScreen(
                                         sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),//State
                                         animatedVisibilityScope = this,
 
-                                    )
+                                        )
                                     .background(Color.Transparent)
                                     .clip(shapeForSharedElement)
                             ) {
                                 SnackContents(
                                     snack = snack,
                                     modifier = Modifier.sharedElement(
-                                        state = rememberSharedContentState(key = snack.name),//State
+                                        sharedContentState = rememberSharedContentState(key = snack.name),//State
                                         animatedVisibilityScope = this@AnimatedVisibility,
-
-                                    ),
+                                        ),
                                     onClick = {
                                         selectedSnack = snack
                                     },
@@ -313,6 +325,10 @@ fun TimerScreen(
                 snack = selectedSnack,//State
                 onConfirmClick = {
                     selectedSnack = null//State
+                },
+                visibleTagItems = visibleTagItems,
+                addTagClick = {
+                    showBottomSheet = true
                 }
             )
         }
