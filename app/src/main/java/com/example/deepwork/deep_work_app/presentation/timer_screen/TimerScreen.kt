@@ -116,7 +116,7 @@ fun TimerScreen(
         ), label = "backgroundGradientAlpha"
     )
     if (showBottomSheet) {
-        TagBottomSheet(showBottomSheet = showBottomSheet)
+        TagBottomSheet(addTagDissmiss = { showBottomSheet = false })
     }
     Column(
         modifier = Modifier
