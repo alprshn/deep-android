@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -55,7 +56,7 @@ fun CustomCircularProgressIndicator(
     )
 
     // Calculate radius and thickness based on the available size
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.padding(10.dp), contentAlignment = Alignment.Center) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -104,12 +105,13 @@ fun CustomCircularProgressIndicator(
 
             // Radial Gradient Effect
             // Adjust gradient radius to be relative to the canvas size or drawing radius
-            val gradientRadius = maxOf(width, height) / 2f // Fill the canvas
+            val gradientRadius = maxOf(width, height) / 1.2f // Fill the canvas
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        colorBackgroundGradient.copy(colorBackgroundGradientValue),
-                        Color.Transparent
+                    colorStops = arrayOf(
+                        0.0f  to colorBackgroundGradient.copy(colorBackgroundGradientValue),                 // tam merkez
+                        0.20f to colorBackgroundGradient.copy(colorBackgroundGradientValue),
+                        1.0f  to Color.Transparent                        // kenar
                     ),
                     center = canvasCenter, // Use Canvas center
                     radius = gradientRadius
@@ -164,7 +166,7 @@ fun CustomCircularProgressIndicator(
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF000)
 @Composable
 fun CustomCircularProgressIndicatorPreview() {
     // state’i preview içinde yönetiyoruz

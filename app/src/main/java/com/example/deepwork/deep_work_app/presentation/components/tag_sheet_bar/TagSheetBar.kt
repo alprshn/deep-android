@@ -70,7 +70,8 @@ fun TagBottomSheet(
     textFieldValueChange: (String) -> Unit,
     clickColorBox: (Int, Color) -> Unit,
     setOnEmojiPickedListener: (EmojiViewItem) -> Unit ,
-    onDismissRequestAlertDialog: () -> Unit
+    onDismissRequestAlertDialog: () -> Unit,
+    addTag: () -> Unit
 ) {
 
 
@@ -193,11 +194,7 @@ fun TagBottomSheet(
             }
 
             Button(
-                onClick = {
-                    if (tagTextField.isNotBlank()) {
-                        //Save gelecek
-                    }
-                },
+                onClick = addTag,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp)
@@ -349,4 +346,9 @@ fun TagBottomSheetPreview() {
 //        ) { Text("Save", color = Color.White, fontSize = 20.sp) }
 //
 //    }
+
+
+    Column {
+
+    }
 }

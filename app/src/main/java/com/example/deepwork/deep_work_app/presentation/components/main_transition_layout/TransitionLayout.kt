@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -42,10 +44,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.deepwork.deep_work_app.data.local.entities.Tags
 import com.example.deepwork.deep_work_app.presentation.timer_screen.Snack
 import kotlinx.coroutines.delay
 
@@ -59,7 +63,8 @@ fun SharedTransitionScope.SnackEditDetails(
     modifier: Modifier = Modifier,
     onConfirmClick: () -> Unit,
     visibleTagItems: Boolean,
-    addTagClick : () -> Unit = {}
+    addTagClick: () -> Unit = {},
+    tagContent: List<Tags>
 ) {
 
     AnimatedContent(
@@ -138,9 +143,11 @@ fun SharedTransitionScope.SnackEditDetails(
                                 Icon(
                                     Icons.Outlined.Add,
                                     contentDescription = "addButton",
-                                    tint = Color.White, modifier = Modifier.size(20.dp).clickable {
-                                        addTagClick()
-                                    }
+                                    tint = Color.White, modifier = Modifier
+                                        .size(20.dp)
+                                        .clickable {
+                                            addTagClick()
+                                        }
                                 )
                             }
                             Text(
@@ -172,7 +179,7 @@ fun SharedTransitionScope.SnackEditDetails(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .sharedElement(
-                                    sharedContentState  = rememberSharedContentState(key = targetSnack.name),
+                                    sharedContentState = rememberSharedContentState(key = targetSnack.name),
                                     animatedVisibilityScope = this@AnimatedContent,
                                     boundsTransform = { _, _ ->
                                         tween(durationMillis = 700, easing = EaseInOutQuart)
@@ -208,38 +215,88 @@ fun SharedTransitionScope.SnackEditDetails(
                             }
                             Column(
                                 modifier = Modifier
-                                    .fillMaxSize().padding( vertical = 20.dp)
+                                    .fillMaxSize()
+                                    .padding(vertical = 10.dp)
                                     .weight(1f),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
+                            ) {
 
                                 AnimatedVisibility(
                                     visible = visibleTagItems,
-                                    enter = fadeIn(tween(600, easing = EaseInOutCubic)) + slideInVertically(tween(600)),
+                                    enter = fadeIn(
+                                        tween(
+                                            600,
+                                            easing = EaseInOutCubic
+                                        )
+                                    ) + slideInVertically(tween(600)),
                                 ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                    ) {
-                                        Icon(
-                                            Icons.Outlined.Sell,
-                                            contentDescription = "tagIcon",
-                                            tint = Color(0xFF5c626a),
+                                    if (tagContent.isEmpty()) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Sell,
+                                                contentDescription = "tagIcon",
+                                                tint = Color(0xFF5c626a),
+                                                modifier = Modifier
+                                                    .size(60.dp)
+                                            )
+                                            Text(
+                                                "No Tags Yet",
+                                                color = Color.White,
+                                                fontSize = 20.sp,
+                                                modifier = Modifier.padding(top = 15.dp)
+                                            )
+                                            Text(
+                                                "Tap + to add a tag",
+                                                color = Color(0xFF5c626a),
+                                                fontSize = 18.sp,
+                                                modifier = Modifier.padding(top = 15.dp)
+                                            )
+                                        }
+                                    } else {
+                                        LazyColumn(
                                             modifier = Modifier
-                                                .size(60.dp)
-                                        )
-                                        Text(
-                                            "No Tags Yet",
-                                            color = Color.White,
-                                            fontSize = 20.sp,
-                                            modifier = Modifier.padding(top = 15.dp)
-                                        )
-                                        Text(
-                                            "Tap + to add a tag",
-                                            color = Color(0xFF5c626a),
-                                            fontSize = 18.sp,
-                                            modifier = Modifier.padding(top = 15.dp)
-                                        )
+                                                .fillMaxWidth().padding(horizontal = 40.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                        ) {
+                                            items(tagContent.size) { tag ->
+                                                val tags = tagContent[tag]
+                                                val tagColor  = Color(tags.tagColor.toULong()) // tekrar Color nesnesi
+
+
+
+                                                Row(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = 30.dp, vertical = 5.dp)
+                                                        .clip(shape = RoundedCornerShape(15.dp))
+                                                        .background(tagColor.copy(alpha = 0.35f))
+                                                        .fillMaxWidth(),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                )
+                                                {
+                                                    Log.e("TAG Color", "SnackEditDetails Color: ${tags.tagColor}")
+                                                    Text(
+                                                        text = tags.tagEmoji,
+                                                        modifier = Modifier
+                                                            .padding(vertical = 13.dp)
+                                                            .padding(start = 20.dp),
+                                                        fontSize = 20.sp
+                                                    )
+                                                    Text(
+                                                        text = tags.tagName,
+                                                        modifier = Modifier
+                                                            .padding(vertical = 13.dp)
+                                                            .padding(start = 10.dp),
+                                                        fontSize = 18.sp,
+                                                        color = tagColor,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
+
                                 }
                             }
                         }
@@ -305,7 +362,8 @@ fun SnackContentsPreview() {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFF28303B)).clickable {
+                    .background(Color(0xFF28303B))
+                    .clickable {
 
                     },
                 contentAlignment = Alignment.Center
@@ -370,29 +428,29 @@ fun SnackContentsPreview() {
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            Icons.Outlined.Sell,
-                            contentDescription = "tagIcon",
-                            tint = Color(0xFF5c626a),
-                            modifier = Modifier
-                                .size(60.dp)
-                        )
-                        Text(
-                            "No Tags Yet",
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(top = 15.dp)
-                        )
-                        Text(
-                            "Tap + to add a tag",
-                            color = Color(0xFF5c626a),
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(top = 15.dp)
-                        )
-                    }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(
+                        Icons.Outlined.Sell,
+                        contentDescription = "tagIcon",
+                        tint = Color(0xFF5c626a),
+                        modifier = Modifier
+                            .size(60.dp)
+                    )
+                    Text(
+                        "No Tags Yet",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(top = 15.dp)
+                    )
+                    Text(
+                        "Tap + to add a tag",
+                        color = Color(0xFF5c626a),
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(top = 15.dp)
+                    )
+                }
 
             }
         }

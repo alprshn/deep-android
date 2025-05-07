@@ -10,12 +10,15 @@ import com.example.deepwork.deep_work_app.data.manager.StopwatchManager
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
 import com.example.deepwork.deep_work_app.domain.data.CalendarUiModel
 import com.example.deepwork.deep_work_app.domain.usecases.AddTagUseCase
+import com.example.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.example.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
 import com.example.deepwork.deep_work_app.domain.usecases.StopFocusSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
@@ -26,16 +29,24 @@ class StopwatchViewModel @Inject constructor(
     private val stopwatchManager: StopwatchManager,
     private val addTag: AddTagUseCase,
     private val startFocusSession: StartFocusSessionUseCase,
-    private val stopFocusSession: StopFocusSessionUseCase
+    private val stopFocusSession: StopFocusSessionUseCase,
+    private val getAllTagsUseCase: GetAllTagsUseCase
 ): ViewModel(), StopwatchActions {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Success(stopwatchManager.stopwatchState))
     val uiState : StateFlow<UiState> = _uiState
 
+    private val _allTagList = MutableStateFlow(emptyList<Tags>())
+    val allTagList = _allTagList.asStateFlow()
+
+
     val stopwatchState = stopwatchManager.stopwatchState.asLiveData()
 
 
     val lapTimes = stopwatchManager.lapTimes
+
+
+
 
     override fun start() {
         viewModelScope.launch {
@@ -62,5 +73,23 @@ class StopwatchViewModel @Inject constructor(
 
     override fun reset() {
         stopwatchManager.reset()
+    }
+
+     fun addTag(tagName: String, tagColor: String, tagEmoji: String){
+         viewModelScope.launch {
+             addTag.invoke(Tags(
+                 tagName = tagName,
+                 tagColor = tagColor,
+                 tagEmoji = tagEmoji
+             ))
+         }
+    }
+
+    fun getAllTag(){
+        viewModelScope.launch {
+          getAllTagsUseCase.invoke().collectLatest {
+              _allTagList.tryEmit(it)
+          }
+        }
     }
 }

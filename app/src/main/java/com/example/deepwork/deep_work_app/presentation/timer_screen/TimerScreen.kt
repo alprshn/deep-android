@@ -45,17 +45,24 @@ import com.example.deepwork.deep_work_app.presentation.components.TimeEditButton
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PersonAddAlt
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.deepwork.deep_work_app.data.local.entities.Tags
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
 import com.example.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
@@ -91,8 +98,6 @@ fun TimerScreen(
     )
 
     var selectedState by remember { mutableStateOf(0) }
-
-
     var initialValue by remember { mutableStateOf(stopwatchState.second.toInt()) }
     var positionValue by remember { mutableStateOf(initialValue) }
     var oldPositionValue by remember { mutableStateOf(initialValue) }
@@ -102,9 +107,14 @@ fun TimerScreen(
 
     var visibleTagItems by remember { mutableStateOf(true) }
 
-    val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
 
+    val tagContent by stopWatchViewModel.allTagList.collectAsStateWithLifecycle()
+
+
+    LaunchedEffect(Unit) {
+        stopWatchViewModel.getAllTag()
+    }
 
     initialValue = stopwatchState.second.toInt()
     Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
@@ -138,15 +148,15 @@ fun TimerScreen(
 
     // Renk listesi
     val colors = listOf(
-        Color(255, 69, 58, 255),
-        Color(255, 159, 10, 255),
-        Color(255, 214, 10, 255),
-        Color(48, 209, 88, 255),
-        Color(99, 230, 226, 255),
-        Color(64, 200, 224, 255),
-        Color(100, 210, 255, 255),
-        Color(10, 132, 255, 255),
-        Color(172, 142, 104, 255),
+        Color(0xFFFF453A	),
+        Color(0xFFFF9F0A),
+        Color(0xFFFFD60A),
+        Color(0xFF30D158),
+        Color(0xFF63E6E2),
+        Color(0xFF40C8E0),
+        Color(0xFF64D2FF),
+        Color(0xFF0A84FF),
+        Color(0xFFAC8E68),
     )
     var selectedIndex by remember { mutableIntStateOf(7) }
 
@@ -185,6 +195,16 @@ fun TimerScreen(
             },
             onDismissRequestAlertDialog = {
                 showEmojiPicker = false
+            },
+            addTag = {
+                if (tagTextField.value.isNotBlank()) {
+                    showBottomSheet = false
+                    stopWatchViewModel.addTag(
+                        tagName = tagTextField.value,
+                        tagColor = tagColor.toString(),
+                        tagEmoji = selectedEmoji
+                    )
+                }
             }
         )
     }
@@ -242,6 +262,11 @@ fun TimerScreen(
                             }
                         }
                     }
+
+
+
+
+
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -327,23 +352,23 @@ fun TimerScreen(
                             icon = Icons.Filled.Replay
                         )
                     }
-                    if (isStarted) {
+                    if (!isStarted) {
                         StartButton(
                             onClick = {
                                 isStarted = !isStarted // Toggle start state
                                 colorBackgroundGradientValue = 0.4f//0.2f
-                                stopWatchViewModel.lap()
+                                stopWatchViewModel.start()
                             },
-                            imageVector = Icons.Filled.Pause
+                            imageVector = Icons.Filled.PlayArrow
                         )
                     } else {
                         StartButton(
                             onClick = {
                                 isStarted = !isStarted // Toggle start state
                                 colorBackgroundGradientValue = 0.2f
-                                stopWatchViewModel.start()
+                                stopWatchViewModel.lap()
                             },
-                            imageVector = Icons.Filled.PlayArrow
+                            imageVector = Icons.Filled.Pause
                         )
                     }
 
@@ -399,7 +424,9 @@ fun TimerScreen(
                 visibleTagItems = visibleTagItems,
                 addTagClick = {
                     showBottomSheet = true
-                }
+                },
+                tagContent = tagContent
+
             )
         }
     }
@@ -409,5 +436,37 @@ fun TimerScreen(
 @Preview
 @Composable
 fun TimerScreenPreview() {
-    TimerScreen()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 70.dp)
+                .clip(shape = RoundedCornerShape(16.dp))
+                .background(Color.Blue.copy(alpha = 0.2f))
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        )
+        {
+            Text(
+                text = "selectedEmoji",
+                modifier = Modifier
+                    .padding(vertical = 15.dp)
+                    .padding(start = 20.dp),
+                fontSize = 20.sp
+            )
+            Text(
+                text = "New Tag",
+                modifier = Modifier
+                    .padding(vertical = 15.dp)
+                    .padding(start = 10.dp),
+                fontSize = 18.sp,
+                color = Color.Blue,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
 }
