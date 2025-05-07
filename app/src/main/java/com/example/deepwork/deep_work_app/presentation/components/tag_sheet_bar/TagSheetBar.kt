@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -54,40 +56,28 @@ import androidx.emoji2.emojipicker.EmojiViewItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagBottomSheet(
-    addTagDissmiss: () -> Unit = {},
+    addTagDismiss: () -> Unit = {},
+    listState: LazyListState,
+    selectedEmoji: String,
+    showEmojiPicker: Boolean,
+    tagGeneratorSheetState: SheetState,
+    tagTextField: String,
+    tagName: String,
+    colors: List<Color>,
+    selectedIndex: Int,
+    tagColor: Color,
+    emojiPickerBox: () -> Unit,
+    textFieldValueChange: (String) -> Unit,
+    clickColorBox: (Int, Color) -> Unit,
+    setOnEmojiPickedListener: (EmojiViewItem) -> Unit ,
+    onDismissRequestAlertDialog: () -> Unit
 ) {
-    val listState = rememberLazyListState()
-
-    var selectedEmoji by remember { mutableStateOf("😊") } // Başlangıç emojisi
-    var showEmojiPicker by remember { mutableStateOf(false) }
-    val tagGeneratorSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false, // Sheet'in kay  dırılmasını engeller
-    )
-    var tagTextField = remember { mutableStateOf("") }
-
-    var tagName by remember { mutableStateOf(tagTextField) } // Başlangıç emojisi
-
-    // Renk listesi
-    val colors = listOf(
-        Color(255, 69, 58, 255),
-        Color(255, 159, 10, 255),
-        Color(255, 214, 10, 255),
-        Color(48, 209, 88, 255),
-        Color(99, 230, 226, 255),
-        Color(64, 200, 224, 255),
-        Color(100, 210, 255, 255),
-        Color(10, 132, 255, 255),
-        Color(172, 142, 104, 255),
-    )
-    var selectedIndex by remember { mutableIntStateOf(7) }
-
-    var tagColor by remember { mutableStateOf(colors[selectedIndex]) }
-
 
 
     ModalBottomSheet(
-        onDismissRequest = addTagDissmiss,
+        onDismissRequest = addTagDismiss,
         sheetState = tagGeneratorSheetState,
+
         containerColor = Color(0xff1d1a1f),
         dragHandle = null,
 
@@ -118,7 +108,7 @@ fun TagBottomSheet(
                     fontSize = 26.sp
                 )
                 Text(
-                    text = tagName.value.ifBlank { "New Tag" },
+                    text = tagName.ifBlank { "New Tag" },
                     modifier = Modifier
                         .padding(vertical = 25.dp)
                         .padding(start = 10.dp),
@@ -139,14 +129,14 @@ fun TagBottomSheet(
                         .size(55.dp)
                         .background(Color(0xff29272c))
                         .clickable {
-                            showEmojiPicker = true
+                            emojiPickerBox()
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(text = selectedEmoji, fontSize = 24.sp)
                 }
                 OutlinedTextField(
-                    value = tagTextField.value, onValueChange = { tagTextField.value = it },
+                    value = tagTextField, onValueChange = { textFieldValueChange(it) },
                     Modifier
                         .padding(start = 10.dp)
                         .fillMaxWidth()
@@ -194,10 +184,8 @@ fun TagBottomSheet(
                             .background(color)
                             .border(borderStroke, shape = CircleShape)
                             .clickable {
-                                selectedIndex = index               // seçili state güncellenir
-                                tagColor = color
+                                clickColorBox(index, color)
                                 Log.e("TAG Color", "TagBottomSheet: $tagColor")
-
                                 Log.e("Index Number: $index", "TagBottomSheet: $color")
                             }
                     )
@@ -206,7 +194,7 @@ fun TagBottomSheet(
 
             Button(
                 onClick = {
-                    if (tagTextField.value.isNotBlank()) {
+                    if (tagTextField.isNotBlank()) {
                         //Save gelecek
                     }
                 },
@@ -216,7 +204,7 @@ fun TagBottomSheet(
                     .height(55.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = if (tagTextField.value.isNotBlank()) tagColor else Color.Gray,
+                    containerColor = if (tagTextField.isNotBlank()) tagColor else Color.Gray,
                     contentColor = Color.White
                 )
             ) { Text("Save", color = Color.White, fontSize = 20.sp) }
@@ -227,15 +215,12 @@ fun TagBottomSheet(
         if (showEmojiPicker) {
             AlertDialog(
                 containerColor = Color(0xFF201e1e),
-                onDismissRequest = { showEmojiPicker = false },
+                onDismissRequest = onDismissRequestAlertDialog,
                 text = {
                     AndroidView(
                         factory = { ctx ->
                             EmojiPickerView(ctx).apply {
-                                setOnEmojiPickedListener { emojiViewItem: EmojiViewItem ->
-                                    selectedEmoji = emojiViewItem.emoji
-                                    showEmojiPicker = false
-                                }
+                                setOnEmojiPickedListener(setOnEmojiPickedListener)
                             }
                         },
                         modifier = Modifier
@@ -254,114 +239,114 @@ fun TagBottomSheet(
 @Preview
 @Composable
 fun TagBottomSheetPreview() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xff1d1a1f)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Add New Tag", color = Color.White)
-        Row(
-            modifier = Modifier
-                .padding(10.dp)
-                .clip(shape = RoundedCornerShape(25.dp))
-                .background(Color(0xff0f79fe).copy(alpha = 0.2f))
-                .fillMaxWidth()
-                .border(shape = RoundedCornerShape(25.dp), width = 2.dp, color = Color.Blue),
-            verticalAlignment = Alignment.CenterVertically,
-        )
-        {
-            Text(
-                text = "\uD83D\uDE0A",
-                modifier = Modifier
-                    .padding(vertical = 25.dp)
-                    .padding(start = 20.dp),
-                fontSize = 26.sp
-            )
-            Text(
-                text = "New Tag",
-                modifier = Modifier
-                    .padding(vertical = 25.dp)
-                    .padding(start = 10.dp),
-                fontSize = 22.sp,
-                color = Color.White
-            )
-        }
-
-
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .size(55.dp)
-                    .background(Color(0xff29272c))
-                    .clickable {
-
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "\uD83D\uDE0A", fontSize = 24.sp)
-            }
-            OutlinedTextField(
-                value = "", onValueChange = {},
-                Modifier
-                    .padding(start = 10.dp)
-                    .fillMaxWidth()
-                    .height(55.dp),
-                shape = RoundedCornerShape(10.dp),
-                placeholder = { Text("Enter Tag Name", color = Color.Gray) },
-                colors = TextFieldDefaults.colors(
-                    // arka plan
-                    unfocusedContainerColor = Color(0xFF29272C),
-                    focusedContainerColor = Color(0xFF29272C),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-
-                    // kenarlıkları şeffaf yap
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                ),
-                textStyle = TextStyle(fontSize = 18.sp)
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .padding(10.dp)
-                .fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(shape = CircleShape)
-                    .border(1.dp, Color.White, shape = CircleShape)
-                    .size(30.dp)
-                    .background(Color.Blue)
-                    .clickable {
-
-                    })
-        }
-
-
-        Button(
-            onClick = {
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-                .height(55.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = Color.Gray,
-                contentColor = Color.White
-            )
-        ) { Text("Save", color = Color.White, fontSize = 20.sp) }
-
-    }
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(Color(0xff1d1a1f)),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Text(text = "Add New Tag", color = Color.White)
+//        Row(
+//            modifier = Modifier
+//                .padding(10.dp)
+//                .clip(shape = RoundedCornerShape(25.dp))
+//                .background(Color(0xff0f79fe).copy(alpha = 0.2f))
+//                .fillMaxWidth()
+//                .border(shape = RoundedCornerShape(25.dp), width = 2.dp, color = Color.Blue),
+//            verticalAlignment = Alignment.CenterVertically,
+//        )
+//        {
+//            Text(
+//                text = "\uD83D\uDE0A",
+//                modifier = Modifier
+//                    .padding(vertical = 25.dp)
+//                    .padding(start = 20.dp),
+//                fontSize = 26.sp
+//            )
+//            Text(
+//                text = "New Tag",
+//                modifier = Modifier
+//                    .padding(vertical = 25.dp)
+//                    .padding(start = 10.dp),
+//                fontSize = 22.sp,
+//                color = Color.White
+//            )
+//        }
+//
+//
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(10.dp)
+//        ) {
+//            Box(
+//                modifier = Modifier
+//                    .clip(shape = RoundedCornerShape(10.dp))
+//                    .size(55.dp)
+//                    .background(Color(0xff29272c))
+//                    .clickable {
+//
+//                    },
+//                contentAlignment = Alignment.Center
+//            ) {
+//                Text(text = "\uD83D\uDE0A", fontSize = 24.sp)
+//            }
+//            OutlinedTextField(
+//                value = "", onValueChange = {},
+//                Modifier
+//                    .padding(start = 10.dp)
+//                    .fillMaxWidth()
+//                    .height(55.dp),
+//                shape = RoundedCornerShape(10.dp),
+//                placeholder = { Text("Enter Tag Name", color = Color.Gray) },
+//                colors = TextFieldDefaults.colors(
+//                    // arka plan
+//                    unfocusedContainerColor = Color(0xFF29272C),
+//                    focusedContainerColor = Color(0xFF29272C),
+//                    focusedTextColor = Color.White,
+//                    unfocusedTextColor = Color.White,
+//
+//                    // kenarlıkları şeffaf yap
+//                    focusedIndicatorColor = Color.Transparent,
+//                    unfocusedIndicatorColor = Color.Transparent,
+//                    disabledIndicatorColor = Color.Transparent,
+//                    errorIndicatorColor = Color.Transparent,
+//                ),
+//                textStyle = TextStyle(fontSize = 18.sp)
+//            )
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .padding(10.dp)
+//                .fillMaxWidth()
+//        ) {
+//            Box(
+//                modifier = Modifier
+//                    .clip(shape = CircleShape)
+//                    .border(1.dp, Color.White, shape = CircleShape)
+//                    .size(30.dp)
+//                    .background(Color.Blue)
+//                    .clickable {
+//
+//                    })
+//        }
+//
+//
+//        Button(
+//            onClick = {
+//            },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(10.dp)
+//                .height(55.dp),
+//            shape = RoundedCornerShape(20.dp),
+//            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+//                containerColor = Color.Gray,
+//                contentColor = Color.White
+//            )
+//        ) { Text("Save", color = Color.White, fontSize = 20.sp) }
+//
+//    }
 }

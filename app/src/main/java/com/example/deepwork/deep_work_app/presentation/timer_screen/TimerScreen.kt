@@ -45,13 +45,16 @@ import com.example.deepwork.deep_work_app.presentation.components.TimeEditButton
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PersonAddAlt
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
 import com.example.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
@@ -115,8 +118,75 @@ fun TimerScreen(
             easing = EaseInOutQuart
         ), label = "backgroundGradientAlpha"
     )
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////Add Tag Layout //////////////////////////////////////////////////////
+    val listState = rememberLazyListState()
+
+    var selectedEmoji by remember { mutableStateOf("😊") } // Başlangıç emojisi
+    var showEmojiPicker by remember { mutableStateOf(false) }
+    val tagGeneratorSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false, // Sheet'in kay  dırılmasını engeller
+        confirmValueChange = { newValue ->
+            newValue != SheetValue.Expanded
+        }
+    )
+    val tagTextField = remember { mutableStateOf("") }
+
+    val tagName by remember { mutableStateOf(tagTextField) } // Başlangıç emojisi
+
+    // Renk listesi
+    val colors = listOf(
+        Color(255, 69, 58, 255),
+        Color(255, 159, 10, 255),
+        Color(255, 214, 10, 255),
+        Color(48, 209, 88, 255),
+        Color(99, 230, 226, 255),
+        Color(64, 200, 224, 255),
+        Color(100, 210, 255, 255),
+        Color(10, 132, 255, 255),
+        Color(172, 142, 104, 255),
+    )
+    var selectedIndex by remember { mutableIntStateOf(7) }
+
+    var tagColor by remember { mutableStateOf(colors[selectedIndex]) }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     if (showBottomSheet) {
-        TagBottomSheet(addTagDissmiss = { showBottomSheet = false })
+        TagBottomSheet(
+            addTagDismiss = { showBottomSheet = false },
+            listState = listState,
+            selectedEmoji = selectedEmoji,
+            showEmojiPicker = showEmojiPicker,
+            tagGeneratorSheetState = tagGeneratorSheetState,
+            tagTextField = tagTextField.value,
+            tagName = tagName.value,
+            colors = colors,
+            selectedIndex = selectedIndex,
+            tagColor = tagColor,
+            emojiPickerBox = {
+                showEmojiPicker = true
+            },
+            textFieldValueChange = { it ->
+                tagTextField.value = it
+            },
+            clickColorBox = { index, color ->
+                selectedIndex = index               // seçili state güncellenir
+                tagColor = color
+                Log.e("TAG Color", "TagBottomSheet: $tagColor")
+
+                Log.e("Index Number: $index", "TagBottomSheet: $color")
+            },
+            setOnEmojiPickedListener = { emojiViewItem ->
+                selectedEmoji = emojiViewItem.emoji
+                showEmojiPicker = false
+            },
+            onDismissRequestAlertDialog = {
+                showEmojiPicker = false
+            }
+        )
     }
     Column(
         modifier = Modifier
@@ -157,7 +227,7 @@ fun TimerScreen(
                                     modifier = Modifier.sharedElement(
                                         sharedContentState = rememberSharedContentState(key = snack.name),//State
                                         animatedVisibilityScope = this@AnimatedVisibility,
-                                        ),
+                                    ),
                                     onClick = {
                                         selectedSnack = snack
                                     },
