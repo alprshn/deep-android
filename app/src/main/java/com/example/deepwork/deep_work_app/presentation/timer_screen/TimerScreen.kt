@@ -96,14 +96,15 @@ fun TimerScreen(
             isReset = false
         )
     )
-
-    var selectedState by remember { mutableStateOf(0) }
-    var initialValue by remember { mutableStateOf(stopwatchState.second.toInt()) }
-    var positionValue by remember { mutableStateOf(initialValue) }
-    var oldPositionValue by remember { mutableStateOf(initialValue) }
+    var toggleState by remember { mutableStateOf(false) }
+    var selectedState by remember { mutableStateOf(false) }
+    var initialValueSecond by remember { mutableStateOf(stopwatchState.second) }
+    var initialValueMinutes by remember { mutableStateOf(stopwatchState.minute) }
+    var positionValue by remember { mutableStateOf(initialValueMinutes) }
+    var oldPositionValue by remember { mutableStateOf(initialValueMinutes) }
     val maxValue by remember { mutableStateOf(60) }
     val minValue by remember { mutableStateOf(0) }
-    Log.d("TAG", "TimerScreen: $initialValue")
+    Log.d("TAG", "TimerScreen: $initialValueMinutes")
 
     var visibleTagItems by remember { mutableStateOf(true) }
 
@@ -116,7 +117,8 @@ fun TimerScreen(
         stopWatchViewModel.getAllTag()
     }
 
-    initialValue = stopwatchState.second.toInt()
+    initialValueMinutes = stopwatchState.minute
+    initialValueSecond = stopwatchState.second
     Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
 
 // Removed Animate circle radius - handled internally
@@ -148,7 +150,7 @@ fun TimerScreen(
 
     // Renk listesi
     val colors = listOf(
-        Color(0xFFFF453A	),
+        Color(0xFFFF453A),
         Color(0xFFFF9F0A),
         Color(0xFFFFD60A),
         Color(0xFF30D158),
@@ -201,9 +203,11 @@ fun TimerScreen(
                     showBottomSheet = false
                     stopWatchViewModel.addTag(
                         tagName = tagTextField.value,
-                        tagColor = tagColor.toString(),
+                        tagColor = tagColor.value.toString(),
                         tagEmoji = selectedEmoji
                     )
+
+                    Log.e("TAG", "TimerScreen: ${tagColor.toString()}")
                 }
             }
         )
@@ -276,13 +280,11 @@ fun TimerScreen(
                     circleButtonPadding = 4.dp,
                     circleBackgroundOnResource = Color(0xff5550e3),
                     circleBackgroundOffResource = Color(0xFF1C1E22),
-                    stateOn = 0,
-                    stateOff = 1,
                     onCheckedChanged = { isSelected ->
                         selectedState = if (isSelected) {
-                            0
+                            false
                         } else {
-                            1
+                            true
                         }
                     },
                     selectedState = selectedState
@@ -293,7 +295,8 @@ fun TimerScreen(
                         .padding(vertical = 50.dp)
                         .size(350.dp)
                         .background(Color.Transparent),
-                    currentValue = initialValue,
+                    minuteCurrentValue = initialValueMinutes.toInt(),
+                    secondCurrentValue = initialValueSecond.toInt(),
                     primaryColor = Color.Blue, // Replace with your theme colors
                     secondaryColor = Color.DarkGray, // Replace with your theme colors
                     maxValue = maxValue,
@@ -301,9 +304,10 @@ fun TimerScreen(
                     colorBackgroundGradientValue = animatedColorBackgroundGradientValue, // Pass the animated value
                     onValueChange = { newValue ->
                         // Indicator'dan gelen yeni değeri kendi state'imize kaydediyoruz
-                        initialValue = newValue
+                        initialValueMinutes = newValue.toString()
 
-                    }
+                    },
+                    timerState = selectedState
 
                 )
 
@@ -341,8 +345,8 @@ fun TimerScreen(
                         TimeEditButtons(
                             onClick = {
                                 // Handle replay/reset click
-                                positionValue = initialValue // Reset timer value
-                                oldPositionValue = initialValue
+                                positionValue = initialValueMinutes // Reset timer value
+                                oldPositionValue = initialValueMinutes
                                 // Optionally stop if started
                                 isStarted = false
                                 colorBackgroundGradientValue = 0.2f

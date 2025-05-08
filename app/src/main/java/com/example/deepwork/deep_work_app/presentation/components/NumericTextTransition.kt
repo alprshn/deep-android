@@ -32,7 +32,7 @@ import com.example.deepwork.deep_work_app.domain.data.DigitModel
 import com.example.deepwork.deep_work_app.domain.data.compareTo
 
 @Composable
-fun NumericTextTransition(count: Int = 0, ) {
+fun NumericTextTransition(secondCount: String = "00", minuteCount: String = "00" ) {
 
     Row (
         modifier = Modifier
@@ -41,8 +41,8 @@ fun NumericTextTransition(count: Int = 0, ) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        count.toString()
-            .mapIndexed { index, c -> DigitModel(c, count, index) }
+        secondCount.toString()
+            .mapIndexed { index, c -> DigitModel(c, secondCount.toInt(), index) }
             .forEach { digit ->
                 AnimatedContent(
                     targetState = digit,
@@ -54,12 +54,45 @@ fun NumericTextTransition(count: Int = 0, ) {
                         }
                     }
                 ) { digit ->
-                    Text(
-                        "${digit.digitChar}",
-                        textAlign = TextAlign.Center,
-                        color = Color.White,
-                        fontSize = 54.sp
-                    )
+                    Row {
+                        Text(
+                            "${digit.digitChar}",
+                            textAlign = TextAlign.Center,
+                            color = Color.White,
+                            fontSize = 54.sp
+                        )
+                    }
+
+                }
+            }
+        Text(
+            ":",
+            textAlign = TextAlign.Center,
+            color = Color.White,
+            fontSize = 54.sp
+        )
+        minuteCount.toString()
+            .mapIndexed { index, c -> DigitModel(c, minuteCount.toInt(), index) }
+            .forEach { digit ->
+                AnimatedContent(
+                    targetState = digit,
+                    transitionSpec = {
+                        if (targetState > initialState) {
+                            slideInVertically { -it } togetherWith slideOutVertically { it }
+                        } else {
+                            slideInVertically { it } togetherWith slideOutVertically { -it }
+                        }
+                    }
+                ) { digit ->
+                    Row {
+                        Text(
+                            "${digit.digitChar}",
+                            textAlign = TextAlign.Center,
+                            color = Color.White,
+                            fontSize = 54.sp
+                        )
+                    }
+
                 }
             }
     }

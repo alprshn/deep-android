@@ -3,10 +3,13 @@ package com.example.deepwork.deep_work_app.presentation.components.circular_prog
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.example.deepwork.deep_work_app.data.util.darken
 import com.example.deepwork.deep_work_app.data.util.lighten
 import com.example.deepwork.deep_work_app.presentation.components.NumericTextTransition
-import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -37,7 +39,8 @@ import kotlin.math.roundToInt
 @Composable
 fun CustomCircularProgressIndicator(
     modifier: Modifier = Modifier,
-    currentValue: Int, // DEĞERİ DIŞARIDAN ALIYORUZ
+    secondCurrentValue: Int,
+    minuteCurrentValue: Int, // DEĞERİ DIŞARIDAN ALIYORUZ
     primaryColor: Color,
     secondaryColor: Color,
     maxValue: Int,
@@ -45,7 +48,8 @@ fun CustomCircularProgressIndicator(
     colorBackgroundGradient: Color = Color.Blue,
     colorBackgroundGradientValue: Float = 0.2f,
     baseColor: Color = Color(0xFF1278FF), // Varsayılan mavi ton
-    onValueChange: (newValue: Int) -> Unit // Değer değiştiğinde dışarıya bildirilecek lambda
+    onValueChange: (newValue: Int) -> Unit = {},
+    timerState: Boolean = false,// Değer değiştiğinde dışarıya bildirilecek lambda
 
 
 ) {
@@ -62,11 +66,11 @@ fun CustomCircularProgressIndicator(
                 .fillMaxSize()
                 .pointerInput(true) {
                     detectDragGestures(
-                        onDragStart = { offset ->
-                        },
+                        onDragStart = { offset -> },
                         //Parmağınızı ekrana koyup sürüklemeye başladığınız ilk an çalışır. (Sürükleme Başladığında)
                         //
                         onDrag = { change: PointerInputChange, dragAmount: Offset ->
+
                             val currentTouchOffset = change.position
                             val canvasCenter = Offset(size.width / 2f, size.height / 2f)
                             val vector = currentTouchOffset - canvasCenter
@@ -85,7 +89,7 @@ fun CustomCircularProgressIndicator(
                             // Değeri KENDİ state'ini GÜNCELLEMEK yerine, dışarıya bildir!
                             onValueChange(newValue)
                         },
-                        onDragEnd = {    }
+                        onDragEnd = { }
                         //onDragEnd: Kullanıcı parmağını ekrandan kaldırdığında, yani sürükleme hareketi bittiğinde tam bir kez tetiklenir.
                     )
                 }
@@ -109,9 +113,9 @@ fun CustomCircularProgressIndicator(
             drawCircle(
                 brush = Brush.radialGradient(
                     colorStops = arrayOf(
-                        0.0f  to colorBackgroundGradient.copy(colorBackgroundGradientValue),                 // tam merkez
+                        0.0f to colorBackgroundGradient.copy(colorBackgroundGradientValue),                 // tam merkez
                         0.20f to colorBackgroundGradient.copy(colorBackgroundGradientValue),
-                        1.0f  to Color.Transparent                        // kenar
+                        1.0f to Color.Transparent                        // kenar
                     ),
                     center = canvasCenter, // Use Canvas center
                     radius = gradientRadius
@@ -120,7 +124,7 @@ fun CustomCircularProgressIndicator(
                 center = canvasCenter // Use Canvas center
             )
 
-            // Secondary Circle
+            ///Bu progress bar'ın kendisi
             drawCircle(
                 style = Stroke(width = circleThickness),
                 color = secondaryColor,
@@ -128,41 +132,64 @@ fun CustomCircularProgressIndicator(
                 center = canvasCenter // Use Canvas center
             )
 
-            // Primary Progress Arc
-            val sweepAngle = (360f / (maxValue - minValue)) * (currentValue - minValue)
-            val arcSize = Size(drawingRadius * 2, drawingRadius * 2)
-            val arcTopLeft = Offset(
-                (width - arcSize.width) / 2f,
-                (height - arcSize.height) / 2f
-            )
-            drawArc(
-                color = primaryColor,
-                startAngle = 90f,
-                sweepAngle = sweepAngle,
-                style = Stroke(width = circleThickness, cap = StrokeCap.Round),
-                useCenter = false,
-                size = arcSize, // Use calculated size based on radius
-                topLeft = arcTopLeft // Calculated to center the arc
-            )
 
-            // Dot on the arc
-            val angleInRadians = Math.toRadians(90f + sweepAngle.toDouble()) // Start angle + sweep
-            val dotRadius = circleThickness // Dot size relative to stroke thickness
+            if (timerState == false) {
+                // Primary Progress Arc
+                val sweepAngle = (360f / (maxValue - minValue)) * (minuteCurrentValue - minValue)
+                val arcSize = Size(drawingRadius * 2, drawingRadius * 2)
+                val arcTopLeft = Offset(
+                    (width - arcSize.width) / 2f,
+                    (height - arcSize.height) / 2f
+                )
+                drawArc(
+                    color = primaryColor,
+                    startAngle = 90f,
+                    sweepAngle = sweepAngle,
+                    style = Stroke(width = circleThickness, cap = StrokeCap.Round),
+                    useCenter = false,
+                    size = arcSize, // Use calculated size based on radius
+                    topLeft = arcTopLeft // Calculated to center the arc
+                )
 
-            val dotX =
-                canvasCenter.x + drawingRadius * cos(angleInRadians).toFloat() // Use calculated radius
-            val dotY =
-                canvasCenter.y + drawingRadius * sin(angleInRadians).toFloat() // Use calculated radius
+                // Dot on the arc
+                val angleInRadians =
+                    Math.toRadians(90f + sweepAngle.toDouble()) // Start angle + sweep
+                val dotRadius = circleThickness // Dot size relative to stroke thickness
 
-            drawCircle(
-                brush = Brush.linearGradient(colors = gradientColors),
-                radius = dotRadius,
-                center = Offset(dotX, dotY)
-            )
+                val dotX =
+                    canvasCenter.x + drawingRadius * cos(angleInRadians).toFloat() // Use calculated radius
+                val dotY =
+                    canvasCenter.y + drawingRadius * sin(angleInRadians).toFloat() // Use calculated radius
+
+                drawCircle(
+                    brush = Brush.linearGradient(colors = gradientColors),
+                    radius = dotRadius,
+                    center = Offset(dotX, dotY)
+                )
+            }
+
+
         }
         // Numeric text is centered in the Box, which is centered in the Column
-        NumericTextTransition(count = currentValue)
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            NumericTextTransition(
+                secondCount = secondCurrentValue.toString(),
+                minuteCount = minuteCurrentValue.toString()
+            )
+
+            Row {
+                Text(":D")
+                Text("Deneme", color = Color.White)
+
+            }
+        }
+
+
     }
+
 }
 
 
@@ -170,12 +197,12 @@ fun CustomCircularProgressIndicator(
 @Composable
 fun CustomCircularProgressIndicatorPreview() {
     // state’i preview içinde yönetiyoruz
-    var progress by remember { mutableStateOf(25) }
+    var progress by remember { mutableStateOf(0) }
 
     MaterialTheme {
         CustomCircularProgressIndicator(
             modifier = Modifier.size(200.dp),
-            currentValue = progress, // Parent state'ini veriyoruz
+            minuteCurrentValue = progress, // Parent state'ini veriyoruz
             primaryColor = Color(0xFF3DDC84),
             secondaryColor = Color(0xFFE0E0E0),
             maxValue = 100,
@@ -183,10 +210,12 @@ fun CustomCircularProgressIndicatorPreview() {
             colorBackgroundGradient = Color(0xFF3DDC84),
             colorBackgroundGradientValue = 0.2f,
             baseColor = Color(0xFF3DDC84),
-            onValueChange = { newValue ->
-                // Indicator'dan gelen değeri parent state'ine kaydediyoruz
-                progress = newValue
-            }
+            onValueChange = {// newValue ->
+//                // Indicator'dan gelen değeri parent state'ine kaydediyoruz
+//                progress = newValue
+            },
+            secondCurrentValue = 0,
+            timerState = false
         )
     }
 }

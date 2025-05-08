@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.deepwork.deep_work_app.data.local.entities.Tags
+import com.example.deepwork.deep_work_app.data.util.parseTagColor
 import com.example.deepwork.deep_work_app.presentation.timer_screen.Snack
 import kotlinx.coroutines.delay
 
@@ -262,9 +263,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                         ) {
                                             items(tagContent.size) { tag ->
                                                 val tags = tagContent[tag]
-                                                val tagColor  = Color(tags.tagColor.toULong()) // tekrar Color nesnesi
-
-
+                                                val tagColor  = parseTagColor(tags.tagColor) // tekrar Color nesnesi
 
                                                 Row(
                                                     modifier = Modifier

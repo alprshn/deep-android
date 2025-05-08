@@ -17,3 +17,14 @@ fun Color.darken(factor: Float): Color {
     val blue = (blue * (1 - factor)).coerceIn(0f, 1f)
     return Color(red, green, blue, alpha)
 }
+
+
+fun parseTagColor(raw: String): Color = try {
+    // ❶ ULong formatı → doğrudan Color(value)
+    Color(raw.toULong())
+} catch (e: NumberFormatException) {
+    // ❷ "Color(r,g,b,a,…)" formatı varsa regex ile al
+    val re = Regex("""Color\(([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)""")
+    val (r, g, b, a) = re.find(raw)!!.destructured
+    Color(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
+}
