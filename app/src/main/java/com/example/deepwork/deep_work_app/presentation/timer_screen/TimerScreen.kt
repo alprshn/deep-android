@@ -106,7 +106,7 @@ fun TimerScreen(
     val maxValue by remember { mutableStateOf(60) }
     val minValue by remember { mutableStateOf(0) }
     Log.d("TAG", "TimerScreen: $initialValueMinutes")
-
+    val endThisSessionVisibility by remember { mutableStateOf(true) }
     var visibleTagItems by remember { mutableStateOf(true) }
 
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -149,9 +149,10 @@ fun TimerScreen(
         }
     )
     val endSessionBarSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false, // Sheet'in kay  dırılmasını engeller
-        confirmValueChange = { newValue ->
-            newValue != SheetValue.Expanded
+        // Başta açık dursun
+        skipPartiallyExpanded = true,               // half‑way yok
+        confirmValueChange = { target ->
+            target == SheetValue.Expanded // başka değere geçişi veto
         }
     )
 
@@ -452,7 +453,6 @@ fun TimerScreen(
 
             if (showEndSessionBar) {
                 EndSessionBar(
-                    endSessionBarDismiss = { showEndSessionBar = false },
                     endSessionSheetState = endSessionBarSheetState,
                     endSession = {
                         showEndSessionBar = false
@@ -461,7 +461,8 @@ fun TimerScreen(
                     keepGoingButtonColor = tagColor,
                     onClickKeepGoing = {
                         showEndSessionBar = false
-                    }
+                    },
+                    endThisSessionVisibility = endThisSessionVisibility,
                 )
             }
 

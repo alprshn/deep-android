@@ -1,6 +1,11 @@
 package com.example.deepwork.deep_work_app.presentation.components.end_session_bar
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
@@ -46,14 +52,14 @@ import androidx.emoji2.emojipicker.EmojiViewItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EndSessionBar(
-    endSessionBarDismiss: () -> Unit = {},
     endSessionSheetState: SheetState,
     endSession: () -> Unit,
     keepGoingButtonColor:Color,
-    onClickKeepGoing : () -> Unit = {}
+    onClickKeepGoing : () -> Unit = {},
+    endThisSessionVisibility: Boolean = true
 ){
     ModalBottomSheet(
-        onDismissRequest = endSessionBarDismiss,
+        onDismissRequest = {},
         sheetState = endSessionSheetState,
         containerColor = Color(0xFF1C1E22).copy(alpha = 0.9f),
         dragHandle = null,
@@ -61,9 +67,7 @@ fun EndSessionBar(
         ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 15.dp)
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp).height(300.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -82,18 +86,39 @@ fun EndSessionBar(
                 )
             ) { Text("Keep going!", color = Color.White, fontSize = 20.sp) }
 
-            Button(
-                onClick =endSession,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .height(60.dp),
-                shape = RoundedCornerShape(15.dp),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray,
-                    contentColor = Color.White
-                ),
-            ) { Text("End this Session", color = Color.White, fontSize = 20.sp) }
+            AnimatedVisibility(
+                visible = endThisSessionVisibility,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(
+                        durationMillis = 500,
+                        delayMillis = 1_000,      // ← BURADA gecikme
+                        easing = EaseOutCubic
+                    )
+                ) + fadeIn(
+                    animationSpec = tween(
+                        durationMillis = 500,
+                        delayMillis = 1_000
+                    )
+                )
+            ) {
+
+                Button(
+                    onClick = endSession,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(60.dp),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = Color.Gray,
+                        contentColor = Color.White
+                    ),
+                ) { Text("End this Session", color = Color.White, fontSize = 20.sp) }
+            }
+
+
+
 
         }
 
