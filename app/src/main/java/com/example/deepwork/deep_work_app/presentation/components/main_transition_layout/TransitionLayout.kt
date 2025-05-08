@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -62,7 +63,7 @@ private val shapeForSharedElement = RoundedCornerShape(48.dp)
 fun SharedTransitionScope.SnackEditDetails(
     snack: Snack?,
     modifier: Modifier = Modifier,
-    onConfirmClick: () -> Unit,
+    onCloseClick: () -> Unit,
     visibleTagItems: Boolean,
     addTagClick: () -> Unit = {},
     tagContent: List<Tags>,
@@ -96,13 +97,6 @@ fun SharedTransitionScope.SnackEditDetails(
             contentAlignment = Alignment.BottomCenter
         ) {
             if (targetSnack != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            onConfirmClick()
-                        }
-                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -132,7 +126,7 @@ fun SharedTransitionScope.SnackEditDetails(
                     ) {
                         Row(
                             modifier = Modifier
-                                .padding(20.dp)
+                                .padding(horizontal = 20.dp).padding(bottom = 10.dp, top = 20.dp)
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -140,7 +134,10 @@ fun SharedTransitionScope.SnackEditDetails(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(50.dp))
-                                    .background(Color(0xFF28303B)),
+                                    .background(Color(0xFF28303B))
+                                    .clickable {
+                                        addTagClick()
+                                    },
                                 contentAlignment = Alignment.Center
 
                             ) {
@@ -149,9 +146,6 @@ fun SharedTransitionScope.SnackEditDetails(
                                     contentDescription = "addButton",
                                     tint = Color.White, modifier = Modifier
                                         .size(20.dp)
-                                        .clickable {
-                                            addTagClick()
-                                        }
                                 )
                             }
                             Text(
@@ -167,7 +161,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(Color(0xFF28303B))
                                     .clickable {
-                                        onConfirmClick()
+                                        onCloseClick()
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -189,13 +183,12 @@ fun SharedTransitionScope.SnackEditDetails(
                                         tween(durationMillis = 700, easing = EaseInOutQuart)
                                     },
                                     placeHolderSize = SharedTransitionScope.PlaceHolderSize.contentSize,
-
                                     )
                         ) {
 
                             Row(
                                 modifier = Modifier
-                                    .padding(horizontal = 15.dp, vertical = 5.dp)
+                                    .padding(horizontal = 15.dp)
                                     .sharedBounds(
                                         sharedContentState = rememberSharedContentState(key = "${targetSnack.name}-text"),
                                         animatedVisibilityScope = this@AnimatedContent,
@@ -263,7 +256,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                         LazyColumn(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 40.dp),
+                                                .padding(horizontal = 40.dp).padding(bottom = 40.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                         ) {
                                             items(tagContent.size) { tag ->

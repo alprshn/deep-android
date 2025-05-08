@@ -78,7 +78,6 @@ fun TagBottomSheet(
     ModalBottomSheet(
         onDismissRequest = addTagDismiss,
         sheetState = tagGeneratorSheetState,
-
         containerColor = Color(0xff1d1a1f),
         dragHandle = null,
 
@@ -86,8 +85,7 @@ fun TagBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 15.dp)
-                .background(Color(0xff1d1a1f)),
+                .padding(top = 15.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Add New Tag", color = Color.White)

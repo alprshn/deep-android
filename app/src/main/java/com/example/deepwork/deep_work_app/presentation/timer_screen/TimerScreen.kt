@@ -64,6 +64,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.deepwork.deep_work_app.data.local.entities.Tags
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
+import com.example.deepwork.deep_work_app.presentation.components.end_session_bar.EndSessionBar
 import com.example.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
@@ -109,6 +110,7 @@ fun TimerScreen(
     var visibleTagItems by remember { mutableStateOf(true) }
 
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showEndSessionBar by remember { mutableStateOf(false) }
 
     val tagContent by stopWatchViewModel.allTagList.collectAsStateWithLifecycle()
 
@@ -146,6 +148,13 @@ fun TimerScreen(
             newValue != SheetValue.Expanded
         }
     )
+    val endSessionBarSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false, // Sheet'in kay  dırılmasını engeller
+        confirmValueChange = { newValue ->
+            newValue != SheetValue.Expanded
+        }
+    )
+
     val tagTextField = remember { mutableStateOf("") }
 
     val tagName by remember { mutableStateOf(tagTextField) } // Başlangıç emojisi
@@ -268,9 +277,6 @@ fun TimerScreen(
                             }
                         }
                     }
-
-
-
 
 
                 }
@@ -411,6 +417,8 @@ fun TimerScreen(
                                 // Handle stop click
                                 isStarted = false // Stop timer
                                 colorBackgroundGradientValue = 0.2f // Reset gradient alpha
+                                showEndSessionBar = true
+                                stopWatchViewModel.lap()
                                 // Optionally reset positionValue as well
                                 // positionValue = initialValue
                                 // oldPositionValue = initialValue
@@ -424,7 +432,7 @@ fun TimerScreen(
 
             SnackEditDetails(
                 snack = selectedSnack,//State
-                onConfirmClick = {
+                onCloseClick = {
                     selectedSnack = null//State
                 },
                 visibleTagItems = visibleTagItems,
@@ -440,7 +448,23 @@ fun TimerScreen(
                 selectedTagEmoji = selectedTagEmoji.value,
                 selectedTagText = selectedTagText.value,
 
-            )
+                )
+
+            if (showEndSessionBar) {
+                EndSessionBar(
+                    endSessionBarDismiss = { showEndSessionBar = false },
+                    endSessionSheetState = endSessionBarSheetState,
+                    endSession = {
+                        showEndSessionBar = false
+                        //stopWatchViewModel.stop()
+                    },
+                    keepGoingButtonColor = tagColor,
+                    onClickKeepGoing = {
+                        showEndSessionBar = false
+                    }
+                )
+            }
+
         }
     }
 }
