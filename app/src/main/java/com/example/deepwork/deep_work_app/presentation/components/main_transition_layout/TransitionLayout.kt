@@ -65,7 +65,10 @@ fun SharedTransitionScope.SnackEditDetails(
     onConfirmClick: () -> Unit,
     visibleTagItems: Boolean,
     addTagClick: () -> Unit = {},
-    tagContent: List<Tags>
+    tagContent: List<Tags>,
+    onTagClick: (Tags) -> Unit,
+    selectedTagEmoji: String = "\uD83D\uDCCD",
+    selectedTagText: String = "Select a Tag"
 ) {
 
     AnimatedContent(
@@ -204,11 +207,12 @@ fun SharedTransitionScope.SnackEditDetails(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    "\uD83D\uDCCD", modifier = Modifier.padding(end = 10.dp),
+                                    text = selectedTagEmoji,
+                                    modifier = Modifier.padding(end = 10.dp),
                                     fontSize = 28.sp
                                 )
                                 Text(
-                                    "Select a Tag",
+                                    text = selectedTagText,
                                     color = Color.White,
                                     fontSize = 38.sp,
                                     modifier = Modifier
@@ -258,23 +262,33 @@ fun SharedTransitionScope.SnackEditDetails(
                                     } else {
                                         LazyColumn(
                                             modifier = Modifier
-                                                .fillMaxWidth().padding(horizontal = 40.dp),
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 40.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                         ) {
                                             items(tagContent.size) { tag ->
                                                 val tags = tagContent[tag]
-                                                val tagColor  = parseTagColor(tags.tagColor) // tekrar Color nesnesi
+                                                val tagColor = parseTagColor(tags.tagColor)
 
                                                 Row(
                                                     modifier = Modifier
-                                                        .padding(horizontal = 30.dp, vertical = 5.dp)
+                                                        .padding(
+                                                            horizontal = 30.dp,
+                                                            vertical = 5.dp
+                                                        )
                                                         .clip(shape = RoundedCornerShape(15.dp))
                                                         .background(tagColor.copy(alpha = 0.35f))
-                                                        .fillMaxWidth(),
+                                                        .fillMaxWidth()
+                                                        .clickable {
+                                                            onTagClick(tags)
+                                                        },
                                                     verticalAlignment = Alignment.CenterVertically,
                                                 )
                                                 {
-                                                    Log.e("TAG Color", "SnackEditDetails Color: ${tags.tagColor}")
+                                                    Log.e(
+                                                        "TAG Color",
+                                                        "SnackEditDetails Color: ${tags.tagColor}"
+                                                    )
                                                     Text(
                                                         text = tags.tagEmoji,
                                                         modifier = Modifier

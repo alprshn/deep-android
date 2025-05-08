@@ -69,7 +69,7 @@ import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.St
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 
 data class Snack(
-    val name: String,
+    var name: String,
     val description: String
 )
 
@@ -112,6 +112,8 @@ fun TimerScreen(
 
     val tagContent by stopWatchViewModel.allTagList.collectAsStateWithLifecycle()
 
+    val selectedTagText = remember { mutableStateOf("Select a Tag") }
+    val selectedTagEmoji = remember { mutableStateOf("\uD83D\uDCCD") }
 
     LaunchedEffect(Unit) {
         stopWatchViewModel.getAllTag()
@@ -257,7 +259,7 @@ fun TimerScreen(
                                     },
                                     heightButton = 50,
                                     textColor = Color.White,
-                                    emoji = "\uD83D\uDCCD",
+                                    emoji = selectedTagEmoji.value,
                                     modifierText = Modifier.sharedBounds(
                                         sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),//State
                                         animatedVisibilityScope = this@AnimatedVisibility
@@ -429,7 +431,14 @@ fun TimerScreen(
                 addTagClick = {
                     showBottomSheet = true
                 },
-                tagContent = tagContent
+                tagContent = tagContent,
+                onTagClick = { tag ->
+                    selectedTagEmoji.value = tag.tagEmoji
+                    selectedTagText.value = tag.tagName
+                    listSnacks[0].name = selectedTagText.value
+                },
+                selectedTagEmoji = selectedTagEmoji.value,
+                selectedTagText = selectedTagText.value,
 
             )
         }
