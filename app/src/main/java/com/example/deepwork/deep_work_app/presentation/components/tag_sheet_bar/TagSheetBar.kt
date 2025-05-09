@@ -69,7 +69,7 @@ fun TagBottomSheet(
     emojiPickerBox: () -> Unit,
     textFieldValueChange: (String) -> Unit,
     clickColorBox: (Int, Color) -> Unit,
-    setOnEmojiPickedListener: (EmojiViewItem) -> Unit ,
+    setOnEmojiPickedListener: (EmojiViewItem) -> Unit,
     onDismissRequestAlertDialog: () -> Unit,
     addTag: () -> Unit
 ) {
@@ -107,7 +107,7 @@ fun TagBottomSheet(
                     fontSize = 26.sp
                 )
                 Text(
-                    text = tagName.ifBlank { "New Tag" },
+                    text = tagName.trim().ifBlank { "New Tag" },
                     modifier = Modifier
                         .padding(vertical = 25.dp)
                         .padding(start = 10.dp),
@@ -135,7 +135,14 @@ fun TagBottomSheet(
                     Text(text = selectedEmoji, fontSize = 24.sp)
                 }
                 OutlinedTextField(
-                    value = tagTextField, onValueChange = { textFieldValueChange(it) },
+                    value = tagTextField, onValueChange = {
+
+                        val normalized = it
+                            .replace(Regex("^\\s+"), "")   // baştaki boşlukları sil
+                            .replace(Regex("\\s{2,}"), " ") // art arda boşluk → tek boşluk
+
+                        textFieldValueChange(normalized)
+                    },
                     Modifier
                         .padding(start = 10.dp)
                         .fillMaxWidth()
@@ -154,7 +161,8 @@ fun TagBottomSheet(
                         disabledIndicatorColor = Color.Transparent,
                         errorIndicatorColor = Color.Transparent,
                     ),
-                    textStyle = TextStyle(fontSize = 18.sp)
+                    textStyle = TextStyle(fontSize = 18.sp),
+                    singleLine = true
                 )
             }
 

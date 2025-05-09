@@ -19,7 +19,6 @@ class WorkRequestManager @Inject constructor(
         inputData?.let {
             workRequest.setInputData(it)
         }
-
         WorkManager.getInstance(applicationContext).enqueue(workRequest.build())
     }
 

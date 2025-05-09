@@ -12,3 +12,4 @@ data class Tags(
     @ColumnInfo(name = "tag_color") val tagColor: String,
     //@ColumnInfo(name = "tag_order") val tagOrder: Int
 )
+

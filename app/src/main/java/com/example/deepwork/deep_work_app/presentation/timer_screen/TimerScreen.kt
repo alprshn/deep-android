@@ -74,6 +74,8 @@ data class Snack(
     val description: String
 )
 
+//UI Effect, UI State, UI Event -> MVI
+
 private val listSnacks = listOf(
     Snack("Select a Tag", ""),
 )
@@ -85,6 +87,7 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
 ) {
+    val a = stopWatchViewModel.uiState.collectAsState()
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
     var isStarted by remember { mutableStateOf(false) }
     var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
