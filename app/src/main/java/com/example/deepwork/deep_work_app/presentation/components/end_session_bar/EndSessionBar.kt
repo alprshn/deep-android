@@ -32,8 +32,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,15 +52,22 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EndSessionBar(
-    endSessionSheetState: SheetState,
     endSession: () -> Unit,
     keepGoingButtonColor:Color,
     onClickKeepGoing : () -> Unit = {},
     endThisSessionVisibility: Boolean = true
 ){
+
+    val endSessionBarSheetState = rememberModalBottomSheetState(
+        // Başta açık dursun
+        skipPartiallyExpanded = true,               // half‑way yok
+        confirmValueChange = { target ->
+            target == SheetValue.Expanded // başka değere geçişi veto
+        }
+    )
     ModalBottomSheet(
         onDismissRequest = {},
-        sheetState = endSessionSheetState,
+        sheetState = endSessionBarSheetState,
         containerColor = Color(0xFF1C1E22).copy(alpha = 0.9f),
         dragHandle = null,
 

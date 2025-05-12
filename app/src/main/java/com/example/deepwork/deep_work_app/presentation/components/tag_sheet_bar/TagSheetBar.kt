@@ -52,18 +52,16 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.emoji2.emojipicker.EmojiPickerView
 import androidx.emoji2.emojipicker.EmojiViewItem
+import com.example.deepwork.ui.theme.TagColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagBottomSheet(
     addTagDismiss: () -> Unit = {},
-    listState: LazyListState,
     selectedEmoji: String,
     showEmojiPicker: Boolean,
-    tagGeneratorSheetState: SheetState,
     tagTextField: String,
     tagName: String,
-    colors: List<Color>,
     selectedIndex: Int,
     tagColor: Color,
     emojiPickerBox: () -> Unit,
@@ -73,7 +71,13 @@ fun TagBottomSheet(
     onDismissRequestAlertDialog: () -> Unit,
     addTag: () -> Unit
 ) {
-
+    val listState = rememberLazyListState()
+    val tagGeneratorSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false, // Sheet'in kay  dırılmasını engeller
+        confirmValueChange = { newValue ->
+            newValue != SheetValue.Expanded
+        }
+    )
 
     ModalBottomSheet(
         onDismissRequest = addTagDismiss,
@@ -177,7 +181,7 @@ fun TagBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)   // her öğe arası eşit 12 dp
 
             ) {
-                itemsIndexed(colors) { index, color ->
+                itemsIndexed(TagColors) { index, color ->
 
                     val borderStroke = if (selectedIndex == index)
                         BorderStroke(2.dp, Color.White)
@@ -353,8 +357,4 @@ fun TagBottomSheetPreview() {
 //
 //    }
 
-
-    Column {
-
-    }
 }

@@ -58,6 +58,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -68,6 +69,7 @@ import com.example.deepwork.deep_work_app.presentation.components.end_session_ba
 import com.example.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
+import com.example.deepwork.ui.theme.TagColors
 
 data class Snack(
     var name: String,
@@ -87,10 +89,7 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
 ) {
-    val a = stopWatchViewModel.uiState.collectAsState()
-    var selectedSnack by remember { mutableStateOf<Snack?>(null) }
-    var isStarted by remember { mutableStateOf(false) }
-    var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
+    val timerUiState by stopWatchViewModel.timerUIState.collectAsState()
     val stopwatchState by stopWatchViewModel.stopwatchState.observeAsState(
         StopwatchState(
             second = "0",
@@ -100,126 +99,131 @@ fun TimerScreen(
             isReset = false
         )
     )
-    var toggleState by remember { mutableStateOf(false) }
-    var selectedState by remember { mutableStateOf(false) }
-    var initialValueSecond by remember { mutableStateOf(stopwatchState.second) }
-    var initialValueMinutes by remember { mutableStateOf(stopwatchState.minute) }
-    var positionValue by remember { mutableStateOf(initialValueMinutes) }
-    var oldPositionValue by remember { mutableStateOf(initialValueMinutes) }
-    val maxValue by remember { mutableStateOf(60) }
-    val minValue by remember { mutableStateOf(0) }
-    Log.d("TAG", "TimerScreen: $initialValueMinutes")
-    val endThisSessionVisibility by remember { mutableStateOf(true) }
-    var visibleTagItems by remember { mutableStateOf(true) }
-
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var showEndSessionBar by remember { mutableStateOf(false) }
-
     val tagContent by stopWatchViewModel.allTagList.collectAsStateWithLifecycle()
 
-    val selectedTagText = remember { mutableStateOf("Select a Tag") }
-    val selectedTagEmoji = remember { mutableStateOf("\uD83D\uDCCD") }
+    var selectedSnack by remember { mutableStateOf<Snack?>(null) }
+    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var showEndSessionBar by remember { mutableStateOf(false) }
+    var selectedTagText by remember { mutableStateOf("Select a Tag") }
+    var selectedTagEmoji by remember { mutableStateOf("\uD83D\uDCCD") }
+    var showEmojiPicker by remember { mutableStateOf(false) }
+    var tagTextField by remember { mutableStateOf("") }
+    var selectedColorIndex by remember { mutableStateOf(7) }
+    var tagColor by remember { mutableStateOf(TagColors[selectedColorIndex]) }
+    var selectedState by remember { mutableStateOf(false) }
+    var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
+    var positionValue by remember { mutableStateOf(stopwatchState.minute) }
+    var oldPositionValue by remember { mutableStateOf(stopwatchState.minute) }
+
+
+
+
+
+
+
+
+
+
+    //var selectedSnack by remember { mutableStateOf<Snack?>(null) }
+    //var isStarted by remember { mutableStateOf(false) }
+    //var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
+    //var toggleState by remember { mutableStateOf(false) }
+    //var selectedState by remember { mutableStateOf(false) }
+    //var initialValueSecond by remember { mutableStateOf(stopwatchState.second) }
+    //var initialValueMinutes by remember { mutableStateOf(stopwatchState.minute) }
+    //var positionValue by remember { mutableStateOf(initialValueMinutes) }
+    //var oldPositionValue by remember { mutableStateOf(initialValueMinutes) }
+    //val maxValue by remember { mutableStateOf(60) }
+    //val minValue by remember { mutableStateOf(0) }
+    //Log.d("TAG", "TimerScreen: $initialValueMinutes")
+
+    //val endThisSessionVisibility by remember { mutableStateOf(true) }
+    //val visibleTagItems by remember { mutableStateOf(true) }
+
+//    var showBottomSheet by remember { mutableStateOf(false) }
+//    var showEndSessionBar by remember { mutableStateOf(false) }
+
+
+//    val selectedTagText = remember { mutableStateOf("Select a Tag") }
+//    val selectedTagEmoji = remember { mutableStateOf("\uD83D\uDCCD") }
+    //var selectedIndex by remember { mutableIntStateOf(7) }
+    //var tagColor by remember { mutableStateOf(colors[selectedIndex]) }
+
+
+    //var selectedEmoji by remember { mutableStateOf("😊") } // Başlangıç emojisi
+    //var showEmojiPicker by remember { mutableStateOf(false) }
+
+
+    //val tagTextField = remember { mutableStateOf("") }
+
+    val tagName by remember { mutableStateOf(tagTextField) } // Başlangıç emojisi
+    // Renk listesi
 
     LaunchedEffect(Unit) {
         stopWatchViewModel.getAllTag()
     }
 
-    initialValueMinutes = stopwatchState.minute
-    initialValueSecond = stopwatchState.second
+    timerUiState.initialValueMinutes = stopwatchState.minute
+    timerUiState.initialValueSecond = stopwatchState.second
+    //timerUiState.tagColor = TagColors[timerUiState.selectedIndex]
     Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
 
 // Removed Animate circle radius - handled internally
     // Animate background gradient
-    val animatedColorBackgroundGradientValue by animateFloatAsState(
-        targetValue = colorBackgroundGradientValue,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = EaseInOutQuart
-        ), label = "backgroundGradientAlpha"
-    )
+//    val animatedColorBackgroundGradientValue by animateFloatAsState(
+//        targetValue = timerUiState.colorBackgroundGradientValue,
+//        animationSpec = tween(
+//            durationMillis = 500,
+//            easing = EaseInOutQuart
+//        ), label = "backgroundGradientAlpha"
+//    )
+
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////Add Tag Layout //////////////////////////////////////////////////////
-    val listState = rememberLazyListState()
-
-    var selectedEmoji by remember { mutableStateOf("😊") } // Başlangıç emojisi
-    var showEmojiPicker by remember { mutableStateOf(false) }
-    val tagGeneratorSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false, // Sheet'in kay  dırılmasını engeller
-        confirmValueChange = { newValue ->
-            newValue != SheetValue.Expanded
-        }
-    )
-    val endSessionBarSheetState = rememberModalBottomSheetState(
-        // Başta açık dursun
-        skipPartiallyExpanded = true,               // half‑way yok
-        confirmValueChange = { target ->
-            target == SheetValue.Expanded // başka değere geçişi veto
-        }
-    )
-
-    val tagTextField = remember { mutableStateOf("") }
-
-    val tagName by remember { mutableStateOf(tagTextField) } // Başlangıç emojisi
-
-    // Renk listesi
-    val colors = listOf(
-        Color(0xFFFF453A),
-        Color(0xFFFF9F0A),
-        Color(0xFFFFD60A),
-        Color(0xFF30D158),
-        Color(0xFF63E6E2),
-        Color(0xFF40C8E0),
-        Color(0xFF64D2FF),
-        Color(0xFF0A84FF),
-        Color(0xFFAC8E68),
-    )
-    var selectedIndex by remember { mutableIntStateOf(7) }
-
-    var tagColor by remember { mutableStateOf(colors[selectedIndex]) }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     if (showBottomSheet) {
         TagBottomSheet(
             addTagDismiss = { showBottomSheet = false },
-            listState = listState,
-            selectedEmoji = selectedEmoji,
+            selectedEmoji = timerUiState.selectedEmoji,
             showEmojiPicker = showEmojiPicker,
-            tagGeneratorSheetState = tagGeneratorSheetState,
-            tagTextField = tagTextField.value,
-            tagName = tagName.value,
-            colors = colors,
-            selectedIndex = selectedIndex,
+            tagTextField = tagTextField,
+            tagName = tagName,
+            selectedIndex =selectedColorIndex,
             tagColor = tagColor,
             emojiPickerBox = {
-                showEmojiPicker = true
+               showEmojiPicker = true
             },
             textFieldValueChange = { it ->
-                tagTextField.value = it
+                tagTextField = it
             },
             clickColorBox = { index, color ->
-                selectedIndex = index               // seçili state güncellenir
+                selectedColorIndex = index               // seçili state güncellenir
                 tagColor = color
-                Log.e("TAG Color", "TagBottomSheet: $tagColor")
+                Log.e("TAG Color", "TagBottomSheet: $timerUiState.tagColor")
 
                 Log.e("Index Number: $index", "TagBottomSheet: $color")
             },
             setOnEmojiPickedListener = { emojiViewItem ->
-                selectedEmoji = emojiViewItem.emoji
+                timerUiState.selectedEmoji = emojiViewItem.emoji
                 showEmojiPicker = false
             },
             onDismissRequestAlertDialog = {
                 showEmojiPicker = false
             },
             addTag = {
-                if (tagTextField.value.isNotBlank()) {
+                if (tagTextField.isNotBlank()) {
                     showBottomSheet = false
                     stopWatchViewModel.addTag(
-                        tagName = tagTextField.value,
+                        tagName = tagTextField,
                         tagColor = tagColor.value.toString(),
-                        tagEmoji = selectedEmoji
+                        tagEmoji = timerUiState.selectedEmoji
                     )
 
                     Log.e("TAG", "TimerScreen: ${tagColor.toString()}")
@@ -272,7 +276,7 @@ fun TimerScreen(
                                     },
                                     heightButton = 50,
                                     textColor = Color.White,
-                                    emoji = selectedTagEmoji.value,
+                                    emoji = selectedTagEmoji,
                                     modifierText = Modifier.sharedBounds(
                                         sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),//State
                                         animatedVisibilityScope = this@AnimatedVisibility
@@ -307,16 +311,16 @@ fun TimerScreen(
                         .padding(vertical = 50.dp)
                         .size(350.dp)
                         .background(Color.Transparent),
-                    minuteCurrentValue = initialValueMinutes.toInt(),
-                    secondCurrentValue = initialValueSecond.toInt(),
+                    minuteCurrentValue = timerUiState.initialValueMinutes.toInt(),
+                    secondCurrentValue = timerUiState.initialValueSecond.toInt(),
                     primaryColor = Color.Blue, // Replace with your theme colors
                     secondaryColor = Color.DarkGray, // Replace with your theme colors
-                    maxValue = maxValue,
-                    minValue = minValue,
-                    colorBackgroundGradientValue = animatedColorBackgroundGradientValue, // Pass the animated value
+                    maxValue = timerUiState.maxValue,
+                    minValue = timerUiState.minValue,
+                    colorBackgroundGradientValue = timerUiState.animatedColorBackgroundGradientValue, // Pass the animated value
                     onValueChange = { newValue ->
                         // Indicator'dan gelen yeni değeri kendi state'imize kaydediyoruz
-                        initialValueMinutes = newValue.toString()
+                        timerUiState.initialValueMinutes = newValue.toString()
 
                     },
                     timerState = selectedState
@@ -328,7 +332,7 @@ fun TimerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AnimatedVisibility(
-                        visible = isStarted,//State
+                        visible = timerUiState.stopWatchIsStarted,//State
                         enter = fadeIn(
                             animationSpec = tween(
                                 durationMillis = 500,
@@ -357,10 +361,10 @@ fun TimerScreen(
                         TimeEditButtons(
                             onClick = {
                                 // Handle replay/reset click
-                                positionValue = initialValueMinutes // Reset timer value
-                                oldPositionValue = initialValueMinutes
+                                positionValue = timerUiState.initialValueMinutes // Reset timer value
+                                oldPositionValue = timerUiState.initialValueMinutes
                                 // Optionally stop if started
-                                isStarted = false
+                                timerUiState.stopWatchIsStarted = false
                                 colorBackgroundGradientValue = 0.2f
                                 stopWatchViewModel.reset()
                             },
@@ -368,10 +372,10 @@ fun TimerScreen(
                             icon = Icons.Filled.Replay
                         )
                     }
-                    if (!isStarted) {
+                    if (!timerUiState.stopWatchIsStarted) {
                         StartButton(
                             onClick = {
-                                isStarted = !isStarted // Toggle start state
+                                timerUiState.stopWatchIsStarted = !timerUiState.stopWatchIsStarted // Toggle start state
                                 colorBackgroundGradientValue = 0.4f//0.2f
                                 stopWatchViewModel.start()
                             },
@@ -380,7 +384,7 @@ fun TimerScreen(
                     } else {
                         StartButton(
                             onClick = {
-                                isStarted = !isStarted // Toggle start state
+                                timerUiState.stopWatchIsStarted = !timerUiState.stopWatchIsStarted // Toggle start state
                                 colorBackgroundGradientValue = 0.2f
                                 stopWatchViewModel.lap()
                             },
@@ -390,7 +394,7 @@ fun TimerScreen(
 
 
                     AnimatedVisibility(
-                        visible = isStarted,
+                        visible = timerUiState.stopWatchIsStarted,
                         enter = fadeIn(
                             animationSpec = tween(
                                 durationMillis = 500,
@@ -419,7 +423,7 @@ fun TimerScreen(
                         TimeEditButtons(
                             onClick = {
                                 // Handle stop click
-                                isStarted = false // Stop timer
+                                timerUiState.stopWatchIsStarted = false // Stop timer
                                 colorBackgroundGradientValue = 0.2f // Reset gradient alpha
                                 showEndSessionBar = true
                                 stopWatchViewModel.lap()
@@ -439,24 +443,23 @@ fun TimerScreen(
                 onCloseClick = {
                     selectedSnack = null//State
                 },
-                visibleTagItems = visibleTagItems,
+                visibleTagItems = timerUiState.visibleTagItems,
                 addTagClick = {
                     showBottomSheet = true
                 },
                 tagContent = tagContent,
                 onTagClick = { tag ->
-                    selectedTagEmoji.value = tag.tagEmoji
-                    selectedTagText.value = tag.tagName
-                    listSnacks[0].name = selectedTagText.value
+                    selectedTagEmoji = tag.tagEmoji
+                    selectedTagText = tag.tagName
+                    listSnacks[0].name = selectedTagText
                 },
-                selectedTagEmoji = selectedTagEmoji.value,
-                selectedTagText = selectedTagText.value,
+                selectedTagEmoji = selectedTagEmoji,
+                selectedTagText = selectedTagText,
 
                 )
 
             if (showEndSessionBar) {
                 EndSessionBar(
-                    endSessionSheetState = endSessionBarSheetState,
                     endSession = {
                         showEndSessionBar = false
                         //stopWatchViewModel.stop()
@@ -465,7 +468,7 @@ fun TimerScreen(
                     onClickKeepGoing = {
                         showEndSessionBar = false
                     },
-                    endThisSessionVisibility = endThisSessionVisibility,
+                    endThisSessionVisibility = timerUiState.endThisSessionVisibility,
                 )
             }
 
