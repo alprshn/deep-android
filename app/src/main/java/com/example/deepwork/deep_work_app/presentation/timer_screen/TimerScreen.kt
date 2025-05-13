@@ -319,8 +319,6 @@ fun TimerScreen(
                         .background(Color.Transparent),
                     minuteCurrentValue = timerUiState.initialValueMinutes.toInt(),
                     secondCurrentValue = timerUiState.initialValueSecond.toInt(),
-                    primaryColor = Color.Blue, // Replace with your theme colors
-                    secondaryColor = Color.DarkGray, // Replace with your theme colors
                     maxValue = timerUiState.maxValue,
                     minValue = timerUiState.minValue,
                     colorBackgroundGradientValue = animatedColorBackgroundGradientValue, // Pass the animated value

@@ -43,13 +43,10 @@ fun CustomCircularProgressIndicator(
     modifier: Modifier = Modifier,
     secondCurrentValue: Int,
     minuteCurrentValue: Int, // DEĞERİ DIŞARIDAN ALIYORUZ
-    primaryColor: Color,
-    secondaryColor: Color,
     maxValue: Int,
     minValue: Int = 0,
     colorBackgroundGradient: String = "18402806360702976000",
     colorBackgroundGradientValue: Float = 0.2f,
-    baseColor: Color = Color(0xFF1278FF), // Varsayılan mavi ton
     onValueChange: (newValue: Int) -> Unit = {},
     timerState: Boolean = false,// Değer değiştiğinde dışarıya bildirilecek lambda
 
@@ -57,9 +54,9 @@ fun CustomCircularProgressIndicator(
 ) {
     val glowColor = parseTagColor(colorBackgroundGradient)
     val gradientColors = listOf(
-        baseColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
-        baseColor.copy(alpha = 1f),                // Orijinal renk
-        baseColor.copy(alpha = 1f).darken(0.3f)   // %30 daha koyu ton
+        glowColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
+        glowColor.copy(alpha = 1f),                // Orijinal renk
+        glowColor.copy(alpha = 1f).darken(0.3f)   // %30 daha koyu ton
     )
 
     // Calculate radius and thickness based on the available size
@@ -131,7 +128,7 @@ fun CustomCircularProgressIndicator(
             ///Bu progress bar'ın kendisi
             drawCircle(
                 style = Stroke(width = circleThickness),
-                color = secondaryColor,
+                color = glowColor.copy(alpha = 0.3f),
                 radius = drawingRadius, // Use calculated radius
                 center = canvasCenter // Use Canvas center
             )
@@ -146,7 +143,7 @@ fun CustomCircularProgressIndicator(
                     (height - arcSize.height) / 2f
                 )
                 drawArc(
-                    color = primaryColor,
+                    color = Color.Red,
                     startAngle = 90f,
                     sweepAngle = sweepAngle,
                     style = Stroke(width = circleThickness, cap = StrokeCap.Round),
@@ -207,12 +204,9 @@ fun CustomCircularProgressIndicatorPreview() {
         CustomCircularProgressIndicator(
             modifier = Modifier.size(200.dp),
             minuteCurrentValue = progress, // Parent state'ini veriyoruz
-            primaryColor = Color(0xFF3DDC84),
-            secondaryColor = Color(0xFFE0E0E0),
             maxValue = 100,
             minValue = 0,
             colorBackgroundGradientValue = 0.2f,
-            baseColor = Color(0xFF3DDC84),
             onValueChange = {// newValue ->
 //                // Indicator'dan gelen değeri parent state'ine kaydediyoruz
 //                progress = newValue
