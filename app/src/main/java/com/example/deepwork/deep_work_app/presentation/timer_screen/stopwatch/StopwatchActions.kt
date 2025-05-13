@@ -6,7 +6,7 @@ import java.util.Date
 
 interface StopwatchActions {
     fun start() {}
-    fun stop(sessions: Sessions) {}
+    fun stop() {}
     fun lap() {}
     fun clear() {}
     fun reset() {}

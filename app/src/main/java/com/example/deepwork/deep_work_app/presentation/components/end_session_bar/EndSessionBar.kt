@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.deepwork.deep_work_app.data.util.parseTagColor
 import kotlinx.coroutines.delay
 
 
@@ -59,7 +60,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun EndSessionBar(
     endSession: () -> Unit,
-    keepGoingButtonColor:Color,
+    keepGoingButtonColor:String,
     onClickKeepGoing : () -> Unit = {},
 ){
 
@@ -76,7 +77,8 @@ fun EndSessionBar(
 
 
     LaunchedEffect(Unit) {
-        delay(1000)
+        delay(1000
+        )
         endThisSessionVisibility = true
     }
 
@@ -94,6 +96,7 @@ fun EndSessionBar(
             verticalArrangement = Arrangement.Center
         ) {
             Text(text = "Are you sure you want to end this session?", color = Color.White, fontSize = 28.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 20.dp))
+            val buttonColor = parseTagColor(keepGoingButtonColor)
 
             Button(
                 onClick = onClickKeepGoing,
@@ -103,7 +106,7 @@ fun EndSessionBar(
                     .height(60.dp),
                 shape = RoundedCornerShape(15.dp),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = keepGoingButtonColor,
+                    containerColor = buttonColor,
                     contentColor = Color.White
                 )
             ) { Text("Keep going!", color = Color.White, fontSize = 20.sp) }

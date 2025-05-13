@@ -27,7 +27,7 @@ class AppModule {
         return Room.databaseBuilder(
             context,
             DeepWorkDatabase::class.java,
-            "deepwork_database"
+            "deepwork_database.sqlite"
         ).build()
 
     }

@@ -1,5 +1,6 @@
 package com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.deepwork.deep_work_app.data.util.darken
 import com.example.deepwork.deep_work_app.data.util.lighten
+import com.example.deepwork.deep_work_app.data.util.parseTagColor
 import com.example.deepwork.deep_work_app.presentation.components.NumericTextTransition
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -45,7 +47,7 @@ fun CustomCircularProgressIndicator(
     secondaryColor: Color,
     maxValue: Int,
     minValue: Int = 0,
-    colorBackgroundGradient: Color = Color.Blue,
+    colorBackgroundGradient: String = "18402806360702976000",
     colorBackgroundGradientValue: Float = 0.2f,
     baseColor: Color = Color(0xFF1278FF), // Varsayılan mavi ton
     onValueChange: (newValue: Int) -> Unit = {},
@@ -53,6 +55,7 @@ fun CustomCircularProgressIndicator(
 
 
 ) {
+    val glowColor = parseTagColor(colorBackgroundGradient)
     val gradientColors = listOf(
         baseColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
         baseColor.copy(alpha = 1f),                // Orijinal renk
@@ -110,11 +113,12 @@ fun CustomCircularProgressIndicator(
             // Radial Gradient Effect
             // Adjust gradient radius to be relative to the canvas size or drawing radius
             val gradientRadius = maxOf(width, height) / 1.2f // Fill the canvas
+            Log.e("TAG", "colorBackgroundGradientValue: $colorBackgroundGradientValue")
             drawCircle(
                 brush = Brush.radialGradient(
                     colorStops = arrayOf(
-                        0.0f to colorBackgroundGradient.copy(colorBackgroundGradientValue),                 // tam merkez
-                        0.20f to colorBackgroundGradient.copy(colorBackgroundGradientValue),
+                        0.0f to glowColor.copy(colorBackgroundGradientValue),                 // tam merkez
+                        0.20f to glowColor.copy(colorBackgroundGradientValue),
                         1.0f to Color.Transparent                        // kenar
                     ),
                     center = canvasCenter, // Use Canvas center
@@ -207,7 +211,6 @@ fun CustomCircularProgressIndicatorPreview() {
             secondaryColor = Color(0xFFE0E0E0),
             maxValue = 100,
             minValue = 0,
-            colorBackgroundGradient = Color(0xFF3DDC84),
             colorBackgroundGradientValue = 0.2f,
             baseColor = Color(0xFF3DDC84),
             onValueChange = {// newValue ->

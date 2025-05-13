@@ -15,7 +15,7 @@ interface SessionsDao{
     fun getAllSessions(): Flow<List<Sessions>>
 
     @Insert
-    fun insertSession(session: Sessions)
+    suspend fun insertSession(session: Sessions)
 
     @Update
     fun updateSessions(session:Sessions)

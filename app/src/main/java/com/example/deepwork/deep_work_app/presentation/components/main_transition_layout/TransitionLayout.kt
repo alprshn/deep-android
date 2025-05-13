@@ -69,7 +69,7 @@ fun SharedTransitionScope.SnackEditDetails(
     tagContent: List<Tags>,
     onTagClick: (Tags) -> Unit,
     selectedTagEmoji: String = "\uD83D\uDCCD",
-    selectedTagText: String = "Select a Tag"
+    selectedTagText: String = "Select a Tag",
 ) {
 
     AnimatedContent(
@@ -261,6 +261,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                         ) {
                                             items(tagContent.size) { tag ->
                                                 val tags = tagContent[tag]
+                                                tags.tagId
                                                 val tagColor = parseTagColor(tags.tagColor)
 
                                                 Row(

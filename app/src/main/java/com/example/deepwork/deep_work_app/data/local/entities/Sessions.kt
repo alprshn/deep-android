@@ -23,12 +23,11 @@ import java.util.Date
 
 )
 data class Sessions(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "session_id") val sessionId: Int,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "session_id") val sessionId: Int = 0,
     @ColumnInfo(name = "tag_id") val tagId: Int,
-    @ColumnInfo(name = "start_time") val startTime: Date,
-    @ColumnInfo(name = "finish_time") val finishTime: Date,
-    @ColumnInfo(name = "duration") val duration: Long,
+    @ColumnInfo(name = "start_time") val startTime: Date?,
+    @ColumnInfo(name = "finish_time") val finishTime: Date?,
+    @ColumnInfo(name = "duration") val duration: String,
     @ColumnInfo(name = "session_emoji") val sessionEmoji: String
     //Buraya finish time eklenebilir incele
 )
