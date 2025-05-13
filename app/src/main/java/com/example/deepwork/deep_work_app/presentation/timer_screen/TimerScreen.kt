@@ -467,8 +467,7 @@ fun TimerScreen(
                     keepGoingButtonColor = tagColor,
                     onClickKeepGoing = {
                         showEndSessionBar = false
-                    },
-                    endThisSessionVisibility = timerUiState.endThisSessionVisibility,
+                    }
                 )
             }
 

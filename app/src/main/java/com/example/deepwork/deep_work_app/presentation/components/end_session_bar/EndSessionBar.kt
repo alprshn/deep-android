@@ -3,6 +3,7 @@ package com.example.deepwork.deep_work_app.presentation.components.end_session_b
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -37,6 +38,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +61,9 @@ fun EndSessionBar(
     endSession: () -> Unit,
     keepGoingButtonColor:Color,
     onClickKeepGoing : () -> Unit = {},
-    endThisSessionVisibility: Boolean = true
 ){
+
+    var endThisSessionVisibility by remember { mutableStateOf(false) }
 
     val endSessionBarSheetState = rememberModalBottomSheetState(
         // Başta açık dursun
@@ -65,6 +72,14 @@ fun EndSessionBar(
             target == SheetValue.Expanded // başka değere geçişi veto
         }
     )
+
+
+
+    LaunchedEffect(Unit) {
+        delay(1000)
+        endThisSessionVisibility = true
+    }
+
     ModalBottomSheet(
         onDismissRequest = {},
         sheetState = endSessionBarSheetState,
@@ -99,14 +114,12 @@ fun EndSessionBar(
                     initialOffsetY = { it },
                     animationSpec = tween(
                         durationMillis = 500,
-                        delayMillis = 1_000,      // ← BURADA gecikme
-                        easing = EaseOutCubic
+                        easing = FastOutSlowInEasing
                     )
                 ) + fadeIn(
                     animationSpec = tween(
                         durationMillis = 500,
-                        delayMillis = 1_000
-                    )
+                        )
                 )
             ) {
 

@@ -11,7 +11,6 @@ data class TimerUiState(
     var initialValueMinutes: String = "",
     val maxValue: Int = 60,
     val minValue: Int = 0,
-    val endThisSessionVisibility: Boolean = true,
     val visibleTagItems: Boolean = true,
     val animatedColorBackgroundGradientValue: Float = 0.2f,
     var selectedEmoji: String = "😊",
