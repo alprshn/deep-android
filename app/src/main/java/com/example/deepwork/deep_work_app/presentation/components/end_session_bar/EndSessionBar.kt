@@ -2,10 +2,12 @@ package com.example.deepwork.deep_work_app.presentation.components.end_session_b
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -60,9 +62,9 @@ import kotlinx.coroutines.delay
 @Composable
 fun EndSessionBar(
     endSession: () -> Unit,
-    keepGoingButtonColor:String,
-    onClickKeepGoing : () -> Unit = {},
-){
+    keepGoingButtonColor: String,
+    onClickKeepGoing: () -> Unit = {},
+) {
 
     var endThisSessionVisibility by remember { mutableStateOf(false) }
 
@@ -77,7 +79,8 @@ fun EndSessionBar(
 
 
     LaunchedEffect(Unit) {
-        delay(1000
+        delay(
+            1000
         )
         endThisSessionVisibility = true
     }
@@ -91,68 +94,80 @@ fun EndSessionBar(
         ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 20.dp).height(300.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Are you sure you want to end this session?", color = Color.White, fontSize = 28.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 20.dp))
-            val buttonColor = parseTagColor(keepGoingButtonColor)
-
-            Button(
-                onClick = onClickKeepGoing,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .height(60.dp),
-                shape = RoundedCornerShape(15.dp),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = buttonColor,
-                    contentColor = Color.White
-                )
-            ) { Text("Keep going!", color = Color.White, fontSize = 20.sp) }
-
-            AnimatedVisibility(
-                visible = endThisSessionVisibility,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
+                .padding(horizontal = 20.dp)
+                .height(300.dp)
+                .animateContentSize(               // boy değişimini yavaşlat
                     animationSpec = tween(
                         durationMillis = 500,
                         easing = FastOutSlowInEasing
                     )
-                ) + fadeIn(
-                    animationSpec = tween(
-                        durationMillis = 500,
-                        )
-                )
-            ) {
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Are you sure you want to end this session?",
+                color = Color.White,
+                fontSize = 28.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 20.dp)
+            )
+            val buttonColor = parseTagColor(keepGoingButtonColor)
 
+            Column(
+                modifier = Modifier
+                    .animateContentSize(               // boy değişimini yavaşlat
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = FastOutSlowInEasing
+                        )
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 Button(
-                    onClick = endSession,
+                    onClick = onClickKeepGoing,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp)
                         .height(60.dp),
                     shape = RoundedCornerShape(15.dp),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = Color.Gray,
+                        containerColor = buttonColor,
                         contentColor = Color.White
-                    ),
-                ) { Text("End this Session", color = Color.White, fontSize = 20.sp) }
+                    )
+                ) { Text("Keep going!", color = Color.White, fontSize = 20.sp) }
+
+                AnimatedVisibility(
+                    visible = endThisSessionVisibility,
+                    enter = fadeIn(tween(durationMillis = 500)),
+                    exit = fadeOut(tween(durationMillis = 500))
+                ) {
+
+                    Button(
+                        onClick = endSession,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .height(60.dp),
+                        shape = RoundedCornerShape(15.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = Color.Gray,
+                            contentColor = Color.White
+                        ),
+                    ) { Text("End this Session", color = Color.White, fontSize = 20.sp) }
+                }
             }
-
-
-
-
         }
-
-
     }
+
+
 }
 
 
 @Preview
 @Composable
-fun EndSessionBarPreview(){
+fun EndSessionBarPreview() {
 
     Column(
         modifier = Modifier
@@ -163,7 +178,13 @@ fun EndSessionBarPreview(){
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Are you sure you want to end this session?", color = Color.White, fontSize = 28.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 20.dp))
+        Text(
+            text = "Are you sure you want to end this session?",
+            color = Color.White,
+            fontSize = 28.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 20.dp)
+        )
 
         Button(
             onClick = {},

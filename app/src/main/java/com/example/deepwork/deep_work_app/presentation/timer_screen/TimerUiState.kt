@@ -14,5 +14,5 @@ data class TimerUiState(
     var startTime: Date? = null,
     var finishTime: Date? = null,
     var tagId: Int = 0,
-    var selectedTagEmoji: String = "😊"
+    var selectedTagEmoji: String = "\uD83D\uDCCD"
 )

@@ -317,19 +317,20 @@ fun TimerScreen(
                         .padding(vertical = 50.dp)
                         .size(350.dp)
                         .background(Color.Transparent),
-                    minuteCurrentValue = timerUiState.initialValueMinutes.toInt(),
-                    secondCurrentValue = timerUiState.initialValueSecond.toInt(),
+                    minuteCurrentValue = stopwatchState.minute,
+                    secondCurrentValue = stopwatchState.second,
                     maxValue = timerUiState.maxValue,
                     minValue = timerUiState.minValue,
                     colorBackgroundGradientValue = animatedColorBackgroundGradientValue, // Pass the animated value
                     onValueChange = { newValue ->
                         // Indicator'dan gelen yeni değeri kendi state'imize kaydediyoruz
                         timerUiState.initialValueMinutes = newValue.toString()
-
                     },
                     timerState = selectedState,
-                    colorBackgroundGradient = colorBackgroundGradient
-
+                    colorBackgroundGradient = colorBackgroundGradient,
+                    progressTagEmoji = selectedEmoji,
+                    progressTagName = selectedTagText,
+                    progressStartState = timerUiState.stopWatchIsStarted
                 )
 
                 Row(
