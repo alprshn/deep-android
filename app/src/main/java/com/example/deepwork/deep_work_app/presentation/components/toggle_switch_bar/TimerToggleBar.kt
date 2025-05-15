@@ -146,5 +146,5 @@ fun TimerToggleBar(
 @Composable
 fun TimerToggleBarPreview() {
 
-    
+
 }
