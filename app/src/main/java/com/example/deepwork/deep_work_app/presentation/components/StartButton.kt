@@ -20,17 +20,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.deepwork.deep_work_app.data.util.darken
 import com.example.deepwork.deep_work_app.data.util.lighten
+import com.example.deepwork.deep_work_app.data.util.parseTagColor
 
 @Composable
 fun StartButton(
     onClick: () -> Unit,
-    baseColor: Color = Color(0xFF1278FF), // Varsayılan mavi ton
-    imageVector: ImageVector = Icons.Filled.PlayArrow
+    baseColor: String = "18402806360702976000", // Varsayılan mavi ton
+    imageVector: ImageVector = Icons.Filled.PlayArrow,
 ) {
+    val buttonColor = parseTagColor(baseColor)
+
     val gradientColors = listOf(
-        baseColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
-        baseColor.copy(alpha = 1f),                // Orijinal renk
-        baseColor.copy(alpha = 1f).darken(0.3f)   // %30 daha koyu ton
+        buttonColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
+        buttonColor.copy(alpha = 1f),                // Orijinal renk
+        buttonColor.copy(alpha = 1f).darken(0.3f)   // %30 daha koyu ton
     )
 
     Box(
@@ -60,6 +63,6 @@ fun StartButton(
 fun StartButtonPreview() {
     StartButton(
         onClick = { /* Tıklama işlemi */ },
-        baseColor = Color.Red // Örnek: Yeşil ton
+       // baseColor = buttonColor // Örnek: Yeşil ton
     )
 }

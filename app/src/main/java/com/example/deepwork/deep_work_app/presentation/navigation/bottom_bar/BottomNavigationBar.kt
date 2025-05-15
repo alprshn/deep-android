@@ -50,7 +50,7 @@ fun BottomBarTabs(
         LocalContentColor provides Color.White
     ) {
         Row (
-            modifier = Modifier.height(64.dp),
+            modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp).height(64.dp),
         ) {
             for (tab in tabs) {
                 val alpha by animateFloatAsState(
@@ -80,7 +80,7 @@ fun BottomBarTabs(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}", modifier = Modifier.size(30.dp))
+                    Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}", modifier = Modifier.size(35.dp))
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import com.example.deepwork.R
+import com.example.deepwork.deep_work_app.data.util.parseTagColor
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -58,12 +60,14 @@ import kotlin.math.roundToInt
 fun TimerToggleBar(
     height: Dp,
     circleButtonPadding: Dp,
-    circleBackgroundOnResource: Color,
-    circleBackgroundOffResource: Color,
+    circleBackgroundOnResource: String = "18402806360702976000",
     selectedState: Boolean,                       // ← Dışarıdan gelen seçili durum
     onCheckedChanged: (isOn: Boolean) -> Unit // ← Dışarıdan tetiklenen callback
 ) {
 //    var selectedState by remember { mutableStateOf(stateOn) }
+
+    val buttonColor = parseTagColor(circleBackgroundOnResource)
+
 
     Row(
         modifier = Modifier
@@ -73,57 +77,66 @@ fun TimerToggleBar(
             .background(Color(0xFF1C1E22)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(height)
-                .padding(circleButtonPadding)
-                .clip(RoundedCornerShape(50))
-                .background(if (selectedState == false) circleBackgroundOnResource else circleBackgroundOffResource)
-                .clickable {
-                    onCheckedChanged(true)
-                },
-            contentAlignment = Alignment.Center
+        AnimatedVisibility(
+            visible = true,
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(10.dp)
+            Box(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(height)
+                    .padding(circleButtonPadding)
+                    .clip(RoundedCornerShape(50))
+                    .background(if (selectedState == false) buttonColor else Color(0xFF1C1E22))
+                    .clickable {
+                        onCheckedChanged(true)
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Filled.AvTimer,
-                    contentDescription = stringResource(R.string.timer_icon_description),
-                    tint = Color.White
-                )
-                Text("Timer", color = Color.White)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.AvTimer,
+                        contentDescription = stringResource(R.string.timer_icon_description),
+                        tint = Color.White
+                    )
+                    Text("Timer", color = Color.White)
+                }
             }
         }
 
-        Box(
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(height)
-                .padding(circleButtonPadding)
-                .clip(RoundedCornerShape(50))
-                .background(if (selectedState == true) circleBackgroundOnResource else circleBackgroundOffResource) // Seçili duruma göre renk
-                .clickable {
-                    onCheckedChanged(false)
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(10.dp)
+        AnimatedVisibility(
+            visible = true,
+        ){
+            Box(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(height)
+                    .padding(circleButtonPadding)
+                    .clip(RoundedCornerShape(50))
+                    .background(if (selectedState == true) buttonColor else Color(0xFF1C1E22)) // Seçili duruma göre renk
+                    .clickable {
+                        onCheckedChanged(false)
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Outlined.Timer,
-                    contentDescription = stringResource(R.string.timer_icon_description),
-                    tint = Color.White
-                )
-                Text("Stopwatch", color = Color.White)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Icon(
+                        Icons.Outlined.Timer,
+                        contentDescription = stringResource(R.string.timer_icon_description),
+                        tint = Color.White
+                    )
+                    Text("Stopwatch", color = Color.White)
+                }
             }
         }
+
     }
 }
 
@@ -134,8 +147,7 @@ fun TimerToggleBarPreview() {
     TimerToggleBar(
         height = 50.dp,
         circleButtonPadding = 4.dp,
-        circleBackgroundOnResource = Color(0xff5550e3),
-        circleBackgroundOffResource = Color(0xFF1C1E22),
+        circleBackgroundOnResource = "18402806360702976000",
         selectedState = false,
         onCheckedChanged = {}
     )

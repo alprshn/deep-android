@@ -13,12 +13,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.EaseInOutQuart
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -45,30 +47,22 @@ import com.example.deepwork.deep_work_app.presentation.components.TimeEditButton
 import com.example.deepwork.deep_work_app.presentation.components.circular_progress_indicator.CustomCircularProgressIndicator
 import com.example.deepwork.deep_work_app.presentation.components.toggle_switch_bar.TimerToggleBar
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.border
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PersonAddAlt
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.deepwork.deep_work_app.data.local.entities.Tags
 import com.example.deepwork.deep_work_app.data.model.StopwatchState
 import com.example.deepwork.deep_work_app.presentation.components.end_session_bar.EndSessionBar
 import com.example.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
-import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchActions
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 import com.example.deepwork.ui.theme.TagColors
 
@@ -120,14 +114,7 @@ fun TimerScreen(
     var oldPositionValue by remember { mutableStateOf(stopwatchState.minute) }
 
 
-    var selectedEmoji by remember{ mutableStateOf("😊") }
-
-
-
-
-
-
-
+    var selectedEmoji by remember { mutableStateOf("😊") }
 
 
     //var selectedSnack by remember { mutableStateOf<Snack?>(null) }
@@ -175,7 +162,6 @@ fun TimerScreen(
     Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
 
 
-
     val animatedColorBackgroundGradientValue by animateFloatAsState(
         targetValue = colorBackgroundGradientValue,
         animationSpec = tween(
@@ -183,9 +169,6 @@ fun TimerScreen(
             easing = EaseInOutQuart
         ), label = "backgroundGradientAlpha"
     )
-
-
-
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,10 +184,10 @@ fun TimerScreen(
             showEmojiPicker = showEmojiPicker,
             tagTextField = tagTextField,
             tagName = tagName,
-            selectedIndex =selectedColorIndex,
+            selectedIndex = selectedColorIndex,
             tagColor = tagColor,
             emojiPickerBox = {
-               showEmojiPicker = true
+                showEmojiPicker = true
             },
             textFieldValueChange = { it ->
                 tagTextField = it
@@ -247,66 +230,83 @@ fun TimerScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
-                LazyColumn(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(70.dp),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .animateContentSize(               // boy değişimini yavaşlat
+                            animationSpec = tween(
+                                durationMillis = 500,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
                 ) {
-                    items(listSnacks) { snack ->
-                        AnimatedVisibility(
-                            visible = snack != selectedSnack, //State
-                            modifier = Modifier.animateItem()
+                    AnimatedVisibility(
+                        visible = !timerUiState.stopWatchIsStarted,
+                        enter = fadeIn(tween(durationMillis = 500)),
+                        exit = fadeOut(tween(durationMillis = 500))
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(70.dp),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .sharedBounds(
-                                        sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),//State
-                                        animatedVisibilityScope = this,
-
+                            items(listSnacks) { snack ->
+                                AnimatedVisibility(
+                                    visible = snack != selectedSnack, //State
+                                    modifier = Modifier.animateItem()
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .sharedBounds(
+                                                sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),//State
+                                                animatedVisibilityScope = this,
+                                            )
+                                            .background(Color.Transparent)
+                                            .clip(shapeForSharedElement)
+                                    ) {
+                                        SnackContents(
+                                            snack = snack,
+                                            modifier = Modifier.sharedElement(
+                                                sharedContentState = rememberSharedContentState(key = snack.name),//State
+                                                animatedVisibilityScope = this@AnimatedVisibility,
+                                            ),
+                                            onClick = {
+                                                selectedSnack = snack
+                                            },
+                                            heightButton = 50,
+                                            textColor = Color.White,
+                                            emoji = timerUiState.selectedTagEmoji,
+                                            modifierText = Modifier.sharedBounds(
+                                                sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),//State
+                                                animatedVisibilityScope = this@AnimatedVisibility
+                                            )
                                         )
-                                    .background(Color.Transparent)
-                                    .clip(shapeForSharedElement)
-                            ) {
-                                SnackContents(
-                                    snack = snack,
-                                    modifier = Modifier.sharedElement(
-                                        sharedContentState = rememberSharedContentState(key = snack.name),//State
-                                        animatedVisibilityScope = this@AnimatedVisibility,
-                                    ),
-                                    onClick = {
-                                        selectedSnack = snack
-                                    },
-                                    heightButton = 50,
-                                    textColor = Color.White,
-                                    emoji = timerUiState.selectedTagEmoji,
-                                    modifierText = Modifier.sharedBounds(
-                                        sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),//State
-                                        animatedVisibilityScope = this@AnimatedVisibility
-                                    )
-                                )
+                                    }
+                                }
                             }
                         }
                     }
-
-
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TimerToggleBar(
                     height = 50.dp,
                     circleButtonPadding = 4.dp,
-                    circleBackgroundOnResource = Color(0xff5550e3),
-                    circleBackgroundOffResource = Color(0xFF1C1E22),
+                    circleBackgroundOnResource = chosenTagColor,
                     onCheckedChanged = { isSelected ->
-                        selectedState = if (isSelected) {
+                        selectedState = if (isSelected && !timerUiState.stopWatchIsStarted) {
                             false
-                        } else {
+                        } else if (!isSelected && !timerUiState.stopWatchIsStarted) {
                             true
+                        } else if (isSelected && timerUiState.stopWatchIsStarted) {
+                            showEndSessionBar = true
+                            true
+                        } else {
+                            showEndSessionBar = true
+                            false
                         }
                     },
                     selectedState = selectedState
@@ -367,7 +367,8 @@ fun TimerScreen(
                         TimeEditButtons(
                             onClick = {
                                 // Handle replay/reset click
-                                positionValue = timerUiState.initialValueMinutes // Reset timer value
+                                positionValue =
+                                    timerUiState.initialValueMinutes // Reset timer value
                                 oldPositionValue = timerUiState.initialValueMinutes
                                 // Optionally stop if started
                                 timerUiState.stopWatchIsStarted = false
@@ -379,22 +380,37 @@ fun TimerScreen(
                         )
                     }
                     if (!timerUiState.stopWatchIsStarted) {
+
                         StartButton(
                             onClick = {
-                                timerUiState.stopWatchIsStarted = !timerUiState.stopWatchIsStarted // Toggle start state
-                                colorBackgroundGradientValue = 0.4f//0.2f
-                                stopWatchViewModel.start()
+                                if (timerUiState.tagId == 0) {
+                                    Log.e(
+                                        "TAG",
+                                        "TimerScreen: ${timerUiState.tagId} Lütfen Tag Seçinizi"
+                                    )
+                                } else {
+                                    timerUiState.stopWatchIsStarted =
+                                        !timerUiState.stopWatchIsStarted // Toggle start state
+                                    colorBackgroundGradientValue = 0.4f//0.2f
+                                    stopWatchViewModel.start()
+                                }
+
                             },
-                            imageVector = Icons.Filled.PlayArrow
+                            imageVector = Icons.Filled.PlayArrow,
+                            baseColor = chosenTagColor
                         )
+
+
                     } else {
                         StartButton(
                             onClick = {
-                                timerUiState.stopWatchIsStarted = !timerUiState.stopWatchIsStarted // Toggle start state
+                                timerUiState.stopWatchIsStarted =
+                                    !timerUiState.stopWatchIsStarted // Toggle start state
                                 colorBackgroundGradientValue = 0.2f
                                 stopWatchViewModel.lap()
                             },
-                            imageVector = Icons.Filled.Pause
+                            imageVector = Icons.Filled.Pause,
+                            baseColor = chosenTagColor
                         )
                     }
 
@@ -429,10 +445,7 @@ fun TimerScreen(
                         TimeEditButtons(
                             onClick = {
                                 // Handle stop click
-                                timerUiState.stopWatchIsStarted = false // Stop timer
-                                colorBackgroundGradientValue = 0.2f // Reset gradient alpha
                                 showEndSessionBar = true
-                                stopWatchViewModel.lap()
                                 // Optionally reset positionValue as well
                                 // positionValue = initialValue
                                 // oldPositionValue = initialValue
@@ -465,18 +478,20 @@ fun TimerScreen(
                 },
                 selectedTagEmoji = timerUiState.selectedTagEmoji,
                 selectedTagText = selectedTagText,
-                )
+            )
 
             if (showEndSessionBar) {
                 EndSessionBar(
                     endSession = {
                         showEndSessionBar = false
                         stopWatchViewModel.stop()
+                        selectedState = !selectedState
+                        timerUiState.stopWatchIsStarted = false
+                        colorBackgroundGradientValue = 0.2f
                     },
                     keepGoingButtonColor = chosenTagColor,
                     onClickKeepGoing = {
                         showEndSessionBar = false
-                        stopWatchViewModel.start()
                     }
                 )
             }

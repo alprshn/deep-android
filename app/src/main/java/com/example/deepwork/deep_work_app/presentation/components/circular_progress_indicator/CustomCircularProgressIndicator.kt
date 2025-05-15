@@ -133,7 +133,6 @@ fun CustomCircularProgressIndicator(
             // Radial Gradient Effect
             // Adjust gradient radius to be relative to the canvas size or drawing radius
             val gradientRadius = maxOf(width, height) / 1.2f  // Fill the canvas
-            Log.e("TAG", "colorBackgroundGradientValue: $colorBackgroundGradientValue")
             drawCircle(
                 brush = Brush.radialGradient(
                     colorStops = arrayOf(
@@ -162,7 +161,7 @@ fun CustomCircularProgressIndicator(
 
 
 
-            if (timerState == false) {
+            if (!timerState) {
                 // Primary Progress Arc
                 val sweepAngle =
                     (360f / (maxValue - minValue)) * (minuteCurrentValue.toInt() - minValue)
