@@ -304,9 +304,11 @@ fun TimerScreen(
                         } else if (isSelected && timerUiState.stopWatchIsStarted) {
                             showEndSessionBar = true
                             true
-                        } else {
+                        } else if (!isSelected && timerUiState.stopWatchIsStarted) {
                             showEndSessionBar = true
                             false
+                        }else{
+                            isSelected
                         }
                     },
                     selectedState = selectedState,
