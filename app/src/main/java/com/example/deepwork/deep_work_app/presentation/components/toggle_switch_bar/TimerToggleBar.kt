@@ -62,7 +62,8 @@ fun TimerToggleBar(
     circleButtonPadding: Dp,
     circleBackgroundOnResource: String = "18402806360702976000",
     selectedState: Boolean,                       // ← Dışarıdan gelen seçili durum
-    onCheckedChanged: (isOn: Boolean) -> Unit // ← Dışarıdan tetiklenen callback
+    onCheckedChanged: (isOn: Boolean) -> Unit, // ← Dışarıdan tetiklenen callback
+    toggleTimerUiState: Boolean
 ) {
 //    var selectedState by remember { mutableStateOf(stateOn) }
 
@@ -78,7 +79,7 @@ fun TimerToggleBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AnimatedVisibility(
-            visible = true,
+            visible = if (toggleTimerUiState && selectedState == true) false else true,
         ) {
             Box(
                 modifier = Modifier
@@ -108,7 +109,7 @@ fun TimerToggleBar(
         }
 
         AnimatedVisibility(
-            visible = true,
+            visible =  if (toggleTimerUiState && selectedState == false) false else true,
         ){
             Box(
                 modifier = Modifier
@@ -144,11 +145,6 @@ fun TimerToggleBar(
 @Preview
 @Composable
 fun TimerToggleBarPreview() {
-    TimerToggleBar(
-        height = 50.dp,
-        circleButtonPadding = 4.dp,
-        circleBackgroundOnResource = "18402806360702976000",
-        selectedState = false,
-        onCheckedChanged = {}
-    )
+
+    
 }

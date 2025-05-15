@@ -309,7 +309,8 @@ fun TimerScreen(
                             false
                         }
                     },
-                    selectedState = selectedState
+                    selectedState = selectedState,
+                    toggleTimerUiState = timerUiState.stopWatchIsStarted
                 )
 
                 CustomCircularProgressIndicator(
