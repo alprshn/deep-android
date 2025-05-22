@@ -19,19 +19,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.InstallMobile
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.outlined.AppBlocking
 import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.rounded.NotificationsNone
+import androidx.compose.material.icons.rounded.Sell
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.sharp.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
-import androidx.wear.compose.material.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,8 +50,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.wear.compose.material.Icon
-import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.Text
 import com.example.deepwork.deep_work_app.data.util.darken
 import com.example.deepwork.deep_work_app.data.util.lighten
@@ -76,7 +82,27 @@ fun SettingsScreen() {
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             PremiumStatusCard({})
-            SettingsBoxes()
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
+                    .fillMaxWidth()
+                    .clip(
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .background(Color(0xff1d1a1f))
+
+            ) {
+                SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
+                SettingsBoxesItem(text = "App Icon", icon = Icons.Default.Apps)
+                SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
+                SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
+                SettingsBoxesItem(
+                    text = "Manage Tags",
+                    icon = Icons.Rounded.Sell,
+                    dividerVisible = false
+                )
+            }
+
 
             Text(
                 "FOCUS SETTINGS",
@@ -103,41 +129,46 @@ fun SettingsScreen() {
 
 
             }
-            SettingsBoxes()
-            Text(
-                "MORE APPS",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Normal,
-                color = Color.Gray,
-                modifier = Modifier.padding(start = 15.dp)
-            )
-            SettingsBoxes()
+            SettingsBoxes(headerVisibility = false, headerName = "")
+
+            SettingsBoxes(true,"MORE APPS")
         }
     }
 }
 
 @Composable
-fun SettingsBoxes() {
+fun SettingsBoxes(headerVisibility: Boolean, headerName: String) {
     Column(
         modifier = Modifier
-            .padding(top = 5.dp)
-            .fillMaxWidth()
-            .clip(
-                shape = RoundedCornerShape(12.dp)
-            )
-            .background(Color(0xff1d1a1f))
-
+            .padding(vertical = 24.dp)
     ) {
+        AnimatedVisibility(visible = headerVisibility) {
+            Text(
+                headerName,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color.Gray,
+                modifier = Modifier.padding(start = 15.dp).padding(bottom = 5.dp)
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .background(Color(0xff1d1a1f))
 
-        SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
-        SettingsBoxesItem(text = "Rate Us", icon = Icons.Rounded.StarBorder)
-        SettingsBoxesItem(
-            dividerVisible = false,
-            text = "Restore Purchases",
-            icon = Icons.Outlined.Replay
-        )
+        ) {
 
-
+            SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
+            SettingsBoxesItem(text = "Rate Us", icon = Icons.Rounded.StarBorder)
+            SettingsBoxesItem(
+                dividerVisible = false,
+                text = "Restore Purchases",
+                icon = Icons.Outlined.Replay
+            )
+        }
     }
 }
 
@@ -271,7 +302,9 @@ fun PremiumStatusCard(
                 text = "Switch to Pro plan to get access to unlimited tags, sessions stats, timeline view an more",
                 color = Color.Gray,
                 fontSize = 16.sp,
-                modifier = Modifier.padding(vertical = 8.dp).padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .padding(bottom = 16.dp)
             )
             PremiumStatusCardButton(onClick)
 
@@ -284,40 +317,49 @@ fun PremiumStatusCard(
 fun SettingsSwitchItem(
     title: String,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    icon: ImageVector
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!isChecked) }
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.Vibration,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = title,
-            color = Color.White,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f)
-        )
-
-        Switch(
-            checked = isChecked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xff1d1a1f),
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = Color.Gray
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCheckedChange(!isChecked) }
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Text(
+                text = title,
+                color = Color.White,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f)
+            )
+
+
+            Switch(
+                checked = isChecked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = Color(0xFF0A84FF),
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Color.Gray
+                ),
+            )
+        }
+
+        Divider(
+            color = Color.Gray.copy(alpha = 0.2f),
+            modifier = Modifier.padding(start = 56.dp)
         )
     }
 }
