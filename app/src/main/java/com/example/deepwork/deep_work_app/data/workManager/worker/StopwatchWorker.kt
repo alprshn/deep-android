@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.collectLatest
 
 @HiltWorker
 class StopwatchWorker @AssistedInject constructor(
-    @Assisted private val stopwatchManager: StopwatchManager,
-    @Assisted private val stopwatchNotificationHelper: StopwatchNotificationHelper,
-    @Assisted ctx: Context,
+    @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
-) : CoroutineWorker(ctx, params) {
+    private val stopwatchManager: StopwatchManager,
+    private val stopwatchNotificationHelper: StopwatchNotificationHelper,
+) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result {
         return try {
             val foregroundInfo = ForegroundInfo(
@@ -35,7 +35,7 @@ class StopwatchWorker @AssistedInject constructor(
             stopwatchManager.stopwatchState.collectLatest {
                 if (!it.isReset) {
                     stopwatchNotificationHelper.updateStopwatchWorkerNotification(
-                        time = "${it.hour}:${it.minute}:${it.second}",
+                        time = "${it.minute}:${it.second}",
                         isPlaying = it.isPlaying,
                         lastLapIndex = stopwatchManager.lapTimes.lastIndex,
                     )

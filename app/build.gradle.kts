@@ -113,8 +113,7 @@ dependencies {
     //Work Manager
     val work_version = "2.10.0"
     implementation("androidx.work:work-runtime-ktx:$work_version")
-
-    //Emoji Picker
+    implementation("androidx.hilt:hilt-work:1.2.0")
 
 
 
