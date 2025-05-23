@@ -60,7 +60,7 @@ class StopwatchNotificationHelper @Inject constructor(
     fun getStopwatchBaseNotification() = //Bildirimi oluşturan fonskiyon
         NotificationCompat.Builder(applicationContext, STOPWATCH_WORKER_CHANNEL)
             .setContentTitle("Stopwatch")
-            .setSmallIcon(Icons.Filled.Timer.hashCode())
+            .setSmallIcon(R.drawable.ic_stopwatch).setOnlyAlertOnce(true)
             .setColor(ContextCompat.getColor(applicationContext, android.R.color.holo_blue_dark))
     .setContentIntent(openStopwatchPendingIntent)//Buraya tıklandığında açılacak intent yazılır.
     .setOngoing(true)//Burası çalışmaya devam etsin diye yazılır.

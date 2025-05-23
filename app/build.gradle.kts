@@ -103,6 +103,7 @@ dependencies {
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     //Material Icons
     implementation("androidx.compose.material:material-icons-extended:1.7.7")
@@ -115,6 +116,9 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:$work_version")
     implementation("androidx.hilt:hilt-work:1.2.0")
 
+    //Blur Library
+    implementation("dev.chrisbanes.haze:haze:1.6.2")
+    implementation("dev.chrisbanes.haze:haze-materials:1.6.2")
 
 
     testImplementation(libs.junit)
