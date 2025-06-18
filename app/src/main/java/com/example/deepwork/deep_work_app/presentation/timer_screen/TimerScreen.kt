@@ -297,19 +297,20 @@ fun TimerScreen(
                     circleButtonPadding = 4.dp,
                     circleBackgroundOnResource = chosenTagColor,
                     onCheckedChanged = { isSelected ->
-                        selectedState = if (isSelected && !timerUiState.stopWatchIsStarted && stopwatchState.minute == "00" && stopwatchState.second == "00") {
-                            false
-                        } else if (!isSelected && !timerUiState.stopWatchIsStarted && stopwatchState.minute == "00" && stopwatchState.second == "00") {
-                            true
-                        } else if (isSelected && timerUiState.stopWatchIsStarted) {
-                            showEndSessionBar = true
-                            true
-                        } else if (!isSelected && timerUiState.stopWatchIsStarted) {
-                            showEndSessionBar = true
-                            false
-                        }else{
-                            isSelected
-                        }
+                        selectedState =
+                            if (isSelected && !timerUiState.stopWatchIsStarted && stopwatchState.minute == "00" && stopwatchState.second == "00") {
+                                false
+                            } else if (!isSelected && !timerUiState.stopWatchIsStarted && stopwatchState.minute == "00" && stopwatchState.second == "00") {
+                                true
+                            } else if (isSelected && timerUiState.stopWatchIsStarted) {
+                                showEndSessionBar = true
+                                true
+                            } else if (!isSelected && timerUiState.stopWatchIsStarted) {
+                                showEndSessionBar = true
+                                false
+                            } else {
+                                isSelected
+                            }
                     },
                     selectedState = selectedState,
                     toggleTimerUiState = timerUiState.stopWatchIsStarted
