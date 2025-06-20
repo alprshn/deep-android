@@ -79,6 +79,9 @@ import com.example.deepwork.deep_work_app.data.util.parseTagColor
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.DateSelector
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.ModernSegmentedControl
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.SegmentedControlColors
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.SummaryCardsSection
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.FocusStatistics
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeElectricCarSales
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 
 
@@ -207,9 +210,9 @@ fun StatisticsScreen(
                 separatorColor = Color.Gray.copy(alpha = 0.2f)
             )
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         DateSelector(
             selectedTimeIndex = selectedSegmentIndex,
             onDateChanged = { selectedDate ->
@@ -218,6 +221,20 @@ fun StatisticsScreen(
             },
             modifier = Modifier.padding(bottom = 16.dp)
         )
+
+        // Summary Cards Section
+        val sampleStatistics = FocusStatistics(
+            totalFocusTime = "178h 20m",
+            totalSessions = 66,
+            averageDuration = "2h 42m"
+        )
+
+        SummaryCardsSection(
+            statistics = sampleStatistics,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        JetpackComposeElectricCarSales()
 
     }
 }

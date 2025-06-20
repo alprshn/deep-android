@@ -102,6 +102,11 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:1.6.4")
     implementation("dev.chrisbanes.haze:haze-materials:1.6.4")
 
+    //Chart Libs
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m2)
+    implementation(libs.vico.compose.m3)
+
 
 
     // Test dependencies

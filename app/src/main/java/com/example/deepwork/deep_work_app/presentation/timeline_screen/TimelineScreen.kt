@@ -13,22 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeElectricCarSales
 
 @Composable
 fun TimelineScreen(){
     Column (modifier = Modifier.fillMaxSize().background(Color.Black)) {
         Text("Timeline", color = Color.White)
+        JetpackComposeElectricCarSales()
     }
 
-
-
-    Box(
-        modifier = Modifier // Bulanıklık efekti
-            .background(Color.White.copy(alpha = 0.6f)).blur(radius = 10.dp).fillMaxWidth()
-            .height(400.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Timeline", color = Color.Black)
-
-    }
 }
