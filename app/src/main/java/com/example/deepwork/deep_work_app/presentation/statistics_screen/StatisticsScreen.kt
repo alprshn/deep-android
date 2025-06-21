@@ -111,7 +111,9 @@ fun StatisticsScreen(
             .fillMaxSize()
             .background(Color.Black)
             .padding(horizontal = 16.dp)
-            .verticalScroll(scrollState)
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column(
             modifier = Modifier
@@ -199,33 +201,30 @@ fun StatisticsScreen(
                     }
                 }
             }
+            ModernSegmentedControl(
+                items = items,
+                selectedIndex = selectedSegmentIndex,
+                onItemSelected = { selectedSegmentIndex = it },
+                showSeparators = true,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                colors = SegmentedControlColors(
+                    containerBackground = Color(0xFF1C1C1E),
+                    selectedBackground = Color.Gray,
+                    selectedTextColor = Color.White,
+                    unselectedTextColor = Color.White,
+                    separatorColor = Color.Gray.copy(alpha = 0.2f)
+                )
+            )
+            DateSelector(
+                selectedTimeIndex = selectedSegmentIndex,
+                onDateChanged = { selectedDate ->
+                    // Burada seçilen tarihe göre veri filtreleme yapılabilir
+                    // Örneğin: statisticsViewModel.filterByDate(selectedDate, selectedTagId)
+                },
+            )
         }
 
-        ModernSegmentedControl(
-            items = items,
-            selectedIndex = selectedSegmentIndex,
-            onItemSelected = { selectedSegmentIndex = it },
-            showSeparators = true,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-            colors = SegmentedControlColors(
-                containerBackground = Color(0xFF1C1C1E),
-                selectedBackground = Color.Gray,
-                selectedTextColor = Color.White,
-                unselectedTextColor = Color.White,
-                separatorColor = Color.Gray.copy(alpha = 0.2f)
-            )
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        DateSelector(
-            selectedTimeIndex = selectedSegmentIndex,
-            onDateChanged = { selectedDate ->
-                // Burada seçilen tarihe göre veri filtreleme yapılabilir
-                // Örneğin: statisticsViewModel.filterByDate(selectedDate, selectedTagId)
-            },
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
 
         // Summary Cards Section
         val sampleStatistics = FocusStatistics(
@@ -236,7 +235,6 @@ fun StatisticsScreen(
 
         SummaryCardsSection(
             statistics = sampleStatistics,
-            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         JetpackComposeElectricCarSales()
@@ -252,7 +250,6 @@ fun StatisticsScreen(
 
         TopTagsCard(
             topTags = sampleTopTags,
-            modifier = Modifier.padding(vertical = 8.dp)
         )
 
         // Sample data for Session Logs
@@ -269,8 +266,7 @@ fun StatisticsScreen(
         )
 
         SessionLogsCard(
-            sessionLogs = sampleSessionLogs,
-            modifier = Modifier.padding(vertical = 8.dp)
+            sessionLogs = sampleSessionLogs
         )
     }
 }

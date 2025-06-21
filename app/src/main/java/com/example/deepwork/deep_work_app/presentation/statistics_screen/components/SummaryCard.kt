@@ -44,7 +44,7 @@ fun SummaryCardsSection(
         // Two smaller cards in a row
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             MetricCard(
                 icon = "#",
