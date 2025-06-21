@@ -83,6 +83,10 @@ import com.example.deepwork.deep_work_app.presentation.statistics_screen.compone
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.FocusStatistics
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeElectricCarSales
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeRockMetalRatios
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.TopTagsCard
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.SessionLogsCard
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.TopTag
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.SessionLog
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 
 
@@ -238,6 +242,36 @@ fun StatisticsScreen(
         JetpackComposeElectricCarSales()
 
         JetpackComposeRockMetalRatios()
+
+        // Sample data for Top Tags
+        val sampleTopTags = listOf(
+            TopTag("Coding", "💻", 48),
+            TopTag("Fizik", "⚛️", 17),
+            TopTag("Physics", "🔬", 1)
+        )
+
+        TopTagsCard(
+            topTags = sampleTopTags,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        // Sample data for Session Logs
+        val sampleSessionLogs = listOf(
+            SessionLog("Coding", "💻", "24.05.2025", "11:10", "1h 54m"),
+            SessionLog("Coding", "💻", "20.05.2025", "17:35", "0m"),
+            SessionLog("Coding", "💻", "19.05.2025", "10:45", "1h 24m"),
+            SessionLog("Physics", "⚛️", "14.05.2025", "23:16", "0m"),
+            SessionLog("Coding", "💻", "11.05.2025", "13:25", "5h 9m"),
+            SessionLog("Coding", "💻", "10.05.2025", "15:42", "1h 56m"),
+            SessionLog("Coding", "💻", "8.05.2025", "09:23", "8h 14m"),
+            SessionLog("Coding", "💻", "6.05.2025", "10:41", "4h 42m"),
+            SessionLog("Coding", "💻", "5.05.2025", "19:01", "0m")
+        )
+
+        SessionLogsCard(
+            sessionLogs = sampleSessionLogs,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
     }
 }
 
