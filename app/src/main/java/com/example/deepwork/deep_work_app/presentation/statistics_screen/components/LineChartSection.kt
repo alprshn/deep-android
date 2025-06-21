@@ -16,6 +16,7 @@ import androidx.compose.material.icons.rounded.IosShare
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.point
+import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
@@ -55,6 +57,8 @@ import com.patrykandpatrick.vico.core.common.Fill
 import com.patrykandpatrick.vico.core.common.Insets
 import com.patrykandpatrick.vico.core.common.shader.ShaderProvider
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
+import com.patrykandpatrick.vico.compose.common.shape.markerCorneredShape
+import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.common.shape.Shape
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import java.text.DecimalFormat
@@ -86,17 +90,33 @@ private fun JetpackComposeElectricCarSales(
     }
 
     // Index geçerli değilse varsayılan değerleri kullan
-    val safeMaxPeakIndex = maxPeakIndex.takeIf { it >= 0 && it < x.size } ?: 12 // Varsayılan olarak 12:00
+    val safeMaxPeakIndex =
+        maxPeakIndex.takeIf { it >= 0 && it < x.size } ?: 12 // Varsayılan olarak 12:00
     val maxPeakXValue = x.getOrNull(safeMaxPeakIndex) ?: 12 // Güvenli erişim
 
     val lineColor = Color.White
 
+    val customMarker = rememberDefaultCartesianMarker(
+        label = rememberTextComponent(
+            color = Color.White,
+            textSize = 12.sp,
+            background = rememberLineComponent(
+                fill = fill(Color(0xFF6200EE)),
+                shape = Shape.Rectangle,
+                thickness = 0.dp
+            ),
+        ),
+        valueFormatter = MarkerValueFormatter
+    )
+
+
+
     CartesianChartHost(
         rememberCartesianChart(
-
             rememberLineCartesianLayer(
                 lineProvider =
                     LineCartesianLayer.LineProvider.series(
+                        // Ana çizgi - nokta yok
                         LineCartesianLayer.rememberLine(
                             fill = LineCartesianLayer.LineFill.single(fill(lineColor)),
                             areaFill =
@@ -108,19 +128,24 @@ private fun JetpackComposeElectricCarSales(
                                     )
                                 ),
                             pointConnector = LineCartesianLayer.PointConnector.Sharp,
+                        ),
+                        // Maksimum nokta için - sadece point, çizgi yok
+                        LineCartesianLayer.rememberLine(
+                            fill = LineCartesianLayer.LineFill.single(fill(Color.Transparent)),
                             pointProvider = LineCartesianLayer.PointProvider.single(
-                                LineCartesianLayer.point(
-                                       component = rememberShapeComponent(
-                                        fill = fill(Color.White),
-                                        shape = CorneredShape.Pill
-                                    ),
-                                    size = 8.dp
+                                point = LineCartesianLayer.point(
+                                    component = rememberShapeComponent(
+                                        shape = CorneredShape.Pill,
+                                        fill = fill(Color.White), // Dikey eksen ana çizgisi rengi
+                                        ),
+                                    size = 12.dp,
                                 )
                             )
                         )
                     ),
                 rangeProvider = RangeProvider,
             ),
+            marker = customMarker,
             endAxis = VerticalAxis.rememberEnd(
                 valueFormatter = StartAxisValueFormatter,
                 line = rememberLineComponent(
@@ -163,7 +188,30 @@ private fun JetpackComposeElectricCarSales(
 
 private val x = (0..23).toList() // 24 saat (00:00 - 23:00)
 private val y = listOf<Number>(
-    200, 150, 100, 80, 120, 300, 850, 1200, 2500, 3800, 5200, 6500, 7200, 6800, 5900, 4200, 3100, 2800, 2200, 1800, 1200, 800, 500, 300
+    200,
+    150,
+    100,
+    80,
+    120,
+    300,
+    850,
+    1200,
+    2500,
+    3800,
+    5200,
+    6500,
+    7200,
+    6800,
+    5900,
+    4200,
+    3100,
+    2800,
+    2200,
+    1800,
+    1200,
+    800,
+    500,
+    300
 ) // Gün içindeki saatlik aktivite süresi (dakika cinsinden)
 
 @Composable
@@ -171,10 +219,23 @@ fun JetpackComposeElectricCarSales(modifier: Modifier = Modifier) {
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(Unit) {
         modelProducer.runTransaction {
-            // Learn more: https://patrykandpatrick.com/vmml6t.
-            lineSeries { series(x, y) }
+            // Ana çizgi serisi ve maksimum nokta serisi
+            lineSeries {
+                series(x, y) // Ana çizgi
+                
+                // Maksimum nokta için ayrı series - sadece max noktada tek değer
+                val maxValue = y.maxOf { it.toDouble() }
+                val maxIndex = y.indexOfFirst { it.toDouble() == maxValue }
+                if (maxIndex != -1) {
+                    val maxXValue = x[maxIndex]
+                    val maxYValue = y[maxIndex]
+                    series(listOf(maxXValue), listOf(maxYValue))
+                }
+            }
         }
     }
+
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
@@ -203,11 +264,15 @@ fun JetpackComposeElectricCarSales(modifier: Modifier = Modifier) {
                     color = Color.White, // Başlık rengi beyaz
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f).padding(end = 16.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp)
                 )
 
                 Icon(
-                    modifier = Modifier.padding(start = 8.dp).size(20.dp),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(20.dp),
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White
@@ -293,11 +358,15 @@ private fun Preview() {
                     color = Color.White, // Başlık rengi beyaz
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
                 )
 
                 Icon(
-                    modifier = Modifier.padding(start = 8.dp).size(20.dp),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(20.dp),
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White

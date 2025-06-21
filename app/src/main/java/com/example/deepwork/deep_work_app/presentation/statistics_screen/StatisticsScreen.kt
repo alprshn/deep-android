@@ -82,6 +82,7 @@ import com.example.deepwork.deep_work_app.presentation.statistics_screen.compone
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.SummaryCardsSection
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.FocusStatistics
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeElectricCarSales
+import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeRockMetalRatios
 import com.example.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 
 
@@ -236,6 +237,7 @@ fun StatisticsScreen(
 
         JetpackComposeElectricCarSales()
 
+        JetpackComposeRockMetalRatios()
     }
 }
 
