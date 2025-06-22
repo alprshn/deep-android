@@ -14,12 +14,14 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeElectricCarSales
+import com.example.deepwork.deep_work_app.presentation.timeline_screen.components.Schedule
+import com.example.deepwork.deep_work_app.presentation.timeline_screen.components.sampleEvents
 
 @Composable
 fun TimelineScreen(){
     Column (modifier = Modifier.fillMaxSize().background(Color.Black)) {
         Text("Timeline", color = Color.White)
-        JetpackComposeElectricCarSales()
+        Schedule(sampleEvents)
     }
 
 }

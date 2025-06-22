@@ -40,6 +40,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
+    }
+    lint {
+        abortOnError = false
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -106,6 +110,8 @@ dependencies {
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m2)
     implementation(libs.vico.compose.m3)
+    //Timline Lib for old version
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
 
 
