@@ -72,7 +72,7 @@ fun CalendarApp(
     }
 }
 
-@Preview(showSystemUi = true)
+@Preview( showBackground = true, backgroundColor = 0x000000)
 @Composable
 fun CalendarAppPreview() {
     CalendarApp(

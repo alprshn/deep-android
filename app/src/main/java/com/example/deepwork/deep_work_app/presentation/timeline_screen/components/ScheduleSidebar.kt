@@ -6,9 +6,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -23,7 +27,21 @@ fun ScheduleSidebar(
     modifier: Modifier = Modifier,
     label: @Composable (time: LocalTime) -> Unit = { BasicSidebarLabel(time = it) },
 ) {
-    Column (modifier = modifier) {
+    val dividerColor = if (MaterialTheme.colorScheme.background == Color.White) Color.LightGray else Color.DarkGray
+    
+    Column (
+        modifier = modifier
+            .drawBehind {
+                repeat(23) {
+                    drawLine(
+                        dividerColor,
+                        start = Offset(0f, (it + 1) * hourHeight.toPx()),
+                        end = Offset(size.width, (it + 1) * hourHeight.toPx()),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+            }
+    ) {
         val startTime = LocalTime.MIN
         repeat(24) { i ->
             Box(modifier = Modifier.height(hourHeight)) {

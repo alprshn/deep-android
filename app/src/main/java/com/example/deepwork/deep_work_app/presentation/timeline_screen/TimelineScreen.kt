@@ -33,13 +33,7 @@ fun TimelineScreen(){
         event.start.toLocalDate() == selectedDate
     }
     
-    Column (modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        Text(
-            text = "Timeline", 
-            color = Color.White,
-            modifier = Modifier.padding(16.dp)
-        )
-        
+    Column (modifier = Modifier.fillMaxSize().background(Color(0xFF101012))) {
         // Calendar at the top
         CalendarApp(
             modifier = Modifier
@@ -57,8 +51,7 @@ fun TimelineScreen(){
             maxDate = selectedDate,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .padding(16.dp)
+                .weight(1f).padding(top = 16.dp)
         )
     }
 }

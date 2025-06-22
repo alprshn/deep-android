@@ -8,9 +8,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -59,4 +64,35 @@ fun CalendarHeader(
             )
         }
     }
+}
+
+@Composable
+@Preview
+fun CalendarHeaderPreview(){
+    val dataSource = CalendarDataSource()
+    // we use `mutableStateOf` and `remember` inside composable function to schedules recomposition
+    var calendarUiModel by remember {
+        mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today))
+    }
+    CalendarHeader(
+        data = calendarUiModel,
+        onPrevClickListener = { startDate ->
+            // refresh the CalendarUiModel with new data
+            // by get data with new Start Date (which is the startDate-1 from the visibleDates)
+            val finalStartDate = startDate.minusDays(1)
+            calendarUiModel = dataSource.getData(
+                startDate = finalStartDate,
+                lastSelectedDate = calendarUiModel.selectedDate.date
+            )
+        },
+        onNextClickListener = { endDate ->
+            // refresh the CalendarUiModel with new data
+            // by get data with new Start Date (which is the endDate+2 from the visibleDates)
+            val finalStartDate = endDate.plusDays(2)
+            calendarUiModel = dataSource.getData(
+                startDate = finalStartDate,
+                lastSelectedDate = calendarUiModel.selectedDate.date
+            )
+        }
+    )
 }
