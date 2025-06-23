@@ -3,9 +3,11 @@ package com.example.deepwork.deep_work_app.di
 import android.content.Context
 import androidx.room.Room
 import com.example.deepwork.deep_work_app.data.local.database.DeepWorkDatabase
+import com.example.deepwork.deep_work_app.data.repository.AppRepositoryImpl
 import com.example.deepwork.deep_work_app.data.repository.SessionsRepositoryImpl
 import com.example.deepwork.deep_work_app.data.repository.TagsRepositoryImpl
 import com.example.deepwork.deep_work_app.data.repository.UserPreferencesRepositoryImpl
+import com.example.deepwork.deep_work_app.domain.repository.AppRepository
 import com.example.deepwork.deep_work_app.domain.repository.SessionsRepository
 import com.example.deepwork.deep_work_app.domain.repository.TagsRepository
 import com.example.deepwork.deep_work_app.domain.repository.UserPreferencesRepository
@@ -46,5 +48,10 @@ class AppModule {
     fun provideUserPreferencesRepository(database: DeepWorkDatabase): UserPreferencesRepository {
         return UserPreferencesRepositoryImpl(database.userPreferencesDao())
     }
+    @Provides
+    fun provideAppRepository(@ApplicationContext context: Context): AppRepository {
+        return AppRepositoryImpl(context)
+    }
+
 
  }

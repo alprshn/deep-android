@@ -57,10 +57,11 @@ import androidx.wear.compose.material.Text
 import com.example.deepwork.deep_work_app.data.util.darken
 import com.example.deepwork.deep_work_app.data.util.lighten
 import com.example.deepwork.deep_work_app.data.util.parseTagColor
+import androidx.navigation.NavHostController
 
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(navController: NavHostController? = null) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -124,7 +125,10 @@ fun SettingsScreen() {
                 SettingsBoxesItem(
                     dividerVisible = false,
                     text = "Select Apps to Block",
-                    icon = Icons.Outlined.AppBlocking
+                    icon = Icons.Outlined.AppBlocking,
+                    onClickSettingsBoxesItem = {
+                        navController?.navigate("SelectBlockApps")
+                    }
                 )
 
 
