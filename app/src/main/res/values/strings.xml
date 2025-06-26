@@ -4,4 +4,7 @@
     <string name="stopwatch_channel">Stopwatch</string>
     <string name="stopwatch_worker_channel_description">Stopwatch Counter</string>
 
+
+    <string name="timer_channel">Timer</string>
+    <string name="timer_worker_channel_description">Timer Counter</string>
 </resources>
