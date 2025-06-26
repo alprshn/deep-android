@@ -63,7 +63,10 @@ fun CustomCircularProgressIndicator(
     timerState: Boolean = false,// Değer değiştiğinde dışarıya bildirilecek lambda
     progressTagName: String = "",
     progressTagEmoji: String = "",
-    progressStartState: Boolean = false
+    progressStartState: Boolean = false,
+    isTimerMode: Boolean = false, // Timer modu için yeni parametre
+    timerProgress: Float = 0f, // Timer progress değeri
+    isTimerRunning: Boolean = false // Timer çalışıyor mu
 ) {
     val glowColor = parseTagColor(colorBackgroundGradient)
     val gradientColors = listOf(
@@ -87,33 +90,32 @@ fun CustomCircularProgressIndicator(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(true) {
-                    detectDragGestures(
-                        onDragStart = { offset -> },
-                        //Parmağınızı ekrana koyup sürüklemeye başladığınız ilk an çalışır. (Sürükleme Başladığında)
-                        //
-                        onDrag = { change: PointerInputChange, dragAmount: Offset ->
+                    // Timer modunda çalışırken veya stopwatch modunda sürükleme işlemi
+                    if ((!isTimerMode && !timerState) || (isTimerMode && !isTimerRunning)) {
+                        detectDragGestures(
+                            onDragStart = { offset -> },
+                            onDrag = { change: PointerInputChange, dragAmount: Offset ->
+                                val currentTouchOffset = change.position
+                                val canvasCenter = Offset(size.width / 2f, size.height / 2f)
+                                val vector = currentTouchOffset - canvasCenter
+                                val angleRadians = atan2(vector.y, vector.x)
+                                var angleDegrees = Math.toDegrees(angleRadians.toDouble()).toFloat()
 
-                            val currentTouchOffset = change.position
-                            val canvasCenter = Offset(size.width / 2f, size.height / 2f)
-                            val vector = currentTouchOffset - canvasCenter
-                            val angleRadians = atan2(vector.y, vector.x)
-                            var angleDegrees = Math.toDegrees(angleRadians.toDouble()).toFloat()
+                                // Açıyı 12 o'clock (-90 derece) sıfır kabul edip saat yönünde ilerleyen
+                                // bir 0-360 aralığına eşle
+                                var sweepAngle = (angleDegrees + 90f + 360f) % 360f
 
-                            // Açıyı 12 o'clock (90 derece) sıfır kabul edip saat yönünde ilerleyen
-                            // bir 0-360 aralığına eşle
-                            var sweepAngle = (angleDegrees - 90f + 360f) % 360f
+                                // Hesaplanan açıya karşılık gelen yeni değeri bul
+                                val newValue =
+                                    ((sweepAngle / 360f) * (maxValue - minValue) + minValue).roundToInt()
+                                        .coerceIn(minValue, maxValue)
 
-                            // Hesaplanan açıya karşılık gelen yeni değeri bul
-                            val newValue =
-                                ((sweepAngle / 360f) * (maxValue - minValue) + minValue).roundToInt()
-                                    .coerceIn(minValue, maxValue)
-
-                            // Değeri KENDİ state'ini GÜNCELLEMEK yerine, dışarıya bildir!
-                            onValueChange(newValue)
-                        },
-                        onDragEnd = { }
-                        //onDragEnd: Kullanıcı parmağını ekrandan kaldırdığında, yani sürükleme hareketi bittiğinde tam bir kez tetiklenir.
-                    )
+                                // Değeri KENDİ state'ini GÜNCELLEMEK yerine, dışarıya bildir!
+                                onValueChange(newValue)
+                            },
+                            onDragEnd = { }
+                        )
+                    }
                 }
         ) {
             val width = size.width
@@ -149,54 +151,90 @@ fun CustomCircularProgressIndicator(
             } else {
                 drawingRadius
             }
-            ///Bu progress bar'ın kendisi
-            drawCircle(
-                style = Stroke(width = circleThickness),
-                color = glowColor.copy(alpha = 0.3f),
-                radius = animatedRadiusValue, // Use calculated radius
-                center = canvasCenter // Use Canvas center
-            )
+            // Background circle - sadece stopwatch modunda göster
+            if (!isTimerMode) {
+                drawCircle(
+                    style = Stroke(width = circleThickness),
+                    color = glowColor.copy(alpha = 0.3f),
+                    radius = animatedRadiusValue,
+                    center = canvasCenter
+                )
+            }
 
-
-
-            if (!timerState) {
-                // Primary Progress Arc
-                val sweepAngle =
-                    (360f / (maxValue - minValue)) * (minuteCurrentValue.toInt() - minValue)
+            // Timer modu için progress arc
+            if (isTimerMode) {
+                // Timer modunda arkada saydam renkte tam circle çiz - her zaman göster
+                drawCircle(
+                    style = Stroke(width = circleThickness),
+                    color = glowColor.copy(alpha = 0.3f), // Saydam arka plan circle
+                    radius = animatedRadiusValue,
+                    center = canvasCenter
+                )
+                
+                // Ayarlanan süreyi temsil eden maksimum açı
+                val currentMinutes = minuteCurrentValue.toFloatOrNull() ?: 0f
+                val maxCircleAngle = (currentMinutes / maxValue) * 360f
+                
+                // Timer modu: kalan zamana göre arc çiz (circle pozisyonundan geriye doğru azalan)
+                val remainingProgress = timerProgress // kalan zamanın oranı (1'den 0'a)
+                val sweepAngle = maxCircleAngle * remainingProgress
                 val arcSize = Size(animatedRadiusValue * 2, animatedRadiusValue * 2)
                 val arcTopLeft = Offset(
                     (width - arcSize.width) / 2f,
                     (height - arcSize.height) / 2f
                 )
-                drawArc(
-                    color = Color.Red,
-                    startAngle = 90f,
-                    sweepAngle = sweepAngle,
-                    style = Stroke(width = circleThickness, cap = StrokeCap.Round),
-                    useCenter = false,
-                    size = arcSize, // Use calculated size based on radius
-                    topLeft = arcTopLeft // Calculated to center the arc
-                )
+                
+                // Progress arc çiz - 12 o'clock'tan circle pozisyonuna kadar
+                if (sweepAngle > 0f) {
+                    drawArc(
+                        brush = Brush.linearGradient(colors = gradientColors),
+                        startAngle = -90f, // 12 o'clock'tan başla
+                        sweepAngle = sweepAngle,
+                        style = Stroke(width = circleThickness, cap = StrokeCap.Round),
+                        useCenter = false,
+                        size = arcSize,
+                        topLeft = arcTopLeft
+                    )
+                }
+                
+                // Ana circle - her zaman göster (ayar yaparken sürüklenebilir, çalışırken sabit)
+                val circleAngle = maxCircleAngle
+                val angleInRadians = Math.toRadians(-90.0 + circleAngle.toDouble())
+                val dotRadius = circleThickness * 0.9f
 
-                // Dot on the arc
-                val angleInRadians =
-                    Math.toRadians(90f + sweepAngle.toDouble()) // Start angle + sweep
-                val dotRadius = circleThickness // Dot size relative to stroke thickness
-
-                val dotX =
-                    canvasCenter.x + animatedRadiusValue * cos(angleInRadians).toFloat() // Use calculated radius
-                val dotY =
-                    canvasCenter.y + animatedRadiusValue * sin(angleInRadians).toFloat() // Use calculated radius
+                val dotX = canvasCenter.x + animatedRadiusValue * cos(angleInRadians).toFloat()
+                val dotY = canvasCenter.y + animatedRadiusValue * sin(angleInRadians).toFloat()
 
                 drawCircle(
                     brush = Brush.linearGradient(colors = gradientColors),
                     radius = dotRadius,
                     center = Offset(dotX, dotY)
                 )
+            } else {
+                // Stopwatch modu: sadece progress arc, circle yok
+                if (!timerState) {
+                    // Primary Progress Arc
+                    val sweepAngle =
+                        (360f / (maxValue - minValue)) * (minuteCurrentValue.toInt() - minValue)
+                    val arcSize = Size(animatedRadiusValue * 2, animatedRadiusValue * 2)
+                    val arcTopLeft = Offset(
+                        (width - arcSize.width) / 2f,
+                        (height - arcSize.height) / 2f
+                    )
+                    drawArc(
+                        brush = Brush.linearGradient(colors = gradientColors),
+                        startAngle = -90f, // 12 o'clock'tan başla
+                        sweepAngle = sweepAngle,
+                        style = Stroke(width = circleThickness, cap = StrokeCap.Round),
+                        useCenter = false,
+                        size = arcSize,
+                        topLeft = arcTopLeft
+                    )
+                    // Stopwatch'ta circle yok - sadece progress arc
+                }
             }
-
-
         }
+        
         // Numeric text is centered in the Box, which is centered in the Column
         Column(
             modifier = Modifier
@@ -252,17 +290,13 @@ fun CustomCircularProgressIndicator(
 
             }
         }
-
-
     }
-
 }
-
 
 @Preview(showBackground = true, backgroundColor = 0xFF000)
 @Composable
 fun CustomCircularProgressIndicatorPreview() {
-    // state’i preview içinde yönetiyoruz
+    // state'i preview içinde yönetiyoruz
     var progress by remember { mutableStateOf(0) }
 
     MaterialTheme {

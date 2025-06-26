@@ -1,6 +1,7 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.components.toggle_switch_bar
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,25 +34,40 @@ fun TimerToggleBar(
     height: Dp,
     circleButtonPadding: Dp,
     circleBackgroundOnResource: String = "18402806360702976000",
-    selectedState: Boolean,                       // ← Dışarıdan gelen seçili durum
-    onCheckedChanged: (isOn: Boolean) -> Unit, // ← Dışarıdan tetiklenen callback
-    toggleTimerUiState: Boolean
+    selectedState: Boolean,                       // true: Stopwatch, false: Timer
+    onCheckedChanged: (isStopwatch: Boolean) -> Unit, // Callback for state change
+    toggleTimerUiState: Boolean // Is currently running
 ) {
-//    var selectedState by remember { mutableStateOf(stateOn) }
-
     val buttonColor = parseTagColor(circleBackgroundOnResource)
-
 
     Row(
         modifier = Modifier
-            .wrapContentSize() // İçeriğe göre genişlik ve yükseklik
+            .wrapContentSize()
             .height(height)
             .clip(RoundedCornerShape(height))
-            .background(Color(0xFF1C1E22)),
+            .background(Color(0xFF1C1E22))
+            .animateContentSize( // Animasyonlu küçülme/büyüme
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 500,
+                    easing = androidx.compose.animation.core.EaseInOutQuart
+                )
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Timer Button (left side) - sadece timer modu değilse ve çalışmıyorsa göster
         AnimatedVisibility(
-            visible = if (toggleTimerUiState && selectedState == true) false else true,
+            visible = !toggleTimerUiState || !selectedState, // Çalışmıyorsa veya timer aktifse göster
+            enter = androidx.compose.animation.fadeIn(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ) + androidx.compose.animation.slideInHorizontally(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ),
+            exit = androidx.compose.animation.fadeOut(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ) + androidx.compose.animation.slideOutHorizontally(
+                animationSpec = androidx.compose.animation.core.tween(300),
+                targetOffsetX = { -it }
+            )
         ) {
             Box(
                 modifier = Modifier
@@ -59,9 +75,11 @@ fun TimerToggleBar(
                     .height(height)
                     .padding(circleButtonPadding)
                     .clip(RoundedCornerShape(50))
-                    .background(if (selectedState == false) buttonColor else Color(0xFF1C1E22))
+                    .background(if (!selectedState) buttonColor else Color(0xFF1C1E22)) // Active when selectedState is false (Timer mode)
                     .clickable {
-                        onCheckedChanged(true)
+                        if (!toggleTimerUiState) { // Only allow change when not running
+                            onCheckedChanged(false) // Switch to Timer mode
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -72,7 +90,7 @@ fun TimerToggleBar(
                 ) {
                     Icon(
                         Icons.Filled.AvTimer,
-                        contentDescription = stringResource(R.string.timer_icon_description),
+                        contentDescription = "Timer",
                         tint = Color.White
                     )
                     Text("Timer", color = Color.White)
@@ -80,18 +98,32 @@ fun TimerToggleBar(
             }
         }
 
+        // Stopwatch Button (right side) - sadece stopwatch modu değilse ve çalışmıyorsa göster
         AnimatedVisibility(
-            visible =  if (toggleTimerUiState && selectedState == false) false else true,
-        ){
+            visible = !toggleTimerUiState || selectedState, // Çalışmıyorsa veya stopwatch aktifse göster
+            enter = androidx.compose.animation.fadeIn(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ) + androidx.compose.animation.slideInHorizontally(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ),
+            exit = androidx.compose.animation.fadeOut(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ) + androidx.compose.animation.slideOutHorizontally(
+                animationSpec = androidx.compose.animation.core.tween(300),
+                targetOffsetX = { it }
+            )
+        ) {
             Box(
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(height)
                     .padding(circleButtonPadding)
                     .clip(RoundedCornerShape(50))
-                    .background(if (selectedState == true) buttonColor else Color(0xFF1C1E22)) // Seçili duruma göre renk
+                    .background(if (selectedState) buttonColor else Color(0xFF1C1E22)) // Active when selectedState is true (Stopwatch mode)
                     .clickable {
-                        onCheckedChanged(false)
+                        if (!toggleTimerUiState) { // Only allow change when not running
+                            onCheckedChanged(true) // Switch to Stopwatch mode
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -102,17 +134,15 @@ fun TimerToggleBar(
                 ) {
                     Icon(
                         Icons.Outlined.Timer,
-                        contentDescription = stringResource(R.string.timer_icon_description),
+                        contentDescription = "Stopwatch",
                         tint = Color.White
                     )
                     Text("Stopwatch", color = Color.White)
                 }
             }
         }
-
     }
 }
-
 
 @Preview
 @Composable

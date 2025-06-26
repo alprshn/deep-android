@@ -23,12 +23,20 @@ abstract class CountDownTimerHelper(
     fun start() {
         if (isTimerPaused) {
             job = GlobalScope.launch {
+                // İlk tick'i hemen çağır (başlangıç durumu)
+                onTimerTick(remainingTime)
+                
                 while (remainingTime > 0) {
                     delay(countDownInterval)
                     remainingTime -= countDownInterval
-                    onTimerTick(remainingTime)
+                    
+                    if (remainingTime <= 0) {
+                        onTimerFinish()
+                        break
+                    } else {
+                        onTimerTick(remainingTime)
+                    }
                 }
-                onTimerFinish()
                 restart()
             }
             isTimerPaused = false

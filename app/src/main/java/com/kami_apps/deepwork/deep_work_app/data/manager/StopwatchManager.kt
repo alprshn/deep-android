@@ -55,7 +55,8 @@ class StopwatchManager @Inject constructor(
         }
         isPlayingFlow.value = true
         if (isResetFlow.value) {
-            workRequestManager.enqueueWorker<StopwatchWorker>(STOPWATCH_TAG)
+            // workRequestManager.enqueueWorker<StopwatchWorker>(STOPWATCH_TAG) // Geçici olarak devre dışı
+            android.util.Log.d("StopwatchManager", "Stopwatch started (worker disabled)")
             isResetFlow.value = false
         }
     }
@@ -90,7 +91,8 @@ class StopwatchManager @Inject constructor(
 
     fun reset() {
         isResetFlow.value = true
-        workRequestManager.cancelWorker(STOPWATCH_TAG)
+        // workRequestManager.cancelWorker(STOPWATCH_TAG) // Geçici olarak devre dışı
+        android.util.Log.d("StopwatchManager", "Stopwatch reset (worker disabled)")
         stop()
         duration = Duration.ZERO
         updateStopwatchState()

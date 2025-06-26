@@ -1,4 +1,4 @@
-package com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch
+package com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.timer
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -7,11 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.kami_apps.deepwork.deep_work_app.data.UiState
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Sessions
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
-import com.kami_apps.deepwork.deep_work_app.data.manager.StopwatchManager
+import com.kami_apps.deepwork.deep_work_app.data.manager.TimerManager
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.AddTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
-import com.kami_apps.deepwork.deep_work_app.domain.usecases.StopFocusSessionUseCase
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,18 +22,15 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
 
-
 @HiltViewModel
-class StopwatchViewModel @Inject constructor(
-    private val stopwatchManager: StopwatchManager,
+class TimerViewModel @Inject constructor(
+    private val timerManager: TimerManager,
     private val addTag: AddTagUseCase,
     private val startFocusSession: StartFocusSessionUseCase,
-    private val stopFocusSession: StopFocusSessionUseCase,
     private val getAllTagsUseCase: GetAllTagsUseCase
-) : ViewModel(), StopwatchActions {
+) : ViewModel(), TimerActions {
 
-    private val _uiState =
-        MutableStateFlow<UiState>(UiState.Success(stopwatchManager.stopwatchState))
+    private val _uiState = MutableStateFlow<UiState>(UiState.Success(timerManager.timerState))
     val uiState: StateFlow<UiState> = _uiState
 
     private val _allTagList = MutableStateFlow(emptyList<Tags>())
@@ -43,44 +39,91 @@ class StopwatchViewModel @Inject constructor(
     private val _timerUIState = MutableStateFlow(TimerUiState())
     val timerUIState: StateFlow<TimerUiState> = _timerUIState.asStateFlow()
 
+    val timerState = timerManager.timerState.asLiveData()
 
-    val stopwatchState = stopwatchManager.stopwatchState.asLiveData()
+    override fun setHour(hour: Int) {
+        timerManager.setTHour(hour)
+    }
 
+    override fun setMinute(minute: Int) {
+        timerManager.setMinute(minute)
+        timerManager.setCountDownTimer()
+    }
 
-    val lapTimes = stopwatchManager.lapTimes
+    override fun setSecond(second: Int) {
+        timerManager.setSecond(second)
+        timerManager.setCountDownTimer()
+    }
 
+    override fun setCountDownTimer() {
+        timerManager.setCountDownTimer()
+    }
 
     override fun start() {
         viewModelScope.launch {
+            // Timer başlatmadan önce sürenin ayarlandığından emin ol
+            val currentMinutes = timerState.value?.minute ?: 0
+            if (currentMinutes <= 0) {
+                Log.e("Timer", "Cannot start timer with 0 minutes")
+                return@launch
+            }
+            
+            // CountDownTimer'ı tekrar kur
+            timerManager.setCountDownTimer()
+            
             val now = Date()
-            Log.e("Date Start", now.toString())
+            Log.e("Timer Start", "Starting timer with $currentMinutes minutes at $now")
             _timerUIState.value = _timerUIState.value.copy(
                 startTime = now,
-                stopWatchIsStarted = true
+                isStarted = true,
+                timerIsRunning = true
             )
-            stopwatchManager.start()
+            timerManager.start()
         }
     }
 
-    override fun stop() {
+    override fun pause() {
+        timerManager.pause()
+        _timerUIState.value = _timerUIState.value.copy(
+            timerIsRunning = false
+        )
+    }
+
+    override fun reset() {
+        timerManager.reset()
+        _timerUIState.value = _timerUIState.value.copy(
+            startTime = null,
+            finishTime = null,
+            isStarted = false,
+            timerIsRunning = false
+        )
+    }
+
+    fun completeSession() {
         val finish = Date()
         val currentState = _timerUIState.value
         val updatedState = currentState.copy(
             finishTime = finish,
-            stopWatchIsStarted = false
+            isStarted = false,
+            timerIsRunning = false
         )
         _timerUIState.value = updatedState
         
-        Log.e("Date Start", updatedState.startTime!!.time.toString())
-        Log.e("Date Finish", finish.time.toString())
         val tagId = updatedState.tagId
         val startTime = updatedState.startTime
         val finishTime = updatedState.finishTime
-        val duration = stopwatchState.value!!.minute + ": " + stopwatchState.value!!.second
         val selectedTagEmoji = updatedState.selectedTagEmoji
         
+        // Timer için süreyi hesapla
+        val totalMinutes = timerState.value?.minute ?: 0
+        val remainingMinutes = timerState.value?.minute ?: 0
+        val remainingSeconds = timerState.value?.second ?: 0
+        val completedMinutes = totalMinutes - remainingMinutes
+        val completedSeconds = if (remainingSeconds > 0) 60 - remainingSeconds else 0
+        val duration = "$completedMinutes:${if (completedSeconds < 10) "0$completedSeconds" else completedSeconds}"
+        
         viewModelScope.launch(Dispatchers.IO) {
-            stopwatchManager.stop()
+            timerManager.reset()
             startFocusSession.invoke(
                 Sessions(
                     tagId = tagId,
@@ -90,27 +133,8 @@ class StopwatchViewModel @Inject constructor(
                     sessionEmoji = selectedTagEmoji
                 )
             )
-            Log.e("Duration", duration.toString())
-            stopwatchManager.reset()
+            Log.e("Timer Duration", duration)
         }
-    }
-
-    override fun lap() {
-        stopwatchManager.stop()
-        _timerUIState.value = _timerUIState.value.copy(stopWatchIsStarted = false)
-    }
-
-    override fun clear() {
-        stopwatchManager.clear()
-    }
-
-    override fun reset() {
-        stopwatchManager.reset()
-        _timerUIState.value = _timerUIState.value.copy(
-            stopWatchIsStarted = false,
-            startTime = null,
-            finishTime = null
-        )
     }
 
     fun addTag(tagName: String, tagColor: String, tagEmoji: String) {
@@ -131,5 +155,12 @@ class StopwatchViewModel @Inject constructor(
                 _allTagList.tryEmit(it)
             }
         }
+    }
+
+    fun setTimerFromMinutes(minutes: Int) {
+        setMinute(minutes)
+        setSecond(0)
+        setHour(0)
+        setCountDownTimer()
     }
 }

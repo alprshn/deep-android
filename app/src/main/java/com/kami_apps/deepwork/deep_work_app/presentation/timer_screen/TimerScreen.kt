@@ -61,9 +61,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kami_apps.deepwork.deep_work_app.data.model.StopwatchState
+import com.kami_apps.deepwork.deep_work_app.data.model.TimerState
 import com.kami_apps.deepwork.deep_work_app.presentation.components.end_session_bar.EndSessionBar
 import com.kami_apps.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
+import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.timer.TimerViewModel
 import com.kami_apps.deepwork.ui.theme.TagColors
 
 data class Snack(
@@ -83,19 +85,39 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 @Composable
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
+    timerViewModel: TimerViewModel = hiltViewModel(),
 ) {
-    val timerUiState by stopWatchViewModel.timerUIState.collectAsState()
+    // UI State'leri
+    val stopwatchUiState by stopWatchViewModel.timerUIState.collectAsState()
+    val timerUiState by timerViewModel.timerUIState.collectAsState()
+    
+    // Timer ve Stopwatch State'leri
     val stopwatchState by stopWatchViewModel.stopwatchState.observeAsState(
         StopwatchState(
-            second = "0",
-            minute = "0",
-            hour = "0",
+            second = "00",
+            minute = "00",
+            hour = "00",
             isPlaying = false,
             isReset = false
         )
     )
+    
+    val timerState by timerViewModel.timerState.observeAsState(
+        TimerState(
+            timeInMillis = 0L,
+            timeText = "00:00:00",
+            hour = 0,
+            minute = 25,
+            second = 0,
+            progress = 0f,
+            isPlaying = false,
+            isDone = true
+        )
+    )
+    
     val tagContent by stopWatchViewModel.allTagList.collectAsStateWithLifecycle()
 
+    // Local UI State'ler
     var selectedSnack by remember { mutableStateOf<Snack?>(null) }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     var showEndSessionBar by remember { mutableStateOf(false) }
@@ -104,63 +126,27 @@ fun TimerScreen(
     var tagTextField by remember { mutableStateOf("") }
     var selectedColorIndex by remember { mutableStateOf(7) }
     var tagColor by remember { mutableStateOf(TagColors[selectedColorIndex]) }
-
     var chosenTagColor by remember { mutableStateOf("18402806360702976000") }
-
-    var selectedState by remember { mutableStateOf(false) }
-    var colorBackgroundGradientValue by remember { mutableFloatStateOf(0.2f) }
-    var colorBackgroundGradient by remember { mutableStateOf("18402806360702976000") }
-    var positionValue by remember { mutableStateOf(stopwatchState.minute) }
-    var oldPositionValue by remember { mutableStateOf(stopwatchState.minute) }
-
-
     var selectedEmoji by remember { mutableStateOf("😊") }
-
-
-    //var selectedSnack by remember { mutableStateOf<Snack?>(null) }
-    //var isStarted by remember { mutableStateOf(false) }
-    //var colorBackgroundGradientValue by remember { mutableStateOf(0.2f) }
-    //var toggleState by remember { mutableStateOf(false) }
-    //var selectedState by remember { mutableStateOf(false) }
-    //var initialValueSecond by remember { mutableStateOf(stopwatchState.second) }
-    //var initialValueMinutes by remember { mutableStateOf(stopwatchState.minute) }
-    //var positionValue by remember { mutableStateOf(initialValueMinutes) }
-    //var oldPositionValue by remember { mutableStateOf(initialValueMinutes) }
-    //val maxValue by remember { mutableStateOf(60) }
-    //val minValue by remember { mutableStateOf(0) }
-    //Log.d("TAG", "TimerScreen: $initialValueMinutes")
-
-    //val endThisSessionVisibility by remember { mutableStateOf(true) }
-    //val visibleTagItems by remember { mutableStateOf(true) }
-
-//    var showBottomSheet by remember { mutableStateOf(false) }
-//    var showEndSessionBar by remember { mutableStateOf(false) }
-
-
-//    val selectedTagText = remember { mutableStateOf("Select a Tag") }
-//    val selectedTagEmoji = remember { mutableStateOf("\uD83D\uDCCD") }
-    //var selectedIndex by remember { mutableIntStateOf(7) }
-    //var tagColor by remember { mutableStateOf(colors[selectedIndex]) }
-
-
-    //var selectedEmoji by remember { mutableStateOf("😊") } // Başlangıç emojisi
-    //var showEmojiPicker by remember { mutableStateOf(false) }
-
-
-    //val tagTextField = remember { mutableStateOf("") }
-
-    val tagName by remember { mutableStateOf(tagTextField) } // Başlangıç emojisi
-    // Renk listesi
+    
+    // Mode Selection State (false: Timer, true: Stopwatch)
+    var isStopwatchMode by remember { mutableStateOf(false) }
+    var colorBackgroundGradientValue by remember { mutableFloatStateOf(0.2f) }
+    
+    // Timer spesifik state'ler
+    var timerMinutes by remember { mutableStateOf(25) }
 
     LaunchedEffect(Unit) {
         stopWatchViewModel.getAllTag()
+        timerViewModel.getAllTag()
+        // Varsayılan timer süresini ayarla (25 dakika)
+        timerViewModel.setTimerFromMinutes(25)
     }
 
-    timerUiState.initialValueMinutes = stopwatchState.minute
-    timerUiState.initialValueSecond = stopwatchState.second
-    //timerUiState.tagColor = TagColors[timerUiState.selectedIndex]
-    Log.e("TAG", "Second: ${stopwatchState.second.toString()}")
-
+    // Derived state'ler - hangi moda göre UI state'i belirlenir
+    val currentUiState = if (isStopwatchMode) stopwatchUiState else timerUiState
+    val isCurrentlyStarted = if (isStopwatchMode) 
+        stopwatchUiState.stopWatchIsStarted else timerState.isPlaying
 
     val animatedColorBackgroundGradientValue by animateFloatAsState(
         targetValue = colorBackgroundGradientValue,
@@ -170,59 +156,42 @@ fun TimerScreen(
         ), label = "backgroundGradientAlpha"
     )
 
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////Add Tag Layout //////////////////////////////////////////////////////
+    // Tag ekleme bottom sheet
     if (showBottomSheet) {
         TagBottomSheet(
             addTagDismiss = { showBottomSheet = false },
             selectedEmoji = selectedEmoji,
             showEmojiPicker = showEmojiPicker,
             tagTextField = tagTextField,
-            tagName = tagName,
+            tagName = tagTextField,
             selectedIndex = selectedColorIndex,
             tagColor = tagColor,
-            emojiPickerBox = {
-                showEmojiPicker = true
-            },
-            textFieldValueChange = { it ->
-                tagTextField = it
-            },
+            emojiPickerBox = { showEmojiPicker = true },
+            textFieldValueChange = { tagTextField = it },
             clickColorBox = { index, color ->
-                selectedColorIndex = index               // seçili state güncellenir
+                selectedColorIndex = index
                 tagColor = color
-                Log.e("TAG Color", "TagBottomSheet: $timerUiState.tagColor")
-
-                Log.e("Index Number: $index", "TagBottomSheet: $color")
             },
             setOnEmojiPickedListener = { emojiViewItem ->
                 selectedEmoji = emojiViewItem.emoji
                 showEmojiPicker = false
             },
-            onDismissRequestAlertDialog = {
-                showEmojiPicker = false
-            },
+            onDismissRequestAlertDialog = { showEmojiPicker = false },
             addTag = {
                 if (tagTextField.isNotBlank()) {
                     showBottomSheet = false
-                    stopWatchViewModel.addTag(
-                        tagName = tagTextField,
-                        tagColor = tagColor.value.toString(),
-                        tagEmoji = selectedEmoji
-                    )
-
-                    Log.e("TAG", "TimerScreen: ${tagColor.toString()}")
+                    if (isStopwatchMode) {
+                        stopWatchViewModel.addTag(tagTextField, tagColor.value.toString(), selectedEmoji)
+                    } else {
+                        timerViewModel.addTag(tagTextField, tagColor.value.toString(), selectedEmoji)
+                    }
                 }
             }
         )
     }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -233,16 +202,15 @@ fun TimerScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 Column(
-                    modifier = Modifier
-                        .animateContentSize(               // boy değişimini yavaşlat
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = FastOutSlowInEasing
-                            )
+                    modifier = Modifier.animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = FastOutSlowInEasing
                         )
+                    )
                 ) {
                     AnimatedVisibility(
-                        visible = !timerUiState.stopWatchIsStarted,
+                        visible = !isCurrentlyStarted,
                         enter = fadeIn(tween(durationMillis = 500)),
                         exit = fadeOut(tween(durationMillis = 500))
                     ) {
@@ -255,13 +223,13 @@ fun TimerScreen(
                         ) {
                             items(listSnacks) { snack ->
                                 AnimatedVisibility(
-                                    visible = snack != selectedSnack, //State
+                                    visible = snack != selectedSnack,
                                     modifier = Modifier.animateItem()
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .sharedBounds(
-                                                sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),//State
+                                                sharedContentState = rememberSharedContentState(key = "${snack.name}-bounds"),
                                                 animatedVisibilityScope = this,
                                             )
                                             .background(Color.Transparent)
@@ -270,17 +238,15 @@ fun TimerScreen(
                                         SnackContents(
                                             snack = snack,
                                             modifier = Modifier.sharedElement(
-                                                sharedContentState = rememberSharedContentState(key = snack.name),//State
+                                                sharedContentState = rememberSharedContentState(key = snack.name),
                                                 animatedVisibilityScope = this@AnimatedVisibility,
                                             ),
-                                            onClick = {
-                                                selectedSnack = snack
-                                            },
+                                            onClick = { selectedSnack = snack },
                                             heightButton = 50,
                                             textColor = Color.White,
-                                            emoji = timerUiState.selectedTagEmoji,
+                                            emoji = currentUiState.selectedTagEmoji,
                                             modifierText = Modifier.sharedBounds(
-                                                sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),//State
+                                                sharedContentState = rememberSharedContentState(key = "${snack.name}-text"),
                                                 animatedVisibilityScope = this@AnimatedVisibility
                                             )
                                         )
@@ -290,170 +256,148 @@ fun TimerScreen(
                         }
                     }
                 }
+                
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Timer/Stopwatch Toggle Bar
                 TimerToggleBar(
                     height = 50.dp,
                     circleButtonPadding = 4.dp,
                     circleBackgroundOnResource = chosenTagColor,
-                    onCheckedChanged = { isSelected ->
-                        selectedState =
-                            if (isSelected && !timerUiState.stopWatchIsStarted && stopwatchState.minute == "00" && stopwatchState.second == "00") {
-                                false
-                            } else if (!isSelected && !timerUiState.stopWatchIsStarted && stopwatchState.minute == "00" && stopwatchState.second == "00") {
-                                true
-                            } else if (isSelected && timerUiState.stopWatchIsStarted) {
-                                showEndSessionBar = true
-                                true
-                            } else if (!isSelected && timerUiState.stopWatchIsStarted) {
-                                showEndSessionBar = true
-                                false
-                            } else {
-                                isSelected
+                    onCheckedChanged = { isStopwatch ->
+                        if (!isCurrentlyStarted) {
+                            isStopwatchMode = isStopwatch
+                        }
+                    },
+                    selectedState = isStopwatchMode,
+                    toggleTimerUiState = isCurrentlyStarted
+                )
+
+                // Circular Progress Indicator
+                if (isStopwatchMode) {
+                    // Stopwatch Mode
+                    CustomCircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 50.dp)
+                            .size(350.dp)
+                            .background(Color.Transparent),
+                        minuteCurrentValue = stopwatchState.minute,
+                        secondCurrentValue = stopwatchState.second,
+                        maxValue = stopwatchUiState.maxValue,
+                        minValue = stopwatchUiState.minValue,
+                        colorBackgroundGradientValue = animatedColorBackgroundGradientValue,
+                        onValueChange = { newValue ->
+                            stopwatchUiState.initialValueMinutes = newValue.toString()
+                        },
+                        timerState = false,
+                        colorBackgroundGradient = chosenTagColor,
+                        progressTagEmoji = selectedEmoji,
+                        progressTagName = selectedTagText,
+                        progressStartState = stopwatchUiState.stopWatchIsStarted,
+                        isTimerMode = false,
+                        timerProgress = 0f,
+                        isTimerRunning = false
+                    )
+                } else {
+                    // Timer Mode
+                    CustomCircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 50.dp)
+                            .size(350.dp)
+                            .background(Color.Transparent),
+                        minuteCurrentValue = String.format("%02d", timerState.minute),
+                        secondCurrentValue = String.format("%02d", timerState.second),
+                        maxValue = 60,
+                        minValue = 0,
+                        colorBackgroundGradientValue = animatedColorBackgroundGradientValue,
+                        onValueChange = { newValue ->
+                            if (!timerState.isPlaying) {
+                                timerMinutes = newValue
+                                timerViewModel.setTimerFromMinutes(newValue)
+                                Log.d("TimerScreen", "Timer minutes set to: $newValue")
                             }
-                    },
-                    selectedState = selectedState,
-                    toggleTimerUiState = timerUiState.stopWatchIsStarted
-                )
+                        },
+                        timerState = false,
+                        colorBackgroundGradient = chosenTagColor,
+                        progressTagEmoji = selectedEmoji,
+                        progressTagName = selectedTagText,
+                        progressStartState = timerState.isPlaying,
+                        isTimerMode = true,
+                        timerProgress = timerState.progress, // TimerManager zaten kalan zamanın oranını veriyor
+                        isTimerRunning = timerState.isPlaying
+                    )
+                }
 
-                CustomCircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(vertical = 50.dp)
-                        .size(350.dp)
-                        .background(Color.Transparent),
-                    minuteCurrentValue = stopwatchState.minute,
-                    secondCurrentValue = stopwatchState.second,
-                    maxValue = timerUiState.maxValue,
-                    minValue = timerUiState.minValue,
-                    colorBackgroundGradientValue = animatedColorBackgroundGradientValue, // Pass the animated value
-                    onValueChange = { newValue ->
-                        // Indicator'dan gelen yeni değeri kendi state'imize kaydediyoruz
-                        timerUiState.initialValueMinutes = newValue.toString()
-                    },
-                    timerState = selectedState,
-                    colorBackgroundGradient = colorBackgroundGradient,
-                    progressTagEmoji = selectedEmoji,
-                    progressTagName = selectedTagText,
-                    progressStartState = timerUiState.stopWatchIsStarted
-                )
-
+                // Action Buttons
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Reset/Replay Button
                     AnimatedVisibility(
-                        visible = timerUiState.stopWatchIsStarted,//State
-                        enter = fadeIn(
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = EaseInOutQuart
-                            )
-                        ) + scaleIn(
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = EaseInOutQuart
-                            ),
-                            initialScale = 0.7f
-                        ),
-                        exit = fadeOut(
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = EaseInOutQuart
-                            )
-                        ) + scaleOut(
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = EaseInOutQuart
-                            ),
-                            targetScale = 0.7f
-                        )
+                        visible = isCurrentlyStarted,
+                        enter = fadeIn(animationSpec = tween(500, easing = EaseInOutQuart)) + 
+                               scaleIn(animationSpec = tween(500, easing = EaseInOutQuart), initialScale = 0.7f),
+                        exit = fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)) + 
+                              scaleOut(animationSpec = tween(300, easing = EaseInOutQuart), targetScale = 0.7f)
                     ) {
                         TimeEditButtons(
                             onClick = {
-                                // Handle replay/reset click
-                                positionValue =
-                                    timerUiState.initialValueMinutes // Reset timer value
-                                oldPositionValue = timerUiState.initialValueMinutes
-                                // Optionally stop if started
-                                timerUiState.stopWatchIsStarted = false
+                                if (isStopwatchMode) {
+                                    stopWatchViewModel.reset()
+                                } else {
+                                    timerViewModel.reset()
+                                }
                                 colorBackgroundGradientValue = 0.2f
-                                stopWatchViewModel.reset()
                             },
                             baseColor = Color.Gray,
                             icon = Icons.Filled.Replay
                         )
                     }
-                    if (!timerUiState.stopWatchIsStarted) {
 
+                    // Play/Pause Button
+                    if (!isCurrentlyStarted) {
                         StartButton(
                             onClick = {
-                                if (timerUiState.tagId == 0) {
-                                    Log.e(
-                                        "TAG",
-                                        "TimerScreen: ${timerUiState.tagId} Lütfen Tag Seçinizi"
-                                    )
+                                if (currentUiState.tagId == 0) {
+                                    Log.e("TAG", "Please select a tag")
                                 } else {
-                                    timerUiState.stopWatchIsStarted =
-                                        !timerUiState.stopWatchIsStarted // Toggle start state
-                                    colorBackgroundGradientValue = 0.4f//0.2f
-                                    stopWatchViewModel.start()
+                                    if (isStopwatchMode) {
+                                        stopWatchViewModel.start()
+                                    } else {
+                                        timerViewModel.start()
+                                    }
+                                    colorBackgroundGradientValue = 0.4f
                                 }
-
                             },
                             imageVector = Icons.Filled.PlayArrow,
                             baseColor = chosenTagColor
                         )
-
-
                     } else {
                         StartButton(
                             onClick = {
-                                timerUiState.stopWatchIsStarted =
-                                    !timerUiState.stopWatchIsStarted // Toggle start state
+                                if (isStopwatchMode) {
+                                    stopWatchViewModel.lap()
+                                } else {
+                                    timerViewModel.pause()
+                                }
                                 colorBackgroundGradientValue = 0.2f
-                                stopWatchViewModel.lap()
                             },
                             imageVector = Icons.Filled.Pause,
                             baseColor = chosenTagColor
                         )
                     }
 
-
+                    // Stop Button
                     AnimatedVisibility(
-                        visible = timerUiState.stopWatchIsStarted,
-                        enter = fadeIn(
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = EaseInOutQuart
-                            )
-                        ) + scaleIn(
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = EaseInOutQuart
-                            ),
-                            initialScale = 0.7f
-                        ),
-                        exit = fadeOut(
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = EaseInOutQuart
-                            )
-                        ) + scaleOut(
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = EaseInOutQuart
-                            ),
-                            targetScale = 0.7f
-                        )
+                        visible = isCurrentlyStarted,
+                        enter = fadeIn(animationSpec = tween(500, easing = EaseInOutQuart)) + 
+                               scaleIn(animationSpec = tween(500, easing = EaseInOutQuart), initialScale = 0.7f),
+                        exit = fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)) + 
+                              scaleOut(animationSpec = tween(300, easing = EaseInOutQuart), targetScale = 0.7f)
                     ) {
                         TimeEditButtons(
-                            onClick = {
-                                // Handle stop click
-                                showEndSessionBar = true
-                                // Optionally reset positionValue as well
-                                // positionValue = initialValue
-                                // oldPositionValue = initialValue
-                            },
+                            onClick = { showEndSessionBar = true },
                             baseColor = Color.Gray,
                             icon = Icons.Default.Stop
                         )
@@ -461,49 +405,50 @@ fun TimerScreen(
                 }
             }
 
+            // Tag Selection Dialog
             SnackEditDetails(
-                snack = selectedSnack,//State
-                onCloseClick = {
-                    selectedSnack = null//State
-                },
-                visibleTagItems = timerUiState.visibleTagItems,
-                addTagClick = {
-                    showBottomSheet = true
-                },
+                snack = selectedSnack,
+                onCloseClick = { selectedSnack = null },
+                visibleTagItems = currentUiState.visibleTagItems,
+                addTagClick = { showBottomSheet = true },
                 tagContent = tagContent,
                 onTagClick = { tag ->
-                    timerUiState.selectedTagEmoji = tag.tagEmoji
+                    if (isStopwatchMode) {
+                        stopwatchUiState.selectedTagEmoji = tag.tagEmoji
+                        stopwatchUiState.tagId = tag.tagId
+                    } else {
+                        timerUiState.selectedTagEmoji = tag.tagEmoji
+                        timerUiState.tagId = tag.tagId
+                    }
                     selectedTagText = tag.tagName
                     listSnacks[0].name = selectedTagText
                     chosenTagColor = tag.tagColor
-                    colorBackgroundGradient = tag.tagColor
-                    timerUiState.tagId = tag.tagId
+                    selectedEmoji = tag.tagEmoji
                     Log.e("chosenTagColor", "TimerScreen: $chosenTagColor")
                 },
-                selectedTagEmoji = timerUiState.selectedTagEmoji,
+                selectedTagEmoji = currentUiState.selectedTagEmoji,
                 selectedTagText = selectedTagText,
             )
 
+            // End Session Dialog
             if (showEndSessionBar) {
                 EndSessionBar(
                     endSession = {
                         showEndSessionBar = false
-                        stopWatchViewModel.stop()
-                        selectedState = !selectedState
-                        timerUiState.stopWatchIsStarted = false
+                        if (isStopwatchMode) {
+                            stopWatchViewModel.stop()
+                        } else {
+                            timerViewModel.completeSession()
+                        }
                         colorBackgroundGradientValue = 0.2f
                     },
                     keepGoingButtonColor = chosenTagColor,
-                    onClickKeepGoing = {
-                        showEndSessionBar = false
-                    }
+                    onClickKeepGoing = { showEndSessionBar = false }
                 )
             }
-
         }
     }
 }
-
 
 @Preview
 @Composable
@@ -521,8 +466,7 @@ fun TimerScreenPreview() {
                 .background(Color.Blue.copy(alpha = 0.2f))
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-        )
-        {
+        ) {
             Text(
                 text = "selectedEmoji",
                 modifier = Modifier
