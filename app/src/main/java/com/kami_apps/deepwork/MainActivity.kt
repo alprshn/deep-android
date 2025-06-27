@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,21 +49,27 @@ class MainActivity : ComponentActivity() {
             val stopWatchViewModel: StopwatchViewModel = hiltViewModel()
 
             val timerUiState by stopWatchViewModel.timerUIState.collectAsState()
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+
             DeepWorkTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.Black,
                     bottomBar = {
-                        BottomBarTabs(tabs = tabs, selectedTab = selectedIndex, onTabSelected = {
-                            selectedIndex = tabs.indexOf(it)
-                            navController.navigate(it.title) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
+                        // Onboarding ekranında bottom bar'ı gösterme
+                        if (currentRoute != "onboarding") {
+                            BottomBarTabs(tabs = tabs, selectedTab = selectedIndex, onTabSelected = {
+                                selectedIndex = tabs.indexOf(it)
+                                navController.navigate(it.title) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        })
+                            })
+                        }
                     }) { innerPadding ->
                     RootNavigationGraph(navController = navController, innerPadding)
                 }
