@@ -15,7 +15,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Facebook
+import androidx.compose.material.icons.filled.HourglassBottom
+import androidx.compose.material.icons.twotone.HourglassBottom
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -57,7 +62,10 @@ fun OnboardingPageContent(
     page: OnboardingPage,
     modifier: Modifier = Modifier,
     onShowButtons: () -> Unit = {},
-    onNextClick: () -> Unit = {}
+    onNextClick: () -> Unit = {},
+    onConnectScreenTime: () -> Unit = {},
+    onRequestNotificationPermission: () -> Unit = {},
+    onMaybeLater: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -80,6 +88,33 @@ fun OnboardingPageContent(
                     page = page,
                     onShowButtons = onShowButtons,
                     onNextClick = onNextClick
+                )
+            }
+
+            page.title == "Block Distractions" -> {
+                // Üçüncü sayfa için dönen emoji animasyonu
+                ThirdPageAnimatedContent(
+                    page = page,
+                    onShowButtons = onShowButtons
+                )
+            }
+
+            page.title == "Screen Time" -> {
+                // Dördüncü sayfa için screen time izni
+                FourthPageAnimatedContent(
+                    page = page,
+                    onShowButtons = onShowButtons,
+                    onConnectScreenTime = onConnectScreenTime
+                )
+            }
+
+            page.title == "Stay on top of your schedule" -> {
+                // Beşinci sayfa için notification izni
+                FifthPageAnimatedContent(
+                    page = page,
+                    onShowButtons = onShowButtons,
+                    onRequestNotificationPermission = onRequestNotificationPermission,
+                    onMaybeLater = onMaybeLater
                 )
             }
 
@@ -544,6 +579,11 @@ private fun SocialMediaContent(
 
 @Composable
 private fun OtherPageContent(page: OnboardingPage) {
+    val isWhiteBackground = page.backgroundColor == Color.White
+    val textColor = if (isWhiteBackground) Color.Black else Color.White
+    val descriptionColor =
+        if (isWhiteBackground) Color.Black.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.8f)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -567,7 +607,7 @@ private fun OtherPageContent(page: OnboardingPage) {
             text = page.title,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = textColor,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp
         )
@@ -578,7 +618,7 @@ private fun OtherPageContent(page: OnboardingPage) {
         Text(
             text = page.description,
             fontSize = 16.sp,
-            color = Color.White.copy(alpha = 0.8f),
+            color = descriptionColor,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp
         )
@@ -761,6 +801,611 @@ fun ShimmeringText(
         modifier = modifier,
         style = textStyle.copy(brush = brush)
     )
+}
+
+@Composable
+private fun ThirdPageAnimatedContent(
+    page: OnboardingPage,
+    onShowButtons: () -> Unit = {}
+) {
+    // Animasyon durumları
+    var textVisible by remember { mutableStateOf(false) }
+    var emojisVisible by remember { mutableStateOf(false) }
+    var buttonsVisible by remember { mutableStateOf(false) }
+
+    // Text animasyonu
+    val textScale by animateFloatAsState(
+        targetValue = if (textVisible) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "text_scale"
+    )
+
+    // Emoji'ler listesi
+    val emojis = listOf(
+        "🚲", "📚", "🎻", "👑", "🏄",
+        "🎨", "⛵", "🗺️", "🏃", "❤️"
+    )
+
+    // Sıralı animasyonları başlat
+    LaunchedEffect(Unit) {
+        delay(500) // İlk gecikme
+        textVisible = true
+        delay(800) // Text göründükten sonra
+        emojisVisible = true
+        delay(1500) // Emoji'ler çıktıktan sonra
+        buttonsVisible = true
+        onShowButtons() // ViewModel'e butonları göster sinyali gönder
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Merkezi text ve floating emojis aynı merkezde
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(400.dp) // Emoji'ler için yeterli alan
+            ) {
+                // Floating emojis (text'ten sonra başlar)
+                if (emojisVisible) {
+                    AnimatedFloatingEmojis(
+                        emojis = emojis,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                // Merkezi text
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(250.dp)
+                        .scale(textScale)
+                ) {
+                    Text(
+                        text = "Don't waste\nyour time\nlive life",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 38.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnimatedFloatingEmojis(
+    emojis: List<String>,
+    modifier: Modifier = Modifier
+) {
+    if (emojis.isEmpty()) return
+
+    // İkonların dışarıya çıkma animasyonu için state
+    var emojisExpanded by remember { mutableStateOf(false) }
+
+    // Dönme için ayrı state
+    var shouldRotate by remember { mutableStateOf(false) }
+
+    // Yarıçap animasyonu - içeriden dışarıya çıkma efekti (daha yavaş ve smooth)
+    val radiusProgress by animateFloatAsState(
+        targetValue = if (emojisExpanded) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 1500, // Daha uzun süre
+            easing = FastOutSlowInEasing // Smooth easing
+        ),
+        label = "radius_expansion"
+    )
+
+    // İkon ölçek animasyonu
+    val iconScale by animateFloatAsState(
+        targetValue = if (emojisExpanded) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = "icon_scale"
+    )
+
+    // Sürekli dönme animasyonu
+    val infiniteTransition = rememberInfiniteTransition(label = "rotation_animation")
+    val rotationValue by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 15000, // Daha yavaş dönme
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "continuous_rotation"
+    )
+
+    // Dönme başladığında smooth geçiş için rotationOffset
+    val rotationOffset by animateFloatAsState(
+        targetValue = if (shouldRotate) rotationValue else 0f,
+        animationSpec = tween(
+            durationMillis = 500, // Yumuşak geçiş
+            easing = LinearEasing
+        ),
+        label = "rotation_offset"
+    )
+
+    // İkonların çıkmasını başlat
+    LaunchedEffect(Unit) {
+        delay(200) // Kısa gecikme
+        emojisExpanded = true
+    }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        emojis.forEachIndexed { index, emoji ->
+            // Her emoji için sabit açı pozisyonu
+            val baseAngle = (index * (360f / emojis.size))
+
+            // Çıkma animasyonu tamamlandıktan sonra dönme başlar
+            if (radiusProgress >= 1f && !shouldRotate) {
+                shouldRotate = true
+            }
+
+            // Emojilerin pozisyonu: sabit açı + yumuşak dönme offset'i
+            val currentAngle = (baseAngle + rotationOffset) * (Math.PI / 180)
+
+            // Yarıçap - içeriden dışarıya çıkma
+            val maxRadius = 150.dp
+            val currentRadius = maxRadius * radiusProgress
+
+            val offsetX = (cos(currentAngle) * currentRadius.value).dp
+            val offsetY = (sin(currentAngle) * currentRadius.value).dp
+
+            Text(
+                text = emoji,
+                fontSize = 32.sp,
+                modifier = Modifier
+                    .offset(offsetX, offsetY)
+                    .alpha(radiusProgress)
+            )
+        }
+    }
+}
+
+@Composable
+private fun FourthPageAnimatedContent(
+    page: OnboardingPage,
+    onShowButtons: () -> Unit = {},
+    onConnectScreenTime: () -> Unit = {}
+) {
+    // Animasyon durumları
+    var appIconsVisible by remember { mutableStateOf(false) }
+    var hourglassVisible by remember { mutableStateOf(false) }
+    var titleVisible by remember { mutableStateOf(false) }
+    var descriptionVisible by remember { mutableStateOf(false) }
+    var buttonVisible by remember { mutableStateOf(false) }
+
+    // App ikonları (placeholder - gerçek ikonlar sonra eklenecek)
+    val appIcons = listOf(
+        "ic_instagram", "ic_facebook", "ic_tiktok", "ic_youtube",
+        "ic_twitter", "ic_reddit", "ic_twitch", "ic_amazon",
+        "ic_disney", "ic_linkedin", "ic_pinterest", "ic_netflix"
+    )
+
+    // Sıralı animasyonları başlat
+    LaunchedEffect(Unit) {
+        delay(300)
+        appIconsVisible = true
+        delay(800)
+        hourglassVisible = true
+        delay(500)
+        titleVisible = true
+        delay(400)
+        descriptionVisible = true
+        delay(600)
+        buttonVisible = true
+        onShowButtons()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp)
+            .padding(top = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // App ikonları grid
+        AnimatedVisibility(
+            visible = appIconsVisible,
+            enter = fadeIn(animationSpec = tween(800)) + scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        ) {
+            AppIconsGrid(appIcons = appIcons)
+        }
+
+        Spacer(modifier = Modifier.height(60.dp))
+
+        // Hourglass ikonu
+        AnimatedVisibility(
+            visible = hourglassVisible,
+            enter = fadeIn(animationSpec = tween(600)) + scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        ) {
+            Icon(
+                imageVector = Icons.TwoTone.HourglassBottom,
+                contentDescription = null,
+                tint = Color(0xFF6366F1),
+                modifier = Modifier.size(80.dp)
+            )
+
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Screen Time başlığı
+        AnimatedVisibility(
+            visible = titleVisible,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                initialOffsetY = { it / 3 },
+                animationSpec = tween(600)
+            )
+        ) {
+            Text(
+                text = "Screen Time",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Açıklama
+        AnimatedVisibility(
+            visible = descriptionVisible,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                initialOffsetY = { it / 3 },
+                animationSpec = tween(600)
+            )
+        ) {
+            Text(
+                text = page.description,
+                fontSize = 16.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Connect Screen Time butonu
+        AnimatedVisibility(
+            visible = buttonVisible,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        ) {
+            Button(
+                onClick = {
+                    onConnectScreenTime()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(35.dp)
+            ) {
+                Text(
+                    text = "Connect screen time",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowForwardIos,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(16.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun AppIconsGrid(appIcons: List<String>) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // 3 satır, her satırda 4 ikon
+        for (row in 0 until 3) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                for (col in 0 until 4) {
+                    val iconIndex = row * 4 + col
+                    if (iconIndex < appIcons.size) {
+                        AppIconItem(iconName = appIcons[iconIndex])
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppIconItem(iconName: String) {
+    // Icon map'i - mevcut ikonları buraya ekleyeceğiz
+    val iconMap = mapOf(
+        "ic_instagram" to R.drawable.ic_instagram,
+        "ic_facebook" to R.drawable.ic_facebook,
+        "ic_tiktok" to R.drawable.ic_tiktok,
+        "ic_youtube" to R.drawable.ic_youtube,
+        "ic_reddit" to R.drawable.ic_reddit,
+        "ic_twitch" to R.drawable.ic_twitch,
+        "ic_twitter" to R.drawable.ic_twitter,
+        "ic_amazon" to R.drawable.ic_amazon,
+        "ic_disney" to R.drawable.ic_disney,
+        "ic_linkedin" to R.drawable.ic_linkedin,
+        "ic_pinterest" to R.drawable.ic_pinterest,
+        "ic_netflix" to R.drawable.ic_netflix,
+        // Diğer ikonlar kullanıcı tarafından eklenecek
+    )
+
+
+    Box(
+        modifier = Modifier
+            .size(64.dp)
+            .background(
+                color = Color(0xFF2D2D2D),
+                shape = RoundedCornerShape(16.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        val iconResource = iconMap[iconName]
+        if (iconResource != null) {
+            Image(
+                painter = painterResource(id = iconResource),
+                contentDescription = iconName,
+                modifier = Modifier.size(38.dp)
+            )
+        } else {
+            // Icon bulunamazsa placeholder göster
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(Color.Gray, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = iconName.take(2).uppercase(),
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FifthPageAnimatedContent(
+    page: OnboardingPage,
+    onShowButtons: () -> Unit = {},
+    onRequestNotificationPermission: () -> Unit = {},
+    onMaybeLater: () -> Unit = {}
+) {
+    // Animasyon durumları
+    var phoneImageVisible by remember { mutableStateOf(false) }
+    var titleVisible by remember { mutableStateOf(false) }
+    var descriptionVisible by remember { mutableStateOf(false) }
+    var buttonsVisible by remember { mutableStateOf(false) }
+
+    // Sıralı animasyonları başlat
+    LaunchedEffect(Unit) {
+        delay(300)
+        phoneImageVisible = true
+        delay(800)
+        titleVisible = true
+        delay(400)
+        descriptionVisible = true
+        delay(400)
+        buttonsVisible = true
+        onShowButtons()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp)
+            .padding(top = 60.dp, bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Phone mockup - Kullanıcı tarafından verilecek image
+        AnimatedVisibility(
+            visible = phoneImageVisible,
+            enter = fadeIn(animationSpec = tween(800)) + scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Phone image with gradient overlay
+                Box(
+                    modifier = Modifier.size(300.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.mck_phone),
+                        contentDescription = null,
+                        modifier = Modifier.size(300.dp)
+                    )
+                    
+                    // Gradient overlay on top of image
+                    Box(
+                        modifier = Modifier
+                            .size(300.dp)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Transparent,
+                                        Color.Black.copy(alpha = 0.5f),
+                                        Color.Black.copy(alpha = 1f)
+                                    ),
+                                    startY = 0f,
+                                    endY = Float.POSITIVE_INFINITY
+                                )
+                            )
+                    )
+                }
+                
+                // Subtle siyah gradient - sadece alt kısım
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(20.dp)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.1f),
+                                    Color.Black.copy(alpha = 0.2f)
+                                ),
+                                startY = 0f,
+                                endY = Float.POSITIVE_INFINITY
+                            )
+                        )
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // Title
+        AnimatedVisibility(
+            visible = titleVisible,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                initialOffsetY = { it / 3 },
+                animationSpec = tween(600)
+            )
+        ) {
+            Text(
+                text = page.title,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+
+                )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Description
+        AnimatedVisibility(
+            visible = descriptionVisible,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                initialOffsetY = { it / 3 },
+                animationSpec = tween(600)
+            )
+        ) {
+            Text(
+                text = page.description,
+                fontSize = 16.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Allow Notifications Button
+        AnimatedVisibility(
+            visible = buttonsVisible,
+            enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Button(
+                    onClick = {
+                        onRequestNotificationPermission()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(35.dp)
+                ) {
+                    Text(
+                        text = "Allow Notifications",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowForwardIos,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(16.dp)
+                    )
+                }
+
+                // Maybe later button
+                Text(
+                    text = "Maybe later",
+                    color = Color.Gray,
+                    fontSize = 16.sp,
+                    modifier = Modifier.clickable {
+                        onMaybeLater()
+                    }
+                )
+            }
+        }
+    }
 }
 
 

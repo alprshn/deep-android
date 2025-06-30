@@ -1,5 +1,12 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,11 +14,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.PersonPin
 import androidx.compose.material.icons.outlined.ScreenLockPortrait
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,9 +73,17 @@ class OnboardingPageProvider : PreviewParameterProvider<OnboardingPage> {
         ),
         // Dördüncü sayfa
         OnboardingPage(
-            title = "Track Progress",
-            description = "Monitor your focus sessions\nand see your productivity grow",
-            showFloatingIcons = false
+            title = "Screen Time",
+            description = "This lets us block distracting apps.\nYour data is private and never\nleaves your phone.",
+            showFloatingIcons = false,
+            backgroundColor = Color.Black
+        ),
+        // Beşinci sayfa
+        OnboardingPage(
+            title = "Stay on top of your schedule",
+            description = "We'll keep notifications minimal. Deep is\nmade to help you focus, not\ndistract you.",
+            showFloatingIcons = false,
+            backgroundColor = Color.Black
         )
     )
 }
@@ -168,18 +187,18 @@ fun LifeDotsPreview() {
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 text = "Each dot represents 1 year of life",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(10.dp))
-            
+
             // 70 yıl için statik noktalar
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -192,14 +211,19 @@ fun LifeDotsPreview() {
                         for (col in 0 until 10) {
                             val yearIndex = row * 10 + col
                             val isFilled = yearIndex < 22
-                            
+
                             Box(
                                 modifier = Modifier
                                     .size(30.dp)
                                     .background(
                                         color = if (isFilled) Color.White else Color.Black,
                                         shape = CircleShape
-                                    ).border(shape = CircleShape, width = 1.dp, color = Color.Gray.copy(alpha = 0.5f))
+                                    )
+                                    .border(
+                                        shape = CircleShape,
+                                        width = 1.dp,
+                                        color = Color.Gray.copy(alpha = 0.5f)
+                                    )
                             )
                         }
                     }
@@ -373,7 +397,7 @@ fun SocialMediaPreview() {
 @Preview(
     name = "Third Page - Block Distractions",
     showBackground = true,
-    backgroundColor = 0xFF000000,
+    backgroundColor = 0xFFFFFFFF,
     widthDp = 360,
     heightDp = 640
 )
@@ -384,7 +408,31 @@ fun ThirdPagePreview() {
             page = OnboardingPage(
                 title = "Block Distractions",
                 description = "Block apps and websites\nthat distract you during focus time",
-                showFloatingIcons = false
+                showFloatingIcons = false,
+                backgroundColor = Color.White
+            ),
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+// Üçüncü sayfa emoji animasyonu için özel preview
+@Preview(
+    name = "Third Page - Emoji Animation",
+    showBackground = true,
+    backgroundColor = 0xFFFFFFFF,
+    widthDp = 360,
+    heightDp = 640
+)
+@Composable
+fun ThirdPageEmojiAnimationPreview() {
+    MaterialTheme {
+        OnboardingPageContent(
+            page = OnboardingPage(
+                title = "Block Distractions", // Bu trigger olarak kullanılıyor
+                description = "Block apps and websites\nthat distract you during focus time",
+                showFloatingIcons = false,
+                backgroundColor = Color.White
             ),
             modifier = Modifier.fillMaxSize()
         )
@@ -392,7 +440,7 @@ fun ThirdPagePreview() {
 }
 
 @Preview(
-    name = "Fourth Page - Track Progress",
+    name = "Fourth Page - Screen Time",
     showBackground = true,
     backgroundColor = 0xFF000000,
     widthDp = 360,
@@ -403,9 +451,33 @@ fun FourthPagePreview() {
     MaterialTheme {
         OnboardingPageContent(
             page = OnboardingPage(
-                title = "Track Progress",
-                description = "Monitor your focus sessions\nand see your productivity grow",
-                showFloatingIcons = false
+                title = "Screen Time",
+                description = "This lets us block distracting apps.\nYour data is private and never\nleaves your phone.",
+                showFloatingIcons = false,
+                backgroundColor = Color.Black
+            ),
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+// Dördüncü sayfa screen time animasyonu için özel preview
+@Preview(
+    name = "Fourth Page - App Icons Animation",
+    showBackground = true,
+    backgroundColor = 0xFF000000,
+    widthDp = 360,
+    heightDp = 640
+)
+@Composable
+fun FourthPageAppIconsAnimationPreview() {
+    MaterialTheme {
+        OnboardingPageContent(
+            page = OnboardingPage(
+                title = "Screen Time", // Bu trigger olarak kullanılıyor
+                description = "This lets us block distracting apps.\nYour data is private and never\nleaves your phone.",
+                showFloatingIcons = false,
+                backgroundColor = Color.Black
             ),
             modifier = Modifier.fillMaxSize()
         )
@@ -421,7 +493,7 @@ fun ButtonSectionFirstPagePreview() {
     MaterialTheme {
         OnboardingButtonSection(
             currentPage = 0,
-            totalPages = 4,
+            totalPages = 5,
             onNextClick = { },
             onPreviousClick = { },
             onSkipClick = { }
@@ -434,8 +506,8 @@ fun ButtonSectionFirstPagePreview() {
 fun ButtonSectionMiddlePagePreview() {
     MaterialTheme {
         OnboardingButtonSection(
-            currentPage = 1,
-            totalPages = 4,
+            currentPage = 2,
+            totalPages = 5,
             onNextClick = { },
             onPreviousClick = { },
             onSkipClick = { }
@@ -448,8 +520,8 @@ fun ButtonSectionMiddlePagePreview() {
 fun ButtonSectionLastPagePreview() {
     MaterialTheme {
         OnboardingButtonSection(
-            currentPage = 3,
-            totalPages = 4,
+            currentPage = 4,
+            totalPages = 5,
             onNextClick = { },
             onPreviousClick = { },
             onSkipClick = { }
@@ -466,8 +538,33 @@ fun ButtonSectionLastPagePreview() {
 )
 @Composable
 fun OnboardingScreenPhonePreview() {
-    MaterialTheme {
-        FirstPagePreviewContent()
+
+    Box(
+        modifier = Modifier.size(300.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.mck_phone),
+            contentDescription = null,
+            modifier = Modifier.size(300.dp)
+        )
+
+        // Gradient overlay on top of image
+        Box(
+            modifier = Modifier
+                .size(300.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.5f),
+                            Color.Black.copy(alpha = 1f)
+                        ),
+                        startY = 0f,
+                        endY = Float.POSITIVE_INFINITY
+                    )
+                )
+        )
     }
 }
 
@@ -502,4 +599,49 @@ private fun FirstPagePreviewContent() {
         ),
         modifier = Modifier.fillMaxSize()
     )
+}
+
+@Preview(
+    name = "Fifth Page - Notification Permission",
+    showBackground = true,
+    backgroundColor = 0xFF000000,
+    widthDp = 360,
+    heightDp = 640
+)
+@Composable
+fun FifthPagePreview() {
+    MaterialTheme {
+        OnboardingPageContent(
+            page = OnboardingPage(
+                title = "Stay on top of your schedule",
+                description = "We'll keep notifications minimal. Deep is\nmade to help you focus, not\ndistract you.",
+                showFloatingIcons = false,
+                backgroundColor = Color.Black
+            ),
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+// Beşinci sayfa notification permission animasyonu için özel preview
+@Preview(
+    name = "Fifth Page - Notification Animation",
+    showBackground = true,
+    backgroundColor = 0xFF000000,
+    widthDp = 360,
+    heightDp = 640
+)
+@Composable
+fun FifthPageNotificationAnimationPreview() {
+    MaterialTheme {
+        OnboardingPageContent(
+            page = OnboardingPage(
+                title = "Stay on top of your schedule", // Bu trigger olarak kullanılıyor
+                description = "We'll keep notifications minimal. Deep is\nmade to help you focus, not\ndistract you.",
+                showFloatingIcons = false,
+                backgroundColor = Color.Black
+            ),
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 } 

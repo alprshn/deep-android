@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.OnboardingPage
 
 @Composable
 fun OnboardingButton(
@@ -76,10 +77,17 @@ fun OnboardingButtonSection(
     onPreviousClick: () -> Unit,
     onSkipClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isVisible: Boolean = true // İlk sayfa için animasyon kontrolü
+    isVisible: Boolean = true, // İlk sayfa için animasyon kontrolü
+    currentPageData: OnboardingPage? = null
 ) {
-    // 2. sayfa (Focus Sessions) için buton gösterme
-    val shouldShowButtons = currentPage != 1
+    // 2. sayfa (Focus Sessions), 4. sayfa (Screen Time) ve 5. sayfa (Stay on top of your schedule) için buton gösterme
+    val shouldShowButtons = currentPage != 1 && 
+                           currentPageData?.title != "Screen Time" && 
+                           currentPageData?.title != "Stay on top of your schedule"
+    
+    // Beyaz arka plan kontrolü
+    val isWhiteBackground = currentPageData?.backgroundColor == Color.White
+    val skipTextColor = if (isWhiteBackground) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.7f)
     
     AnimatedVisibility(
         visible = isVisible && shouldShowButtons,
@@ -112,7 +120,7 @@ fun OnboardingButtonSection(
             ) {
                 Text(
                     text = "Skip",
-                    color = Color.White.copy(alpha = 0.7f),
+                    color = skipTextColor,
                     fontSize = 14.sp
                 )
             }
@@ -125,7 +133,9 @@ fun OnboardingButtonSection(
                     else -> "Continue"
                 },
                 onClick = onNextClick,
-                modifier = Modifier.weight(2f)
+                modifier = Modifier.weight(2f),
+                backgroundColor = if (isWhiteBackground) Color.Black else Color.White,
+                textColor = if (isWhiteBackground) Color.White else Color.Black
             )
         }
     }

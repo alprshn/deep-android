@@ -5,6 +5,8 @@ sealed class OnboardingActions {
     object PreviousPage : OnboardingActions()
     data class GoToPage(val page: Int) : OnboardingActions()
     object CompleteOnboarding : OnboardingActions()
-    object SkipOnboarding : OnboardingActions()
     object ShowButtons : OnboardingActions() // İlk sayfa animasyonu için
+    object RequestScreenTimePermission : OnboardingActions()
+    object RequestNotificationPermission : OnboardingActions()
+    object MaybeLater : OnboardingActions()
 } 

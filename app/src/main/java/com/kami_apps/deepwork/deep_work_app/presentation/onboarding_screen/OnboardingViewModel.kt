@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.compose.ui.graphics.Color
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
@@ -46,12 +47,20 @@ class OnboardingViewModel @Inject constructor(
         OnboardingPage(
             title = "Block Distractions",
             description = "Block apps and websites\nthat distract you during focus time",
-            showFloatingIcons = false
+            showFloatingIcons = false,
+            backgroundColor = Color.White
         ),
         OnboardingPage(
-            title = "Track Progress",
-            description = "Monitor your focus sessions\nand see your productivity grow",
-            showFloatingIcons = false
+            title = "Screen Time",
+            description = "This lets us block distracting apps.\nYour data is private and never\nleaves your phone.",
+            showFloatingIcons = false,
+            backgroundColor = Color.Black
+        ),
+        OnboardingPage(
+            title = "Stay on top of your schedule",
+            description = "We'll keep notifications minimal. Deep is\nmade to help you focus, not\ndistract you.",
+            showFloatingIcons = false,
+            backgroundColor = Color.Black
         )
     )
 
@@ -91,13 +100,20 @@ class OnboardingViewModel @Inject constructor(
             is OnboardingActions.CompleteOnboarding -> {
                 completeOnboarding()
             }
-            is OnboardingActions.SkipOnboarding -> {
-                completeOnboarding()
-            }
             is OnboardingActions.ShowButtons -> {
                 viewModelScope.launch {
                     _uiState.value = _uiState.value.copy(showButtons = true)
                 }
+            }
+            is OnboardingActions.RequestScreenTimePermission -> {
+                // Screen time permission logic handled in the composable
+            }
+            is OnboardingActions.RequestNotificationPermission -> {
+                // Notification permission logic handled in the composable
+            }
+            is OnboardingActions.MaybeLater -> {
+                // Skip to next page or complete onboarding
+                handleAction(OnboardingActions.NextPage)
             }
         }
     }
@@ -109,7 +125,7 @@ class OnboardingViewModel @Inject constructor(
             sharedPrefs.edit().putBoolean("onboarding_completed", true).apply()
             
             _uiState.value = _uiState.value.copy(
-                isCompleted = false,
+                isCompleted = true,
                 isLoading = false
             )
         }
