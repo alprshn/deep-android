@@ -78,8 +78,11 @@ fun OnboardingButtonSection(
     modifier: Modifier = Modifier,
     isVisible: Boolean = true // İlk sayfa için animasyon kontrolü
 ) {
+    // 2. sayfa (Focus Sessions) için buton gösterme
+    val shouldShowButtons = currentPage != 1
+    
     AnimatedVisibility(
-        visible = isVisible,
+        visible = isVisible && shouldShowButtons,
         enter = slideInVertically(
             initialOffsetY = { it },
             animationSpec = tween(

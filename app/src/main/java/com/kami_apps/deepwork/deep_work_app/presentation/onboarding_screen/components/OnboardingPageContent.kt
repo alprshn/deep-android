@@ -8,9 +8,15 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Facebook
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +56,8 @@ import kotlin.math.cos
 fun OnboardingPageContent(
     page: OnboardingPage,
     modifier: Modifier = Modifier,
-    onShowButtons: () -> Unit = {}
+    onShowButtons: () -> Unit = {},
+    onNextClick: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -58,15 +65,28 @@ fun OnboardingPageContent(
             .background(page.backgroundColor),
         contentAlignment = Alignment.Center
     ) {
-        if (page.showFloatingIcons) {
-            // İlk sayfa için sıralı animasyonlar
-            FirstPageAnimatedContent(
-                page = page,
-                onShowButtons = onShowButtons
-            )
-        } else {
-            // Diğer sayfalar için basit içerik
-            OtherPageContent(page = page)
+        when {
+            page.showFloatingIcons -> {
+                // İlk sayfa için sıralı animasyonlar
+                FirstPageAnimatedContent(
+                    page = page,
+                    onShowButtons = onShowButtons
+                )
+            }
+
+            page.title == "Focus Sessions" -> {
+                // İkinci sayfa için özel animasyon
+                SecondPageAnimatedContent(
+                    page = page,
+                    onShowButtons = onShowButtons,
+                    onNextClick = onNextClick
+                )
+            }
+
+            else -> {
+                // Diğer sayfalar için basit içerik
+                OtherPageContent(page = page)
+            }
         }
     }
 }
@@ -213,6 +233,311 @@ private fun FirstPageAnimatedContent(
                 lineHeight = 24.sp,
                 modifier = Modifier.alpha(descriptionAlpha)
             )
+        }
+    }
+}
+
+@Composable
+private fun SecondPageAnimatedContent(
+    page: OnboardingPage,
+    onShowButtons: () -> Unit = {},
+    onNextClick: () -> Unit = {}
+) {
+    // Animasyon durumları
+    var filledDotsCount by remember { mutableStateOf(0) }
+    var showBlur by remember { mutableStateOf(false) }
+    var showSocialMedia by remember { mutableStateOf(false) }
+    var socialMediaTitleVisible by remember { mutableStateOf(false) }
+    var socialMediaDescVisible by remember { mutableStateOf(false) }
+    var isClickable by remember { mutableStateOf(false) }
+
+    // Blur animasyonu
+    val blurAmount by animateFloatAsState(
+        targetValue = if (showBlur) 10f else 0f,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        ),
+        label = "blur_amount"
+    )
+
+    // Social media içerik alpha
+    val socialMediaAlpha by animateFloatAsState(
+        targetValue = if (showSocialMedia) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        ),
+        label = "social_media_alpha"
+    )
+
+    // Animasyon sırası
+    LaunchedEffect(Unit) {
+        // Noktaları tek tek doldur (22 tane)
+        for (i in 1..22) {
+            filledDotsCount = i
+            delay(250) // Her nokta için 300ms bekleme
+        }
+
+        delay(1000) // Tüm noktalar dolduktan sonra bekle
+        showBlur = true
+        delay(300) // Blur animasyonu için bekle
+        showSocialMedia = true
+        socialMediaTitleVisible = true
+        socialMediaDescVisible = true
+        delay(500)
+        isClickable = true // Tıklanabilir hale getir
+        onShowButtons()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .let { modifier ->
+                if (isClickable) {
+                    modifier.clickable { onNextClick() }
+                } else {
+                    modifier
+                }
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        // İlk içerik (70 yıllık hayat)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(blurAmount.dp)
+        ) {
+            FirstLifeContent(
+                filledDotsCount = filledDotsCount
+            )
+        }
+
+        // Social media içeriği
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(socialMediaAlpha)
+        ) {
+            SocialMediaContent(
+                titleVisible = socialMediaTitleVisible,
+                descriptionVisible = socialMediaDescVisible
+            )
+        }
+
+        // Tıklanabilir olduğunda gösterge
+        if (isClickable) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 32.dp)
+            ) {
+                DynamicShimmeringText(
+                    modifier = Modifier.alpha(socialMediaAlpha),
+                    text = "Tap anywhere to continue",
+                    baseColor = Color.Gray,
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                )
+
+            }
+        }
+    }
+}
+
+@Composable
+private fun FirstLifeContent(
+    filledDotsCount: Int = 0
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Text(
+            text = "70-Year Human Life",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Each dot represents 1 year of life",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LifeDotsGrid(filledDotsCount = filledDotsCount)
+
+    }
+}
+
+@Composable
+private fun LifeDotsGrid(filledDotsCount: Int = 0) {
+    val totalYears = 70
+    val dotsPerRow = 10
+    val totalRows = totalYears / dotsPerRow
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        for (row in 0 until totalRows) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                for (col in 0 until dotsPerRow) {
+                    val yearIndex = row * dotsPerRow + col
+                    val isFilled = yearIndex < filledDotsCount
+
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(
+                                color = if (isFilled) Color.White else Color.Black,
+                                shape = CircleShape
+                            )
+                            .border(
+                                shape = CircleShape,
+                                width = 1.dp,
+                                color = Color.Gray.copy(alpha = 0.5f)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SocialMediaContent(
+    titleVisible: Boolean,
+    descriptionVisible: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // Ana social media ikonları (yukarı kayma animasyonu)
+        AnimatedVisibility(
+            visible = titleVisible,
+            enter = slideInVertically(
+                initialOffsetY = { -it }, // Yukarıdan gelsin
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ) + fadeIn(
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    delayMillis = 0
+                )
+            )
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_instagram),
+                    contentDescription = "Instagram",
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.ic_tiktok),
+                    contentDescription = "TikTok",
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.ic_youtube),
+                    contentDescription = "YouTube",
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Başlık (animasyonsuz)
+        Text(
+            text = "Social Media Takes\n30% of Your Life",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            lineHeight = 32.sp,
+            modifier = Modifier.alpha(if (titleVisible) 1f else 0f)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Açıklama (animasyonsuz)
+        Text(
+            text = "That's 21 years of your life",
+            fontSize = 16.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.alpha(if (descriptionVisible) 1f else 0f)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Alt ikincil social media ikonları (aşağı kayma animasyonu)
+        AnimatedVisibility(
+            visible = descriptionVisible,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Aşağıdan gelsin
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ) + fadeIn(
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    delayMillis = 0 // Alt ikonlar için 300ms gecikme
+                )
+            )
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_facebook),
+                    contentDescription = "Facebook",
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.ic_twitch),
+                    contentDescription = "Twitch",
+                    modifier = Modifier.size(40.dp)
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.ic_reddit),
+                    contentDescription = "Reddit",
+                    modifier = Modifier.size(40.dp)
+                )
+            }
         }
     }
 }

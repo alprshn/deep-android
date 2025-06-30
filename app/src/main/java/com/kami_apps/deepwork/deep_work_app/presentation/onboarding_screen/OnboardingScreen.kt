@@ -75,6 +75,9 @@ fun OnboardingScreen(
                         if (page == 0) { // Sadece ilk sayfa için
                             viewModel.handleAction(OnboardingActions.ShowButtons)
                         }
+                    },
+                    onNextClick = {
+                        viewModel.handleAction(OnboardingActions.NextPage)
                     }
                 )
             }
