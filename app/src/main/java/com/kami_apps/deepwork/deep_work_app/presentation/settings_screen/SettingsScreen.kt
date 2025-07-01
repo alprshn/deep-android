@@ -85,7 +85,13 @@ fun SettingsScreen(navController: NavHostController? = null) {
 
             ) {
                 SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
-                SettingsBoxesItem(text = "App Icon", icon = Icons.Default.Apps)
+                SettingsBoxesItem(
+                    text = "App Icon", 
+                    icon = Icons.Default.Apps,
+                    onClickSettingsBoxesItem = {
+                        navController?.navigate("AppIcon")
+                    }
+                )
                 SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
                 SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
                 SettingsBoxesItem(

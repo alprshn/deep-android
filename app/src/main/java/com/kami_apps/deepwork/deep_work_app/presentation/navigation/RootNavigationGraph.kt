@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import com.kami_apps.deepwork.deep_work_app.presentation.navigation.bottom_bar.BottomBarTab
 import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.OnboardingScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.SettingsScreen
+import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.components.AppIconScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.components.SelectBlockAppsScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.StatisticsScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.TimelineScreen
@@ -59,5 +60,6 @@ fun RootNavigationGraph(navController: NavHostController, innerPadding: PaddingV
         composable(BottomBarTab.Timeline.title){TimelineScreen()}
         composable(BottomBarTab.Settings.title){SettingsScreen(navController)}
         composable("SelectBlockApps") { SelectBlockAppsScreen(navController) }
+        composable("AppIcon") { AppIconScreen(navController) }
    }
 }
