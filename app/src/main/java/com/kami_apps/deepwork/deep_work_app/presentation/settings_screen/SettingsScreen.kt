@@ -3,7 +3,10 @@ package com.kami_apps.deepwork.deep_work_app.presentation.settings_screen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -74,31 +77,30 @@ fun SettingsScreen(navController: NavHostController? = null) {
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             PremiumStatusCard({})
-            Column(
+            Card(
                 modifier = Modifier
                     .padding(vertical = 24.dp)
-                    .fillMaxWidth()
-                    .clip(
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .background(Color(0xff1d1a1f))
-
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
             ) {
-                SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
-                SettingsBoxesItem(
-                    text = "App Icon", 
-                    icon = Icons.Default.Apps,
-                    onClickSettingsBoxesItem = {
-                        navController?.navigate("AppIcon")
-                    }
-                )
-                SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
-                SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
-                SettingsBoxesItem(
-                    text = "Manage Tags",
-                    icon = Icons.Rounded.Sell,
-                    dividerVisible = false
-                )
+                Column {
+                    SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
+                    SettingsBoxesItem(
+                        text = "App Icon", 
+                        icon = Icons.Default.Apps,
+                        onClickSettingsBoxesItem = {
+                            navController?.navigate("AppIcon")
+                        }
+                    )
+                    SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
+                    SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
+                    SettingsBoxesItem(
+                        text = "Manage Tags",
+                        icon = Icons.Rounded.Sell,
+                        dividerVisible = false
+                    )
+                }
             }
 
 
@@ -109,26 +111,23 @@ fun SettingsScreen(navController: NavHostController? = null) {
                 color = Color.Gray,
                 modifier = Modifier.padding(start = 15.dp)
             )
-            Column(
+            Card(
                 modifier = Modifier
                     .padding(top = 5.dp)
-                    .fillMaxWidth()
-                    .clip(
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .background(Color(0xff1d1a1f))
-
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
             ) {
-                SettingsBoxesItem(
-                    dividerVisible = false,
-                    text = "Select Apps to Block",
-                    icon = Icons.Outlined.AppBlocking,
-                    onClickSettingsBoxesItem = {
-                        navController?.navigate("SelectBlockApps")
-                    }
-                )
-
-
+                Column {
+                    SettingsBoxesItem(
+                        dividerVisible = false,
+                        text = "Select Apps to Block",
+                        icon = Icons.Outlined.AppBlocking,
+                        onClickSettingsBoxesItem = {
+                            navController?.navigate("SelectBlockApps")
+                        }
+                    )
+                }
             }
             SettingsBoxes(headerVisibility = false, headerName = "")
 
@@ -152,23 +151,20 @@ fun SettingsBoxes(headerVisibility: Boolean, headerName: String) {
                 modifier = Modifier.padding(start = 15.dp).padding(bottom = 5.dp)
             )
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .background(Color(0xff1d1a1f))
-
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
         ) {
-
-            SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
-            SettingsBoxesItem(text = "Rate Us", icon = Icons.Rounded.StarBorder)
-            SettingsBoxesItem(
-                dividerVisible = false,
-                text = "Restore Purchases",
-                icon = Icons.Outlined.Replay
-            )
+            Column {
+                SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
+                SettingsBoxesItem(text = "Rate Us", icon = Icons.Rounded.StarBorder)
+                SettingsBoxesItem(
+                    dividerVisible = false,
+                    text = "Restore Purchases",
+                    icon = Icons.Outlined.Replay
+                )
+            }
         }
     }
 }
@@ -181,7 +177,11 @@ fun SettingsBoxesItem(
     onClickSettingsBoxesItem: () -> Unit = {}
 ) {
 
-    Column(modifier = Modifier.clickable(onClick = onClickSettingsBoxesItem)) {
+    Column(modifier = Modifier.fillMaxWidth().clickable(
+        onClick = onClickSettingsBoxesItem,
+        indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+        interactionSource = remember { MutableInteractionSource() }
+    )) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -239,7 +239,11 @@ fun PremiumStatusCardButton(
                 brush = Brush.linearGradient(colors = gradientColors),
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable(onClick = onClick)
+            .clickable(
+                onClick = onClick,
+                indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                interactionSource = remember { MutableInteractionSource() }
+            )
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -268,7 +272,11 @@ fun PremiumStatusCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = onClick,
+                indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                interactionSource = remember { MutableInteractionSource() }
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
     ) {
@@ -325,7 +333,11 @@ fun SettingsSwitchItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onCheckedChange(!isChecked) }
+                .clickable(
+                    onClick = { onCheckedChange(!isChecked) },
+                    indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                    interactionSource = remember { MutableInteractionSource() }
+                )
                 .padding(horizontal = 16.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
