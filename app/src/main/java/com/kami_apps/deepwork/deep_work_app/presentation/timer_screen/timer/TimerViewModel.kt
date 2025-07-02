@@ -1,5 +1,7 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.timer
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -8,11 +10,14 @@ import com.kami_apps.deepwork.deep_work_app.data.UiState
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Sessions
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 import com.kami_apps.deepwork.deep_work_app.data.manager.TimerManager
+import com.kami_apps.deepwork.deep_work_app.data.service.AppBlockingService
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.AddTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerUiState
+import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +32,8 @@ class TimerViewModel @Inject constructor(
     private val timerManager: TimerManager,
     private val addTag: AddTagUseCase,
     private val startFocusSession: StartFocusSessionUseCase,
-    private val getAllTagsUseCase: GetAllTagsUseCase
+    private val getAllTagsUseCase: GetAllTagsUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel(), TimerActions {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Success(timerManager.timerState))
@@ -61,24 +67,43 @@ class TimerViewModel @Inject constructor(
 
     override fun start() {
         viewModelScope.launch {
-            // Timer başlatmadan önce sürenin ayarlandığından emin ol
+            val currentState = _timerUIState.value
             val currentMinutes = timerState.value?.minute ?: 0
-            if (currentMinutes <= 0) {
-                Log.e("Timer", "Cannot start timer with 0 minutes")
-                return@launch
+            
+            if (currentState.isStarted) {
+                // This is a RESUME action
+                Log.d("Timer", "Resuming paused timer")
+                _timerUIState.value = currentState.copy(timerIsRunning = true)
+                timerManager.start()
+                
+                // Resume app blocking if permissions are granted
+                if (PermissionHelper.hasAllPermissions(context)) {
+                    startAppBlocking()
+                }
+            } else {
+                // This is a NEW START action
+                if (currentMinutes <= 0) {
+                    Log.e("Timer", "Cannot start timer with 0 minutes")
+                    return@launch
+                }
+                
+                // CountDownTimer'ı tekrar kur
+                timerManager.setCountDownTimer()
+                
+                val now = Date()
+                Log.e("Timer Start", "Starting NEW timer with $currentMinutes minutes at $now")
+                _timerUIState.value = _timerUIState.value.copy(
+                    startTime = now,
+                    isStarted = true,
+                    timerIsRunning = true
+                )
+                timerManager.start()
+                
+                // Start app blocking if permissions are granted
+                if (PermissionHelper.hasAllPermissions(context)) {
+                    startAppBlocking()
+                }
             }
-            
-            // CountDownTimer'ı tekrar kur
-            timerManager.setCountDownTimer()
-            
-            val now = Date()
-            Log.e("Timer Start", "Starting timer with $currentMinutes minutes at $now")
-            _timerUIState.value = _timerUIState.value.copy(
-                startTime = now,
-                isStarted = true,
-                timerIsRunning = true
-            )
-            timerManager.start()
         }
     }
 
@@ -87,6 +112,9 @@ class TimerViewModel @Inject constructor(
         _timerUIState.value = _timerUIState.value.copy(
             timerIsRunning = false
         )
+        
+        // Stop app blocking when pausing
+        stopAppBlocking()
     }
 
     override fun reset() {
@@ -97,6 +125,9 @@ class TimerViewModel @Inject constructor(
             isStarted = false,
             timerIsRunning = false
         )
+        
+        // Stop app blocking when resetting
+        stopAppBlocking()
     }
 
     fun completeSession() {
@@ -124,6 +155,10 @@ class TimerViewModel @Inject constructor(
         
         viewModelScope.launch(Dispatchers.IO) {
             timerManager.reset()
+            
+            // Stop app blocking when session completes
+            stopAppBlocking()
+            
             startFocusSession.invoke(
                 Sessions(
                     tagId = tagId,
@@ -162,5 +197,30 @@ class TimerViewModel @Inject constructor(
         setSecond(0)
         setHour(0)
         setCountDownTimer()
+    }
+    
+    // App Blocking Helper Methods
+    private fun startAppBlocking() {
+        try {
+            val intent = Intent(context, AppBlockingService::class.java).apply {
+                action = AppBlockingService.ACTION_START_BLOCKING
+            }
+            context.startForegroundService(intent)
+            Log.d("TimerViewModel", "App blocking service started")
+        } catch (e: Exception) {
+            Log.e("TimerViewModel", "Failed to start app blocking service", e)
+        }
+    }
+    
+    private fun stopAppBlocking() {
+        try {
+            val intent = Intent(context, AppBlockingService::class.java).apply {
+                action = AppBlockingService.ACTION_STOP_BLOCKING
+            }
+            context.startService(intent)
+            Log.d("TimerViewModel", "App blocking service stopped")
+        } catch (e: Exception) {
+            Log.e("TimerViewModel", "Failed to stop app blocking service", e)
+        }
     }
 }

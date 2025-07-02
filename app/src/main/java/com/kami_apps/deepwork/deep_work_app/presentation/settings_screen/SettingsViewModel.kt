@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,6 +22,23 @@ class SettingsViewModel @Inject constructor(
 
     companion object {
         private const val PAGE_SIZE = 20
+    }
+    
+    init {
+        // Observe blocked apps changes
+        viewModelScope.launch {
+            appRepository.getBlockedAppsFlow().collect { blockedApps ->
+                _uiState.update { state ->
+                    val updatedApps = state.installedApps.map { app ->
+                        app.copy(isSelected = blockedApps.contains(app.packageName))
+                    }
+                    state.copy(
+                        installedApps = updatedApps,
+                        blockedApps = blockedApps
+                    )
+                }
+            }
+        }
     }
 
     // App Installation Functions
@@ -76,12 +94,19 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun toggleAppSelection(packageName: String) {
-        _uiState.update { state ->
-            val updated = state.installedApps.map {
-                if (it.packageName == packageName) it.copy(isSelected = !it.isSelected)
-                else it
+        viewModelScope.launch {
+            try {
+                val isCurrentlyBlocked = appRepository.isAppBlocked(packageName)
+                if (isCurrentlyBlocked) {
+                    appRepository.removeBlockedApp(packageName)
+                } else {
+                    appRepository.addBlockedApp(packageName)
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(error = e.message)
+                }
             }
-            state.copy(installedApps = updated)
         }
     }
 
@@ -176,6 +201,34 @@ class SettingsViewModel @Inject constructor(
                 iconChangeSuccess = false,
                 iconError = null
             )
+        }
+    }
+    
+    // App Blocking Functions
+    fun loadBlockedApps() {
+        viewModelScope.launch {
+            try {
+                val blockedApps = appRepository.getBlockedApps()
+                _uiState.update { 
+                    it.copy(blockedApps = blockedApps)
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(error = e.message)
+                }
+            }
+        }
+    }
+    
+    fun clearAllBlockedApps() {
+        viewModelScope.launch {
+            try {
+                appRepository.clearAllBlockedApps()
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(error = e.message)
+                }
+            }
         }
     }
 }

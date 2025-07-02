@@ -6,6 +6,7 @@ import android.content.Intent
 import com.kami_apps.deepwork.deep_work_app.data.manager.StopwatchManager
 import com.kami_apps.deepwork.deep_work_app.util.helper.StopwatchNotificationHelper
 import com.kami_apps.deepwork.deep_work_app.util.safeLet
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -13,6 +14,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class StopwatchNotificationBroadcastReceiver : BroadcastReceiver() {
     @Inject
     lateinit var stopwatchManager: StopwatchManager
@@ -37,8 +39,8 @@ class StopwatchNotificationBroadcastReceiver : BroadcastReceiver() {
                         STOPWATCH_RESET_ACTION -> {
                             stopwatchManager.clear()
                             stopwatchManager.reset()
+                            stopwatchNotificationHelper.removeStopwatchNotification()
                         }
-                        STOPWATCH_LAP_ACTION -> stopwatchManager.lap()
                     }
                 }
 
@@ -47,11 +49,6 @@ class StopwatchNotificationBroadcastReceiver : BroadcastReceiver() {
                     isPlaying,
                     lastLapIndex,
                 ) { safeTime, safeIsPlaying, safeLastIndex ->
-                    stopwatchNotificationHelper.updateStopwatchWorkerNotification(
-                        isPlaying = safeIsPlaying,
-                        time = safeTime,
-                        lastLapIndex = safeLastIndex,
-                    )
                     if (safeIsPlaying) {
                         stopwatchManager.stop()
                     } else {
@@ -72,5 +69,4 @@ class StopwatchNotificationBroadcastReceiver : BroadcastReceiver() {
 const val STOPWATCH_TIME = "STOPWATCH_TIME"
 const val STOPWATCH_IS_PLAYING = "STOPWATCH_IS_PLAYING"
 const val STOPWATCH_RESET_ACTION = "STOPWATCH_RESET_ACTION"
-const val STOPWATCH_LAP_ACTION = "STOPWATCH_LAP_ACTION"
 const val STOPWATCH_LAST_INDEX = "STOPWATCH_LAST_INDEX"

@@ -20,8 +20,8 @@ android {
         applicationId = "com.kami_apps.deepwork"
         minSdk = 25
         targetSdk = 35
-        versionCode = 90
-        versionName = "0.9.0 (Test)"
+        versionCode = 91
+        versionName = "0.9.1 (Test)"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.ui.viewbinding)
     implementation(libs.androidx.emoji2.emojipicker)
+    implementation(libs.androidx.datastore.core.android)
+    implementation(libs.androidx.datastore.preferences.core.android)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
@@ -101,6 +103,11 @@ dependencies {
 
     // Material icons
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.1")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
+    implementation ("androidx.savedstate:savedstate:1.3.0")
 
     //Haze
     implementation("dev.chrisbanes.haze:haze:1.6.4")

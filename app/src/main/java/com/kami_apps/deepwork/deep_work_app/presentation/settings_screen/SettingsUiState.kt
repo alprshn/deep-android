@@ -17,5 +17,8 @@ data class SettingsUiState(
     val currentAppIcon: AppIcon? = null,
     val isIconLoading: Boolean = false,
     val iconChangeSuccess: Boolean = false,
-    val iconError: String? = null
+    val iconError: String? = null,
+    
+    // App blocking related
+    val blockedApps: List<String> = emptyList()
 )

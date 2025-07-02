@@ -18,7 +18,6 @@ import androidx.core.net.toUri
 import com.kami_apps.deepwork.MainActivity
 import com.kami_apps.deepwork.R
 import com.kami_apps.deepwork.deep_work_app.data.receiver.STOPWATCH_IS_PLAYING
-import com.kami_apps.deepwork.deep_work_app.data.receiver.STOPWATCH_LAP_ACTION
 import com.kami_apps.deepwork.deep_work_app.data.receiver.STOPWATCH_LAST_INDEX
 import com.kami_apps.deepwork.deep_work_app.data.receiver.STOPWATCH_RESET_ACTION
 import com.kami_apps.deepwork.deep_work_app.data.receiver.STOPWATCH_TIME
@@ -88,12 +87,6 @@ class StopwatchNotificationHelper @Inject constructor(
         isPlaying: Boolean,
         lastLapIndex: Int,
     ) {
-        val lapIntentAction = stopwatchNotificationBroadcastReceiver.setIntentAction(
-//Intent oluşuturoruz bunun sayesinde
-            actionName = STOPWATCH_LAP_ACTION,
-            requestCode = 2,
-            context = applicationContext,
-        )
         val resetIntentAction = stopwatchNotificationBroadcastReceiver.setIntentAction(
             actionName = STOPWATCH_RESET_ACTION,
             requestCode = 3,
@@ -101,9 +94,6 @@ class StopwatchNotificationHelper @Inject constructor(
         )
         val stopResumeIntentAction = stopResumeIntentAction(time, isPlaying, lastLapIndex)
 
-        val lapResetIntentAction = if (isPlaying) lapIntentAction else resetIntentAction
-        val lapResetLabel = if (isPlaying) "Lap" else "Reset"
-        val lapResetIcon = if (isPlaying) Icons.Default.Close.hashCode() else Icons.Default.Timer.hashCode()
         val stopResumeLabel = if (isPlaying) "Stop" else "Resume"
         val stopResumeIcon = if (isPlaying) Icons.Default.Stop.hashCode() else Icons.Default.PlayArrow.hashCode()
         val lastLapIndexText = if (isPlaying && lastLapIndex != -1) "\nLap  $lastLapIndex" else ""
@@ -113,7 +103,7 @@ class StopwatchNotificationHelper @Inject constructor(
             getStopwatchBaseNotification()//getStopwatchBaseNotification'e ekleme yapıyor
                 .setContentText("$time  $lastLapIndexText$isPlayingText")
                 .addAction(stopResumeIcon, stopResumeLabel, stopResumeIntentAction)
-                .addAction(lapResetIcon, lapResetLabel, lapResetIntentAction)
+                .addAction(Icons.Default.Timer.hashCode(), "Reset", resetIntentAction)
                 .build()
         notificationManager.notify(STOPWATCH_WORKER_NOTIFICATION_ID, notificationUpdate)
     }

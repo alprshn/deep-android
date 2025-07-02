@@ -12,4 +12,12 @@ interface AppRepository {
     suspend fun getAvailableAppIcons(): List<AppIcon>
     suspend fun getCurrentAppIcon(): AppIcon
     suspend fun changeAppIcon(iconId: String): Boolean
+    
+    // App Blocking Management
+    suspend fun getBlockedApps(): List<String>
+    suspend fun addBlockedApp(packageName: String)
+    suspend fun removeBlockedApp(packageName: String)
+    suspend fun isAppBlocked(packageName: String): Boolean
+    suspend fun clearAllBlockedApps()
+    fun getBlockedAppsFlow(): Flow<List<String>>
 }

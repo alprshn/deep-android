@@ -40,21 +40,23 @@ class TimerNotificationBroadcastReceiver : BroadcastReceiver() {
 
                 action?.let {
                     when (it) {
-                        TIMER_RUNNING_CANCEL_ACTION -> timerManager.reset()
-                        TIMER_COMPLETED_DISMISS_ACTION -> workRequestManager.cancelWorker(TIMER_COMPLETED_TAG)
+                        TIMER_RUNNING_CANCEL_ACTION -> {
+                            timerManager.reset()
+                            timerNotificationHelper.removeTimerRunningNotification()
+                        }
+                        TIMER_COMPLETED_DISMISS_ACTION -> {
+                            workRequestManager.cancelWorker(TIMER_COMPLETED_TAG)
+                            timerNotificationHelper.removeTimerCompletedNotification()
+                        }
                         TIMER_COMPLETED_RESTART_ACTION -> {
                             workRequestManager.cancelWorker(TIMER_COMPLETED_TAG)
+                            timerNotificationHelper.removeTimerCompletedNotification()
                             timerManager.start()
                         }
                     }
                 }
 
                 safeLet(isPlaying, timeText) { safeIsPlaying, safeTime ->
-                    timerNotificationHelper.updateTimerServiceNotification(
-                        isPlaying = safeIsPlaying,
-                        timeText = safeTime,
-                    )
-
                     if (safeIsPlaying) {
                         timerManager.pause()
                     } else {

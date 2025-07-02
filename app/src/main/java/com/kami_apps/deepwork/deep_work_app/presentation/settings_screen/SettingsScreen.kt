@@ -95,11 +95,11 @@ fun SettingsScreen(navController: NavHostController? = null) {
                     )
                     SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
                     SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
-                    SettingsBoxesItem(
-                        text = "Manage Tags",
-                        icon = Icons.Rounded.Sell,
-                        dividerVisible = false
-                    )
+                                    SettingsBoxesItem(
+                    text = "Manage Tags",
+                    icon = Icons.Rounded.Sell,
+                    dividerVisible = false
+                )
                 }
             }
 

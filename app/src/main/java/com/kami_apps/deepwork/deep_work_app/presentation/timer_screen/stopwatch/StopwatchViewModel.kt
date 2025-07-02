@@ -1,5 +1,7 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -8,12 +10,15 @@ import com.kami_apps.deepwork.deep_work_app.data.UiState
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Sessions
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 import com.kami_apps.deepwork.deep_work_app.data.manager.StopwatchManager
+import com.kami_apps.deepwork.deep_work_app.data.service.AppBlockingService
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.AddTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StopFocusSessionUseCase
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerUiState
+import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +35,8 @@ class StopwatchViewModel @Inject constructor(
     private val addTag: AddTagUseCase,
     private val startFocusSession: StartFocusSessionUseCase,
     private val stopFocusSession: StopFocusSessionUseCase,
-    private val getAllTagsUseCase: GetAllTagsUseCase
+    private val getAllTagsUseCase: GetAllTagsUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel(), StopwatchActions {
 
     private val _uiState =
@@ -52,13 +58,33 @@ class StopwatchViewModel @Inject constructor(
 
     override fun start() {
         viewModelScope.launch {
-            val now = Date()
-            Log.e("Date Start", now.toString())
-            _timerUIState.value = _timerUIState.value.copy(
-                startTime = now,
-                stopWatchIsStarted = true
-            )
-            stopwatchManager.start()
+            val currentState = _timerUIState.value
+            
+            if (currentState.stopWatchIsStarted && currentState.startTime != null) {
+                // This is a RESUME action (after lap/pause)
+                Log.d("Stopwatch", "Resuming paused stopwatch")
+                _timerUIState.value = currentState.copy(stopWatchIsStarted = true)
+                stopwatchManager.start()
+                
+                // Resume app blocking if permissions are granted
+                if (PermissionHelper.hasAllPermissions(context)) {
+                    startAppBlocking()
+                }
+            } else {
+                // This is a NEW START action
+                val now = Date()
+                Log.e("Date Start", now.toString())
+                _timerUIState.value = _timerUIState.value.copy(
+                    startTime = now,
+                    stopWatchIsStarted = true
+                )
+                stopwatchManager.start()
+                
+                // Start app blocking if permissions are granted
+                if (PermissionHelper.hasAllPermissions(context)) {
+                    startAppBlocking()
+                }
+            }
         }
     }
 
@@ -81,6 +107,10 @@ class StopwatchViewModel @Inject constructor(
         
         viewModelScope.launch(Dispatchers.IO) {
             stopwatchManager.stop()
+            
+            // Stop app blocking
+            stopAppBlocking()
+            
             startFocusSession.invoke(
                 Sessions(
                     tagId = tagId,
@@ -98,6 +128,9 @@ class StopwatchViewModel @Inject constructor(
     override fun lap() {
         stopwatchManager.stop()
         _timerUIState.value = _timerUIState.value.copy(stopWatchIsStarted = false)
+        
+        // Stop app blocking when pausing
+        stopAppBlocking()
     }
 
     override fun clear() {
@@ -111,6 +144,9 @@ class StopwatchViewModel @Inject constructor(
             startTime = null,
             finishTime = null
         )
+        
+        // Stop app blocking when resetting
+        stopAppBlocking()
     }
 
     fun addTag(tagName: String, tagColor: String, tagEmoji: String) {
@@ -130,6 +166,31 @@ class StopwatchViewModel @Inject constructor(
             getAllTagsUseCase.invoke().collectLatest {
                 _allTagList.tryEmit(it)
             }
+        }
+    }
+    
+    // App Blocking Helper Methods
+    private fun startAppBlocking() {
+        try {
+            val intent = Intent(context, AppBlockingService::class.java).apply {
+                action = AppBlockingService.ACTION_START_BLOCKING
+            }
+            context.startForegroundService(intent)
+            Log.d("StopwatchViewModel", "App blocking service started")
+        } catch (e: Exception) {
+            Log.e("StopwatchViewModel", "Failed to start app blocking service", e)
+        }
+    }
+    
+    private fun stopAppBlocking() {
+        try {
+            val intent = Intent(context, AppBlockingService::class.java).apply {
+                action = AppBlockingService.ACTION_STOP_BLOCKING
+            }
+            context.startService(intent)
+            Log.d("StopwatchViewModel", "App blocking service stopped")
+        } catch (e: Exception) {
+            Log.e("StopwatchViewModel", "Failed to stop app blocking service", e)
         }
     }
 }

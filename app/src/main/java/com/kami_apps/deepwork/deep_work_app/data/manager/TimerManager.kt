@@ -97,7 +97,7 @@ class TimerManager @Inject constructor(
                 handleTimerValues(false, "00:00:00", 0f)
                 // Timer bittiğinde completed worker'ı başlat
                 android.util.Log.d("TimerManager", "Enqueueing TimerCompletedWorker")
-                // workRequestManager.enqueueWorker<TimerCompletedWorker>(TIMER_COMPLETED_TAG) // Geçici olarak devre dışı
+                workRequestManager.enqueueWorker<TimerCompletedWorker>(TIMER_COMPLETED_TAG)
                 reset()
             }
         }
@@ -114,8 +114,8 @@ class TimerManager @Inject constructor(
         val originalTimeText = timeInMillisFlow.value.formatTime()
         handleTimerValues(false, originalTimeText, 1f) // progress = 1 (tam dolu)
         isDoneFlow.value = true
-        // workRequestManager.cancelWorker(TIMER_RUNNING_TAG) // Geçici olarak devre dışı
-        android.util.Log.d("TimerManager", "Timer reset to: $originalTimeText (worker disabled)")
+        workRequestManager.cancelWorker(TIMER_RUNNING_TAG)
+        android.util.Log.d("TimerManager", "Timer reset to: $originalTimeText (worker cancelled)")
     }
 
     fun start() {
@@ -137,7 +137,7 @@ class TimerManager @Inject constructor(
         if (isDoneFlow.value) {
             // Timer başladığında running worker'ı başlat (tamamlama worker'ı değil)
             android.util.Log.d("TimerManager", "Enqueueing TimerRunningWorker")
-            // workRequestManager.enqueueWorker<TimerRunningWorker>(TIMER_RUNNING_TAG) // Geçici olarak devre dışı
+            workRequestManager.enqueueWorker<TimerRunningWorker>(TIMER_RUNNING_TAG)
             isDoneFlow.value = false
         }
         
