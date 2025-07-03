@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
+import android.util.Log
 
 @Composable
 fun Schedule(
@@ -22,6 +23,11 @@ fun Schedule(
     minDate: LocalDate = events.minByOrNull(Event::start)?.start?.toLocalDate() ?: LocalDate.now(),
     maxDate: LocalDate = events.maxByOrNull(Event::end)?.end?.toLocalDate() ?: LocalDate.now(),
 ) {
+    Log.d("Schedule", "Schedule composable called with ${events.size} events")
+    events.forEach { event ->
+        Log.d("Schedule", "Event: ${event.name}, start: ${event.start}, end: ${event.end}")
+    }
+    
     val dayWidth = 256.dp
     val hourHeight = 64.dp
     val verticalScrollState = rememberScrollState()

@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Column
+import android.util.Log
 
 private class EventDataModifier(
     val event: Event,
@@ -45,6 +46,8 @@ fun BasicSchedule(
     hourHeight: Dp,
     sidebarLabel: @Composable (time: LocalTime) -> Unit = { BasicSidebarLabel(time = it) },
 ) {
+    Log.d("BasicSchedule", "BasicSchedule called with ${events.size} events, minDate: $minDate, maxDate: $maxDate")
+    
     val numDays = ChronoUnit.DAYS.between(minDate, maxDate).toInt() + 1
     val dividerColor = if (MaterialTheme.colorScheme.background == Color.White) Color.LightGray else Color.DarkGray
     var sidebarWidth by remember { mutableStateOf(0) }
@@ -91,7 +94,11 @@ fun BasicSchedule(
             val placeablesWithEvents = measureables.map { measurable ->
                 val event = measurable.parentData as Event
                 val eventDurationMinutes = ChronoUnit.MINUTES.between(event.start, event.end)
-                val eventHeight = ((eventDurationMinutes / 60f) * hourHeight.toPx()).roundToInt()
+                val calculatedHeight = ((eventDurationMinutes / 60f) * hourHeight.toPx()).roundToInt()
+                val eventHeight = maxOf(calculatedHeight, 32) // Minimum 32dp height
+                
+                Log.d("BasicSchedule", "Measuring event '${event.name}': duration=${eventDurationMinutes}min, calculatedHeight=${calculatedHeight}px, finalHeight=${eventHeight}px")
+                
                 val placeable = measurable.measure(
                     constraints.copy(
                         minWidth = dayWidth.roundToPx(),
@@ -104,11 +111,14 @@ fun BasicSchedule(
             }
             
             layout(width, height) {
+                Log.d("BasicSchedule", "Layout: width=$width, height=$height, placing ${placeablesWithEvents.size} events")
                 placeablesWithEvents.forEach { (placeable, event) ->
                     val eventOffsetMinutes = ChronoUnit.MINUTES.between(LocalTime.MIN, event.start.toLocalTime())
                     val eventY = ((eventOffsetMinutes / 60f) * hourHeight.toPx()).roundToInt()
                     val eventOffsetDays = ChronoUnit.DAYS.between(minDate, event.start.toLocalDate()).toInt()
                     val eventX = eventOffsetDays * dayWidth.roundToPx()
+                    
+                    Log.d("BasicSchedule", "Placing event '${event.name}' at X=$eventX, Y=$eventY (time: ${event.start.toLocalTime()}, offsetMinutes: $eventOffsetMinutes)")
                     placeable.place(eventX, eventY)
                 }
             }

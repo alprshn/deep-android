@@ -29,7 +29,7 @@ interface SessionsDao{
     @Query("SELECT * FROM sessions_table WHERE tag_id = :tagId ORDER BY start_time DESC")
      fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
 
-    @Query("SELECT * FROM sessions_table WHERE start_time BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM sessions_table WHERE start_time >= :startDate AND start_time <= :endDate ORDER BY start_time ASC")
      fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
 
     @Query("SELECT SUM(duration) FROM sessions_table")
