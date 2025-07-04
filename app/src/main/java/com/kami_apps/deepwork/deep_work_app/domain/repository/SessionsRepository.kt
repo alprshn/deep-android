@@ -20,7 +20,7 @@ interface SessionsRepository {
 
     suspend fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
 
-    suspend fun getTotalFocusTime(): Long
+    suspend fun getTotalFocusTime(): String
 
     suspend fun getSessionCount(): Int
 

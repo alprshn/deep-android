@@ -52,9 +52,12 @@ fun StatisticsScreen(
     var selectedTagId by remember { mutableStateOf<Int>(0) } // 0 = All Tags seçili
     val items = listOf("Day", "Week", "Month", "Year")
     var selectedSegmentIndex by remember { mutableIntStateOf(0) }
+    val totalSessionCount by statisticsViewModel.totalSessionCount.collectAsStateWithLifecycle()
+
     // Tagları yükle
     LaunchedEffect(Unit) {
         statisticsViewModel.getAllTag()
+        statisticsViewModel.loadStatistics() // istatistikleri yükle
     }
 
     val scrollState = rememberScrollState()
@@ -181,8 +184,8 @@ fun StatisticsScreen(
 
         // Summary Cards Section
         val sampleStatistics = FocusStatistics(
-            totalFocusTime = "178h 20m",
-            totalSessions = 66,
+            totalFocusTime = "statisticsViewModel",
+            totalSessions = totalSessionCount,
             averageDuration = "2h 42m"
         )
 

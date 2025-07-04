@@ -32,8 +32,8 @@ interface SessionsDao{
     @Query("SELECT * FROM sessions_table WHERE start_time >= :startDate AND start_time <= :endDate ORDER BY start_time ASC")
      fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
 
-    @Query("SELECT SUM(duration) FROM sessions_table")
-    suspend fun getTotalFocusTime(): Long
+    @Query("SELECT duration FROM sessions_table")
+    suspend fun getTotalFocusTime(): String
 
     @Query("SELECT COUNT(*) FROM sessions_table")
     suspend fun getSessionCount(): Int

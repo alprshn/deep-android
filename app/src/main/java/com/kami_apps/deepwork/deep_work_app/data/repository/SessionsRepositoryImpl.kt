@@ -38,7 +38,7 @@ class SessionsRepositoryImpl @Inject constructor(
        return sessionsDao.getSessionsByDate(startDate,endDate)
     }
 
-    override suspend fun getTotalFocusTime(): Long {
+    override suspend fun getTotalFocusTime(): String {
         return sessionsDao.getTotalFocusTime()
     }
 
