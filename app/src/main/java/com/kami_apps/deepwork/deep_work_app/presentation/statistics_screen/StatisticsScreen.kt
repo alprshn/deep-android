@@ -49,10 +49,8 @@ fun StatisticsScreen(
     statisticsViewModel: StatisticsViewModel = hiltViewModel(),
 ) {
     val statisticsState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
-    var selectedTagId by remember { mutableStateOf<Int>(0) } // 0 = All Tags seçili
     val items = listOf("Day", "Week", "Month", "Year")
     var selectedSegmentIndex by remember { mutableIntStateOf(0) }
-    val sessionCountForSelectedTag by statisticsViewModel.sessionCountForSelectedTag.collectAsStateWithLifecycle()
     var sampleStatistics by remember { mutableStateOf(FocusStatistics()) } // Örnek
 
 
@@ -60,12 +58,10 @@ fun StatisticsScreen(
     LaunchedEffect(Unit) {
 
         statisticsViewModel.loadAllTags()
-        statisticsViewModel.InitializeTotalSessionCount() // istatistikleri yükle
+        statisticsViewModel.loadStatisticsForSelectedTag()
     }
 
-    LaunchedEffect(selectedTagId) {
-        statisticsViewModel.loadSessionCountByTag(selectedTagId)
-    }
+
     val scrollState = rememberScrollState()
 
     Column(
@@ -90,16 +86,19 @@ fun StatisticsScreen(
             )
 
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(bottom = 12.dp),
             ) {
                 // All Tags - Her zaman başta olacak
                 item {
-                    val isSelected = selectedTagId == 0
+                    val isSelected = statisticsState.selectedTagId == 0
 
                     Card(
                         modifier = Modifier
                             .wrapContentWidth()
-                            .clickable { selectedTagId = 0 },
+                            .clickable {
+                                statisticsViewModel.updateTagId(0)
+                            },
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isSelected)
@@ -130,12 +129,15 @@ fun StatisticsScreen(
                 // Kullanıcı tarafından oluşturulan taglar
                 items(statisticsState.allTags) { tags ->
                     val tagColor = parseTagColor(tags.tagColor)
-                    val isSelected = selectedTagId == tags.tagId.toInt()
+
+                    val isSelected = statisticsState.selectedTagId == tags.tagId
 
                     Card(
                         modifier = Modifier
                             .wrapContentWidth()
-                            .clickable { selectedTagId = tags.tagId.toInt() },
+                            .clickable {
+                                statisticsViewModel.updateTagId(tags.tagId)
+                            },
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isSelected)
@@ -168,7 +170,9 @@ fun StatisticsScreen(
                 selectedIndex = selectedSegmentIndex,
                 onItemSelected = { selectedSegmentIndex = it },
                 showSeparators = true,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
                 colors = SegmentedControlColors(
                     containerBackground = Color(0xFF1C1C1E),
                     selectedBackground = Color.Gray,
@@ -187,21 +191,11 @@ fun StatisticsScreen(
         }
 // Summary Cards Section
 
-        if (sessionCountForSelectedTag > 0) {
-            // Summary Cards Section
-             sampleStatistics = FocusStatistics(
-                totalFocusTime = "statisticsViewModel Selected Tag",
-                totalSessions = sessionCountForSelectedTag,
-                averageDuration = "1h"
-            )
-        }else{
-            // Summary Cards Section
-            sampleStatistics = FocusStatistics(
-                totalFocusTime = "statisticsViewModel",
-                totalSessions =statisticsState.totalSessionCount ,
-                averageDuration = "2h 42m"
-            )
-        }
+        sampleStatistics = FocusStatistics(
+            totalFocusTime = "statisticsViewModel",
+            totalSessions = statisticsState.totalSessionCount,
+            averageDuration = "2h 42m"
+        )
 
 
         SummaryCardsSection(

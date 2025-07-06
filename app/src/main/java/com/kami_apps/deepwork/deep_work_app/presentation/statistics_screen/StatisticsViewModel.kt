@@ -68,6 +68,50 @@ class StatisticsViewModel @Inject constructor(
     }
 
 
+    fun updateTagId(tagId: Int) {
+        _uiState.update { it.copy(selectedTagId = tagId) }
+        loadStatisticsForSelectedTag()
+    }
+
+    fun loadStatisticsForSelectedTag() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoading = true, errorMessage = null
+                )
+            } // Yükleme başladı, hata yok
+            try {
+                if (_uiState.value.selectedTagId == 0) {
+                    _uiState.update { it.copy(totalSessionCount = getTotalSessionCountUseCase.invoke()) }
+
+
+                } else {
+                    getSessionCountByTagUseCase(_uiState.value.selectedTagId).collectLatest { count ->
+                        _uiState.value = _uiState.value.copy(totalSessionCount = count)
+                    }
+                }
+
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false, // Yükleme bitti
+                        errorMessage = null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false, // Yükleme bitti
+                        errorMessage = "Etiketler yüklenirken bir hata oluştu: ${e.localizedMessage}"
+                    )
+                }
+
+            }
+
+        }
+    }
+
+
     fun InitializeTotalSessionCount() {
         viewModelScope.launch {
             _uiState.update {
@@ -98,34 +142,11 @@ class StatisticsViewModel @Inject constructor(
     }
 
 
-
-
-
-    private val _sessionCountForSelectedTag = MutableStateFlow(0)
-    val sessionCountForSelectedTag: StateFlow<Int> = _sessionCountForSelectedTag.asStateFlow()
-
-
-    private var _selectedTagId = MutableStateFlow(0) // Internal olarak tutulan StateFlow
-    val selectedTagId: StateFlow<Int> = _selectedTagId.asStateFlow() // UI'a açılan okuma kısmı
-
-
-
-
-
-
-
-
-
     fun loadSessionCountByTag(tagId: Int) {
-        if (_selectedTagId.value == tagId) return
 
-        // Yeni seçilen tagId'yi ViewModel'ın iç state'ine kaydet
-        _selectedTagId.value = tagId
         viewModelScope.launch {
             // Use Case'i çağır ve Flow'u topla
-            getSessionCountByTagUseCase(tagId).collectLatest { count ->
-                _sessionCountForSelectedTag.value = count
-            }
+
         }
 
     }
