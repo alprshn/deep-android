@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.sp
 import com.kami_apps.deepwork.R
 
 data class FocusStatistics(
-    val totalFocusTime: String,
-    val totalSessions: Int,
-    val averageDuration: String
+    val totalFocusTime: String = "0",
+    val totalSessions: Int = 0,
+    val averageDuration: String = "0"
 )
 
 @Composable

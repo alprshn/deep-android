@@ -22,6 +22,8 @@ interface SessionsRepository {
 
     suspend fun getTotalFocusTime(): String
 
+    suspend fun getSessionCountByTag(tagId: Int): Flow<Int>
+
     suspend fun getSessionCount(): Int
 
     suspend fun getAverageSessionDuration(): Double

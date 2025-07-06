@@ -42,6 +42,10 @@ class SessionsRepositoryImpl @Inject constructor(
         return sessionsDao.getTotalFocusTime()
     }
 
+    override suspend fun getSessionCountByTag(tagId: Int): Flow<Int> {
+        return sessionsDao.getSessionCountByTag(tagId)
+    }
+
     override suspend fun getSessionCount(): Int {
         return sessionsDao.getSessionCount()
     }

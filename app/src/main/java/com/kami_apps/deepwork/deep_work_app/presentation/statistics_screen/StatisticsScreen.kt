@@ -48,18 +48,24 @@ import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.compo
 fun StatisticsScreen(
     statisticsViewModel: StatisticsViewModel = hiltViewModel(),
 ) {
-    val tagContent by statisticsViewModel.allTagList.collectAsStateWithLifecycle()
+    val statisticsState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTagId by remember { mutableStateOf<Int>(0) } // 0 = All Tags seçili
     val items = listOf("Day", "Week", "Month", "Year")
     var selectedSegmentIndex by remember { mutableIntStateOf(0) }
-    val totalSessionCount by statisticsViewModel.totalSessionCount.collectAsStateWithLifecycle()
+    val sessionCountForSelectedTag by statisticsViewModel.sessionCountForSelectedTag.collectAsStateWithLifecycle()
+    var sampleStatistics by remember { mutableStateOf(FocusStatistics()) } // Örnek
+
 
     // Tagları yükle
     LaunchedEffect(Unit) {
-        statisticsViewModel.getAllTag()
-        statisticsViewModel.loadStatistics() // istatistikleri yükle
+
+        statisticsViewModel.loadAllTags()
+        statisticsViewModel.InitializeTotalSessionCount() // istatistikleri yükle
     }
 
+    LaunchedEffect(selectedTagId) {
+        statisticsViewModel.loadSessionCountByTag(selectedTagId)
+    }
     val scrollState = rememberScrollState()
 
     Column(
@@ -122,7 +128,7 @@ fun StatisticsScreen(
                 }
 
                 // Kullanıcı tarafından oluşturulan taglar
-                items(tagContent) { tags ->
+                items(statisticsState.allTags) { tags ->
                     val tagColor = parseTagColor(tags.tagColor)
                     val isSelected = selectedTagId == tags.tagId.toInt()
 
@@ -179,15 +185,24 @@ fun StatisticsScreen(
                 },
             )
         }
+// Summary Cards Section
 
+        if (sessionCountForSelectedTag > 0) {
+            // Summary Cards Section
+             sampleStatistics = FocusStatistics(
+                totalFocusTime = "statisticsViewModel Selected Tag",
+                totalSessions = sessionCountForSelectedTag,
+                averageDuration = "1h"
+            )
+        }else{
+            // Summary Cards Section
+            sampleStatistics = FocusStatistics(
+                totalFocusTime = "statisticsViewModel",
+                totalSessions =statisticsState.totalSessionCount ,
+                averageDuration = "2h 42m"
+            )
+        }
 
-
-        // Summary Cards Section
-        val sampleStatistics = FocusStatistics(
-            totalFocusTime = "statisticsViewModel",
-            totalSessions = totalSessionCount,
-            averageDuration = "2h 42m"
-        )
 
         SummaryCardsSection(
             statistics = sampleStatistics,

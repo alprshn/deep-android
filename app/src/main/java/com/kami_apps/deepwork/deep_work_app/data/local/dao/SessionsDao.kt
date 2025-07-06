@@ -38,6 +38,9 @@ interface SessionsDao{
     @Query("SELECT COUNT(*) FROM sessions_table")
     suspend fun getSessionCount(): Int
 
+    @Query("SELECT COUNT(session_id) FROM sessions_table WHERE tag_id = :tagId")
+    fun getSessionCountByTag(tagId: Int): Flow<Int>
+
     @Query("SELECT AVG(duration) FROM sessions_table")
     suspend fun getAverageSessionDuration(): Double
 }
