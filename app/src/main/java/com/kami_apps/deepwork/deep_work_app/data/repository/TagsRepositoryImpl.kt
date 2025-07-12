@@ -3,6 +3,7 @@ package com.kami_apps.deepwork.deep_work_app.data.repository
 import com.kami_apps.deepwork.deep_work_app.data.local.dao.TagsDao
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 import com.kami_apps.deepwork.deep_work_app.domain.repository.TagsRepository
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.TopTag
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -25,7 +26,7 @@ class TagsRepositoryImpl @Inject constructor(
         return tagsDao.getAllTags()
     }
 
-    override fun getTopTagsBySessionCount(): Flow<List<Tags>> {
+    override fun getTopTagsBySessionCount(): Flow<List<TopTag>> {
         return tagsDao.getTopTagsBySessionCount()
     }
 

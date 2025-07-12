@@ -1,9 +1,11 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen
 
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.TopTag
 
 data class StatisticsUiState(
     val allTags: List<Tags> = emptyList(),
+    val topTags: List<TopTag> = emptyList(),
     val selectedTagId: Int = 0, // 0 = All Tags
     val totalSessionCount: Int = 0,
     val totalFocusTimeOverall: String = "0h 0m", // Genel odaklanma süresi

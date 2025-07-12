@@ -1,6 +1,7 @@
 package com.kami_apps.deepwork.deep_work_app.domain.repository
 
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.TopTag
 import kotlinx.coroutines.flow.Flow
 
 interface TagsRepository {
@@ -13,5 +14,5 @@ interface TagsRepository {
 
     fun getAllTags(): Flow<List<Tags>>
 
-    fun getTopTagsBySessionCount(): Flow<List<Tags>>
+    fun getTopTagsBySessionCount(): Flow<List<TopTag>>
 }

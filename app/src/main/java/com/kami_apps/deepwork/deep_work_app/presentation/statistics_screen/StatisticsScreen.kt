@@ -57,6 +57,7 @@ fun StatisticsScreen(
     // Tagları yükle
     LaunchedEffect(Unit) {
         statisticsViewModel.loadAllTags()
+        statisticsViewModel.loadTopTags()
         statisticsViewModel.loadStatisticsForSelectedTag()
     }
 
@@ -205,6 +206,11 @@ fun StatisticsScreen(
 
         JetpackComposeRockMetalRatios()
 
+
+
+
+
+
         // Sample data for Top Tags
         val sampleTopTags = listOf(
             TopTag("Coding", "💻", 48),
@@ -212,8 +218,10 @@ fun StatisticsScreen(
             TopTag("Physics", "🔬", 1)
         )
 
+
+
         TopTagsCard(
-            topTags = sampleTopTags,
+            topTags = statisticsState.topTags
         )
 
         // Sample data for Session Logs

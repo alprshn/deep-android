@@ -9,6 +9,7 @@ import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAverageFocusTimeByTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAverageFocusTimeUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetSessionCountByTagUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTopTagsBySessionCountUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalFocusTimeByTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalFocusTimeUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalSessionCountUseCase
@@ -33,7 +34,8 @@ class StatisticsViewModel @Inject constructor(
     private val getSessionCountByTagUseCase: GetSessionCountByTagUseCase,
     private val getTotalFocusTimeByTagUseCase: GetTotalFocusTimeByTagUseCase,
     private val getAverageFocusTimeByTagUseCase: GetAverageFocusTimeByTagUseCase,
-    private val getAverageFocusTimeUseCase: GetAverageFocusTimeUseCase
+    private val getAverageFocusTimeUseCase: GetAverageFocusTimeUseCase,
+    private val getTopTagsBySessionCountUseCase: GetTopTagsBySessionCountUseCase
 ) : ViewModel(), StatisticsActions {
 
 
@@ -43,6 +45,40 @@ class StatisticsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = StatisticsUiState()
     )
+
+
+
+    fun loadTopTags() {
+        viewModelScope.launch {
+
+            _uiState.update {
+                it.copy(
+                    isLoading = true, errorMessage = null
+                )
+            } // Yükleme başladı, hata yok
+            try {
+                getTopTagsBySessionCountUseCase.invoke().collectLatest {
+                    _uiState.value = _uiState.value.copy(topTags = it)
+                }
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false, // Yükleme bitti
+                        errorMessage = null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false, // Yükleme bitti
+                        errorMessage = "Etiketler yüklenirken bir hata oluştu: ${e.localizedMessage}"
+                    )
+                }
+
+            }
+
+        }
+    }
 
 
     fun loadAllTags() {
@@ -57,6 +93,8 @@ class StatisticsViewModel @Inject constructor(
                 getAllTagsUseCase.invoke().collectLatest {
                     _uiState.value = _uiState.value.copy(allTags = it)
                 }
+
+
 
                 _uiState.update { currentState ->
                     currentState.copy(
@@ -151,6 +189,11 @@ class StatisticsViewModel @Inject constructor(
             }
         }
     }
+
+
+
+
+
 
 
     fun InitializeTotalSessionCount() {
