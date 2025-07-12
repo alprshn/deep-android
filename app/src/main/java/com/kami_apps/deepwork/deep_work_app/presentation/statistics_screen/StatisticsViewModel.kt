@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAverageFocusTimeByTagUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAverageFocusTimeUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetSessionCountByTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalFocusTimeByTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalFocusTimeUseCase
@@ -29,7 +31,9 @@ class StatisticsViewModel @Inject constructor(
     private val getTotalFocusTimeUseCase: GetTotalFocusTimeUseCase,
     private val getTotalSessionCountUseCase: GetTotalSessionCountUseCase,
     private val getSessionCountByTagUseCase: GetSessionCountByTagUseCase,
-    private val getTotalFocusTimeByTagUseCase: GetTotalFocusTimeByTagUseCase
+    private val getTotalFocusTimeByTagUseCase: GetTotalFocusTimeByTagUseCase,
+    private val getAverageFocusTimeByTagUseCase: GetAverageFocusTimeByTagUseCase,
+    private val getAverageFocusTimeUseCase: GetAverageFocusTimeUseCase
 ) : ViewModel(), StatisticsActions {
 
 
@@ -90,16 +94,24 @@ class StatisticsViewModel @Inject constructor(
                 if (_uiState.value.selectedTagId == 0) {
                     // All tags - get total statistics
                     _uiState.update { it.copy(totalSessionCount = getTotalSessionCountUseCase.invoke()) }
+
                     getTotalFocusTimeUseCase.invoke().collectLatest { result ->
                         Log.e("UI Log", "All Tags - Toplam Süre (UI): $result")
                         _uiState.value = _uiState.value.copy(totalFocusTime = result)
                     }
+
+                    getAverageFocusTimeUseCase.invoke().collectLatest { result ->
+                        _uiState.value = _uiState.value.copy(averageFocusTime = result)
+                    }
+
+
+
                 } else {
                     // Specific tag - get statistics for that tag
                     val selectedTagId = _uiState.value.selectedTagId
                     
                     // Collect both flows concurrently
-                    kotlinx.coroutines.coroutineScope {
+                    coroutineScope {
                         launch {
                             getSessionCountByTagUseCase(selectedTagId).collectLatest { count ->
                                 Log.e("UI Log", "Session Count for Tag $selectedTagId: $count")
@@ -111,6 +123,12 @@ class StatisticsViewModel @Inject constructor(
                             getTotalFocusTimeByTagUseCase(selectedTagId).collectLatest { result ->
                                 Log.e("UI Log", "Tag $selectedTagId - Toplam Süre (UI): $result")
                                 _uiState.value = _uiState.value.copy(totalFocusTime = result)
+                            }
+                        }
+
+                        launch {
+                            getAverageFocusTimeByTagUseCase(selectedTagId).collectLatest { result ->
+                                _uiState.value = _uiState.value.copy(averageFocusTime = result)
                             }
                         }
                     }

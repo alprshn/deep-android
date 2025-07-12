@@ -13,4 +13,5 @@ interface TagsRepository {
 
     fun getAllTags(): Flow<List<Tags>>
 
+    fun getTopTagsBySessionCount(): Flow<List<Tags>>
 }

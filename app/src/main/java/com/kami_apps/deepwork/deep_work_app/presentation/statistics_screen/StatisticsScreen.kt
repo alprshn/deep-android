@@ -193,7 +193,7 @@ fun StatisticsScreen(
         sampleStatistics = FocusStatistics(
             totalFocusTime = statisticsState.totalFocusTime,
             totalSessions = statisticsState.totalSessionCount,
-            averageDuration = "2h 42m"
+            averageDuration = statisticsState.averageFocusTime
         )
 
 

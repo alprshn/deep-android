@@ -25,4 +25,9 @@ class TagsRepositoryImpl @Inject constructor(
         return tagsDao.getAllTags()
     }
 
+    override fun getTopTagsBySessionCount(): Flow<List<Tags>> {
+        return tagsDao.getTopTagsBySessionCount()
+    }
+
+
 }
