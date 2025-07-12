@@ -16,7 +16,7 @@ interface SessionsRepository {
 
     suspend fun getSessionsById(sessionId: Int): Sessions?
 
-    suspend fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
+    fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
 
     suspend fun getSessionsByDate(startDate: Date, endDate: Date): Flow<List<Sessions>>
 

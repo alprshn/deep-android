@@ -30,7 +30,7 @@ class SessionsRepositoryImpl @Inject constructor(
         return sessionsDao.getSessionsById(sessionId)
     }
 
-    override suspend fun getSessionsByTag(tagId: Int): Flow<List<Sessions>> {
+    override fun getSessionsByTag(tagId: Int): Flow<List<Sessions>> {
         return sessionsDao.getSessionsByTag(tagId)
     }
 

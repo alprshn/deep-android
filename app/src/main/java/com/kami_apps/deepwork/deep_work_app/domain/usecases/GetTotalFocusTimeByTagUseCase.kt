@@ -6,18 +6,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetTotalFocusTimeUseCase @Inject constructor (private val sessionsRepository: SessionsRepository)  {
-
-    operator fun invoke(): Flow<String> {
-        return sessionsRepository.getAllSessions()
-            .map { sessions ->
-                val durations = sessions.map { it.duration }
-                Log.e("Durations", calculateTotalTime(durations))
-
-                calculateTotalTime(durations)
-
-            }
-
+class GetTotalFocusTimeByTagUseCase @Inject constructor (private val sessionsRepository: SessionsRepository){
+     operator fun invoke(tagId: Int): Flow<String> {
+         return sessionsRepository.getSessionsByTag(tagId)
+             .map { sessions ->
+                 Log.d("MAP_DEBUG", "map tetiklendi! ${sessions.size} oturum var")
+                 val durations = sessions.map { it.duration }
+                 val total = calculateTotalTime(durations)
+                 Log.e("Durations For Tag", total)
+                 total
+             }
     }
 
     private fun calculateTotalTime(durations: List<String>): String {
@@ -42,5 +40,4 @@ class GetTotalFocusTimeUseCase @Inject constructor (private val sessionsReposito
             if (remainingMinutes > 0) append("${remainingMinutes}m ")
         }.trim()
     }
-
 }

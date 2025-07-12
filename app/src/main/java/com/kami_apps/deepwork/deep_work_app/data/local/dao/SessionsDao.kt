@@ -26,7 +26,7 @@ interface SessionsDao{
     @Query("SELECT * FROM sessions_table WHERE session_id = :sessionId")
     suspend fun getSessionsById(sessionId: Int): Sessions
 
-    @Query("SELECT * FROM sessions_table WHERE tag_id = :tagId ORDER BY start_time DESC")
+    @Query("SELECT * FROM sessions_table WHERE tag_id = :tagId")
      fun getSessionsByTag(tagId: Int): Flow<List<Sessions>>
 
     @Query("SELECT * FROM sessions_table WHERE start_time >= :startDate AND start_time <= :endDate ORDER BY start_time ASC")

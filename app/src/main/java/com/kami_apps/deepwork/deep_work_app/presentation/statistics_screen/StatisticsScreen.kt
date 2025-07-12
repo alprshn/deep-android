@@ -56,7 +56,6 @@ fun StatisticsScreen(
 
     // Tagları yükle
     LaunchedEffect(Unit) {
-
         statisticsViewModel.loadAllTags()
         statisticsViewModel.loadStatisticsForSelectedTag()
     }
@@ -192,7 +191,7 @@ fun StatisticsScreen(
 // Summary Cards Section
 
         sampleStatistics = FocusStatistics(
-            totalFocusTime = "statisticsViewModel",
+            totalFocusTime = statisticsState.totalFocusTime,
             totalSessions = statisticsState.totalSessionCount,
             averageDuration = "2h 42m"
         )
