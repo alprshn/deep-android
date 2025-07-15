@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.kami_apps.deepwork.MainActivity
 import com.kami_apps.deepwork.ui.theme.DeepWorkTheme
 
@@ -207,4 +208,138 @@ fun AppBlockScreen(
             }
         }
     }
-} 
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@Composable
+fun AppBlockScreenPreview() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.95f))
+            .blur(2.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF1C1C1E)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                // Block Icon
+                Icon(
+                    imageVector = Icons.Default.Block,
+                    contentDescription = "Blocked",
+                    tint = Color(0xFFFF4757),
+                    modifier = Modifier.size(64.dp)
+                )
+
+                // Title
+                Text(
+                    text = "App Blocked",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+
+                // App Name
+                Text(
+                    text = "appName",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFFFF4757),
+                    textAlign = TextAlign.Center
+                )
+
+                // Message
+                Text(
+                    text = "This app is blocked during your focus session. Stay focused on your goals!",
+                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 24.sp
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Buttons
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Return to DeepWork Button
+                    Button(
+                        onClick = {  },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF0A84FF)
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Block,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Return to Focus",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    // Go to Home Button
+                    OutlinedButton(
+                        onClick = {  },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Home,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Go to Home",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

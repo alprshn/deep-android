@@ -114,7 +114,7 @@ fun TopTagsCard(
 @Composable
 private fun TopTagItem(
     tag: TopTag,
-    showDivider: Boolean = false
+    showDivider: Boolean = true
 ) {
     Column {
         Row(

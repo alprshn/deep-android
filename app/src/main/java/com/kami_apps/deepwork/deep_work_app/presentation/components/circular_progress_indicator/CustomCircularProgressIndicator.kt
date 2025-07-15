@@ -33,6 +33,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
@@ -170,11 +171,11 @@ fun CustomCircularProgressIndicator(
                     radius = animatedRadiusValue,
                     center = canvasCenter
                 )
-                
+
                 // Ayarlanan süreyi temsil eden maksimum açı
                 val currentMinutes = minuteCurrentValue.toFloatOrNull() ?: 0f
                 val maxCircleAngle = (currentMinutes / maxValue) * 360f
-                
+
                 // Timer modu: kalan zamana göre arc çiz (circle pozisyonundan geriye doğru azalan)
                 val remainingProgress = timerProgress // kalan zamanın oranı (1'den 0'a)
                 val sweepAngle = maxCircleAngle * remainingProgress
@@ -183,7 +184,7 @@ fun CustomCircularProgressIndicator(
                     (width - arcSize.width) / 2f,
                     (height - arcSize.height) / 2f
                 )
-                
+
                 // Progress arc çiz - 12 o'clock'tan circle pozisyonuna kadar
                 if (sweepAngle > 0f) {
                     drawArc(
@@ -196,7 +197,7 @@ fun CustomCircularProgressIndicator(
                         topLeft = arcTopLeft
                     )
                 }
-                
+
                 // Ana circle - her zaman göster (ayar yaparken sürüklenebilir, çalışırken sabit)
                 val circleAngle = maxCircleAngle
                 val angleInRadians = Math.toRadians(-90.0 + circleAngle.toDouble())
@@ -204,6 +205,17 @@ fun CustomCircularProgressIndicator(
 
                 val dotX = canvasCenter.x + animatedRadiusValue * cos(angleInRadians).toFloat()
                 val dotY = canvasCenter.y + animatedRadiusValue * sin(angleInRadians).toFloat()
+
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color(0xFF000000).copy(alpha = 0.4f), Color.Transparent),
+                        center = Offset(dotX, dotY),
+                        radius = dotRadius * 3 / 2
+                    ),
+                    radius = dotRadius * 3 / 2,
+                    center = Offset(dotX, dotY),
+                    style = Fill
+                )
 
                 drawCircle(
                     brush = Brush.linearGradient(colors = gradientColors),
@@ -234,7 +246,7 @@ fun CustomCircularProgressIndicator(
                 }
             }
         }
-        
+
         // Numeric text is centered in the Box, which is centered in the Column
         Column(
             modifier = Modifier
@@ -314,5 +326,42 @@ fun CustomCircularProgressIndicatorPreview() {
             timerState = false
         )
     }
+}
+
+
+@Composable
+fun FramedCircle() {
+    Canvas(modifier = Modifier.size(200.dp)) {
+        val canvasSize = size.minDimension
+        val radius = canvasSize / 4
+        val centerOffset = Offset(canvasSize / 2, canvasSize / 2)
+
+        // Dıştaki büyük bulanık gradient circle
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0xFF000000).copy(alpha = 0.4f), Color.Transparent),
+                center = centerOffset,
+                radius = radius * 3 / 2
+            ),
+            radius = radius * 3 / 2,
+            center = centerOffset,
+            style = Fill
+        )
+
+        // İçteki belirgin circle
+        drawCircle(
+            color = Color(0xFF0A84FF),
+            radius = radius,
+            center = centerOffset
+        )
+    }
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewFramedCircle() {
+
+    FramedCircle()
 }
 

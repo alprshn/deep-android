@@ -210,16 +210,6 @@ fun StatisticsScreen(
 
 
 
-
-        // Sample data for Top Tags
-        val sampleTopTags = listOf(
-            TopTag("Coding", "💻", 48),
-            TopTag("Fizik", "⚛️", 17),
-            TopTag("Physics", "🔬", 1)
-        )
-
-
-
         TopTagsCard(
             topTags = statisticsState.topTags
         )
