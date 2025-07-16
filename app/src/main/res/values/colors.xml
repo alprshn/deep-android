@@ -6,5 +6,24 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <!-- Ana renkler -->
+    <color name="primary_blue">#0A84FF</color>
+    <color name="accent_red">#FF3B30</color>
+    <color name="card_background">#1C1C1E</color>
+    <color name="overlay_background">#E6000000</color>
+
+    <!-- Metin renkleri -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AEAEB2</color>
+    <color name="text_tertiary">#8E8E93</color>
+
+    <!-- Border ve ripple -->
+    <color name="border_color">#38383A</color>
+    <color name="ripple_primary">#33FFFFFF</color>
+    <color name="ripple_secondary">#1A000000</color>
+
+    <!-- Utility -->
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
 </resources>

@@ -78,15 +78,6 @@
             android:theme="@style/Theme.DeepWork">
         </activity>
         
-        <!-- App Block Overlay Activity -->
-        <activity
-            android:name=".deep_work_app.presentation.block_screen.AppBlockOverlayActivity"
-            android:exported="false"
-            android:theme="@style/Theme.DeepWork"
-            android:launchMode="singleTop"
-            android:excludeFromRecents="true"
-            android:taskAffinity=""
-            android:finishOnTaskLaunch="true" />
 
     <!-- Varsayılan İkon -->
     <activity-alias

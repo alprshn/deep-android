@@ -12,6 +12,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -39,12 +40,21 @@ class AppBlockingService : Service() {
     private var windowManager: WindowManager? = null
     private var currentBlockedPackage: String? = null
 
+    // Performans optimizasyonları
+    private var lastCheckedApp: String? = null
+    private var lastCheckTime = 0L
+    private var preCreatedOverlay: View? = null // Önceden oluşturulan overlay
+    private var packageNameCache = mutableMapOf<String, String>() // App isim cache
+    private var usageStatsManager: UsageStatsManager? = null
+
     companion object {
         const val ACTION_START_BLOCKING = "start_blocking"
         const val ACTION_STOP_BLOCKING = "stop_blocking"
         const val NOTIFICATION_ID = 2001
         const val CHANNEL_ID = "APP_BLOCKING_CHANNEL"
-        const val CHECK_INTERVAL = 1000L // 1 saniye
+        const val CHECK_INTERVAL = 300L // 300ms'ye düşürdük (daha hızlı kontrol)
+        const val MIN_CHECK_INTERVAL = 100L // Minimum interval
+        const val CACHE_CLEANUP_INTERVAL = 60000L // 1 dakika
     }
 
     override fun onCreate() {
@@ -52,6 +62,10 @@ class AppBlockingService : Service() {
         Log.d("AppBlockingService", "Service created")
         createNotificationChannel()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
+        // Overlay'i önceden oluştur
+        preCreateOverlay()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -61,12 +75,10 @@ class AppBlockingService : Service() {
                 Log.d("AppBlockingService", "Starting blocking...")
                 startBlocking()
             }
-
             ACTION_STOP_BLOCKING -> {
                 Log.d("AppBlockingService", "Stopping blocking...")
                 stopBlocking()
             }
-
             else -> {
                 Log.d("AppBlockingService", "Unknown or null action received")
             }
@@ -79,7 +91,9 @@ class AppBlockingService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d("AppBlockingService", "Service onDestroy called")
-        removeBlockOverlay() // Clean up any active overlay
+        removeBlockOverlay()
+        preCreatedOverlay = null
+        packageNameCache.clear()
     }
 
     private fun startBlocking() {
@@ -97,11 +111,12 @@ class AppBlockingService : Service() {
             try {
                 Log.d("AppBlockingService", "Loading blocked apps from repository")
                 blockedApps = appRepository.getBlockedApps().toSet()
-                Log.d(
-                    "AppBlockingService",
-                    "Blocked apps loaded: ${blockedApps.size} apps -> $blockedApps"
-                )
-                startAppMonitoring()
+                Log.d("AppBlockingService", "Blocked apps loaded: ${blockedApps.size} apps -> $blockedApps")
+
+                // Ana thread'e geç ve monitoring'i başlat
+                withContext(Dispatchers.Main) {
+                    startAppMonitoring()
+                }
             } catch (e: Exception) {
                 Log.e("AppBlockingService", "Error in startBlocking coroutine", e)
             }
@@ -117,9 +132,7 @@ class AppBlockingService : Service() {
             Log.d("AppBlockingService", "Monitoring callbacks removed")
         }
 
-        // Remove any active overlay
         removeBlockOverlay()
-
         stopForeground(STOP_FOREGROUND_REMOVE)
         Log.d("AppBlockingService", "Foreground service stopped")
         stopSelf()
@@ -131,8 +144,22 @@ class AppBlockingService : Service() {
         checkRunnable = object : Runnable {
             override fun run() {
                 if (isBlocking) {
-                    checkCurrentApp()
-                    handler.postDelayed(this, CHECK_INTERVAL)
+                    val currentTime = System.currentTimeMillis()
+
+                    // Hızlı kontrol - çok yakın zamanda kontrol edildi mi?
+                    if (currentTime - lastCheckTime > MIN_CHECK_INTERVAL) {
+                        checkCurrentApp()
+                        lastCheckTime = currentTime
+                    }
+
+                    // Dinamik interval - eğer blocked app tespit edilirse daha hızlı kontrol et
+                    val interval = if (currentBlockedPackage != null) {
+                        CHECK_INTERVAL / 2 // Blocked app varsa daha hızlı
+                    } else {
+                        CHECK_INTERVAL
+                    }
+
+                    handler.postDelayed(this, interval)
                 } else {
                     Log.d("AppBlockingService", "Monitoring stopped - isBlocking is false")
                 }
@@ -143,6 +170,13 @@ class AppBlockingService : Service() {
 
     private fun checkCurrentApp() {
         val currentApp = getCurrentForegroundApp()
+
+        // Aynı app'i tekrar kontrol etme optimizasyonu
+        if (currentApp == lastCheckedApp) {
+            return
+        }
+
+        lastCheckedApp = currentApp
         Log.d("AppBlockingService", "Current foreground app: $currentApp")
 
         if (currentApp != null) {
@@ -150,44 +184,24 @@ class AppBlockingService : Service() {
                 Log.w("AppBlockingService", "BLOCKED APP DETECTED: $currentApp - Showing overlay")
                 showBlockOverlay(currentApp)
             } else {
-                // If user switched to a non-blocked app, remove overlay
+                // Non-blocked app'e geçiş
                 if (currentBlockedPackage != null && currentBlockedPackage != currentApp) {
-                    Log.d(
-                        "AppBlockingService",
-                        "User switched from blocked app to allowed app, removing overlay"
-                    )
+                    Log.d("AppBlockingService", "User switched from blocked app to allowed app, removing overlay")
                     removeBlockOverlay()
                 }
-
-                // Only log every 10th check to reduce spam
-                if (System.currentTimeMillis() % 10000 < 1000) {
-                    Log.d("AppBlockingService", "App $currentApp is not blocked")
-                }
-            }
-        } else {
-            // Only log every 10th check to reduce spam
-            if (System.currentTimeMillis() % 10000 < 1000) {
-                Log.d("AppBlockingService", "No foreground app detected")
             }
         }
     }
 
     private fun getCurrentForegroundApp(): String? {
         try {
-            val usageStatsManager =
-                getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            if (usageStatsManager == null) return null
+
             val endTime = System.currentTimeMillis()
-            val beginTime = endTime - 2000 // 2 seconds window
+            val beginTime = endTime - 1000 // 1 saniye pencere (daha küçük)
 
-            val usageEvents = usageStatsManager.queryEvents(beginTime, endTime)
-
-            if (usageEvents == null) {
-                // Only log every 10th check to reduce spam
-                if (System.currentTimeMillis() % 10000 < 1000) {
-                    Log.w("AppBlockingService", "No usage events available - check permissions")
-                }
-                return null
-            }
+            val usageEvents = usageStatsManager!!.queryEvents(beginTime, endTime)
+            if (usageEvents == null) return null
 
             var latestPackage: String? = null
             var latestTimestamp = 0L
@@ -204,26 +218,6 @@ class AppBlockingService : Service() {
                 }
             }
 
-            // If no events in small window, try a larger window (up to 30 seconds)
-            if (latestPackage == null) {
-                val largerBeginTime = endTime - 30000 // 30 seconds window
-                val largerUsageEvents = usageStatsManager.queryEvents(largerBeginTime, endTime)
-
-                if (largerUsageEvents != null) {
-                    while (largerUsageEvents.hasNextEvent()) {
-                        val event = android.app.usage.UsageEvents.Event()
-                        largerUsageEvents.getNextEvent(event)
-
-                        if (event.eventType == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                            if (event.timeStamp > latestTimestamp) {
-                                latestTimestamp = event.timeStamp
-                                latestPackage = event.packageName
-                            }
-                        }
-                    }
-                }
-            }
-
             return latestPackage
         } catch (e: Exception) {
             Log.e("AppBlockingService", "Error getting foreground app", e)
@@ -235,21 +229,23 @@ class AppBlockingService : Service() {
         try {
             Log.i("AppBlockingService", "Attempting to show block overlay for: $packageName")
 
-            // If overlay is already showing for the same app, don't recreate it
+            // Aynı app için overlay zaten gösteriliyorsa, tekrar oluşturma
             if (currentBlockedPackage == packageName && overlayView != null) {
                 Log.d("AppBlockingService", "Overlay already showing for $packageName")
                 return
             }
 
-            // Remove any existing overlay first
+            // Mevcut overlay'i kaldır
             removeBlockOverlay()
-
             currentBlockedPackage = packageName
 
-            // Create native Android View overlay (no Compose complications)
-            overlayView = createNativeOverlayView(packageName, getAppName(packageName))
+            // Önceden oluşturulan overlay'i kullan veya yeni bir tane oluştur
+            overlayView = preCreatedOverlay?.let { view ->
+                updateOverlayContent(view, packageName)
+                view
+            } ?: createNativeOverlayView(packageName, getAppName(packageName))
 
-            // Window parameters for overlay
+            // Window parametreleri
             val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             } else {
@@ -268,7 +264,7 @@ class AppBlockingService : Service() {
                 gravity = Gravity.TOP or Gravity.START
             }
 
-            // Add overlay to window
+            // Overlay'i ekle
             windowManager?.addView(overlayView, params)
             Log.i("AppBlockingService", "Block overlay added successfully for $packageName")
 
@@ -292,98 +288,75 @@ class AppBlockingService : Service() {
             currentBlockedPackage = null
         }
     }
-    
+
+    private fun preCreateOverlay() {
+        // XML layout'u önceden oluştur
+        preCreatedOverlay = LayoutInflater.from(this).inflate(R.layout.overlay_block_screen, null)
+
+        // Button listeners'ı ayarla
+        val returnButton = preCreatedOverlay?.findViewById<Button>(R.id.return_button)
+        val homeButton = preCreatedOverlay?.findViewById<Button>(R.id.home_button)
+
+        returnButton?.setOnClickListener {
+            removeBlockOverlay()
+        }
+
+        homeButton?.setOnClickListener {
+            removeBlockOverlay()
+            goToHomeScreen()
+        }
+    }
+
+    private fun updateOverlayContent(view: View, packageName: String) {
+        // Sadece app ismini güncelle
+        val appNameText = view.findViewById<TextView>(R.id.app_name_text)
+        appNameText?.text = getAppName(packageName)
+    }
+
     private fun createNativeOverlayView(packageName: String, appName: String): View {
-        // Create main container
-        val mainLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xF0000000.toInt()) // Semi-transparent black
-            gravity = Gravity.CENTER
-            setPadding(48, 48, 48, 48)
+        // XML layout'u inflate et
+        val overlayView = LayoutInflater.from(this).inflate(R.layout.overlay_block_screen, null)
+
+        // View'ları bul ve içeriği ayarla
+        val appNameText = overlayView.findViewById<TextView>(R.id.app_name_text)
+        val returnButton = overlayView.findViewById<Button>(R.id.return_button)
+        val homeButton = overlayView.findViewById<Button>(R.id.home_button)
+        val focusTimeText = overlayView.findViewById<TextView>(R.id.focus_time_text)
+
+        // İçeriği ayarla
+        appNameText.text = appName
+
+        // Buton click listeners
+        returnButton.setOnClickListener {
+            removeBlockOverlay()
         }
-        
-        // Title text
-        val titleText = TextView(this).apply {
-            text = "Stay Focused!"
-            textSize = 24f
-            setTextColor(0xFFFFFFFF.toInt()) // White
-            gravity = Gravity.CENTER
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
+
+        homeButton.setOnClickListener {
+            removeBlockOverlay()
+            goToHomeScreen()
         }
-        
-        // Message text
-        val messageText = TextView(this).apply {
-            text = "$appName is blocked during your focus session"
-            textSize = 18f
-            setTextColor(0xFFCCCCCC.toInt()) // Light gray
-            gravity = Gravity.CENTER
-            setPadding(0, 32, 0, 16)
-        }
-        
-        // Subtitle text
-        val subtitleText = TextView(this).apply {
-            text = "Keep working towards your goals!"
-            textSize = 16f
-            setTextColor(0xFFCCCCCC.toInt()) // Light gray
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 48)
-        }
-        
-        // Return to focus button
-        val returnButton = Button(this).apply {
-            text = "Return to Focus"
-            textSize = 16f
-            setBackgroundColor(0xFF2196F3.toInt()) // Blue
-            setTextColor(0xFFFFFFFF.toInt())
-            setPadding(32, 16, 32, 16)
-            setOnClickListener { removeBlockOverlay() }
-            
-            val params = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 0, 0, 16)
-            }
-            layoutParams = params
-        }
-        
-        // Go to home button
-        val homeButton = Button(this).apply {
-            text = "Go to Home"
-            textSize = 16f
-            setBackgroundColor(0xFF666666.toInt()) // Gray
-            setTextColor(0xFFFFFFFF.toInt())
-            setPadding(32, 16, 32, 16)
-            setOnClickListener { 
-                removeBlockOverlay()
-                goToHomeScreen()
-            }
-            
-            val params = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            layoutParams = params
-        }
-        
-        // Add all views to main layout
-        mainLayout.addView(titleText)
-        mainLayout.addView(messageText)
-        mainLayout.addView(subtitleText)
-        mainLayout.addView(returnButton)
-        mainLayout.addView(homeButton)
-        
-        return mainLayout
+
+        // Focus time bilgisini ayarla (isteğe bağlı)
+        focusTimeText.text = "Focus session active"
+
+        return overlayView
     }
 
     private fun getAppName(packageName: String): String {
+        // Cache'den kontrol et
+        packageNameCache[packageName]?.let { return it }
+
         return try {
             val packageManager = packageManager
             val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-            packageManager.getApplicationLabel(applicationInfo).toString()
+            val appName = packageManager.getApplicationLabel(applicationInfo).toString()
+
+            // Cache'e ekle
+            packageNameCache[packageName] = appName
+            appName
         } catch (e: Exception) {
             Log.w("AppBlockingService", "Could not get app name for $packageName", e)
-            packageName // Fallback to package name
+            packageName
         }
     }
 
@@ -391,7 +364,7 @@ class AppBlockingService : Service() {
         try {
             val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             startActivity(homeIntent)
         } catch (e: Exception) {
@@ -410,8 +383,7 @@ class AppBlockingService : Service() {
                 setShowBadge(false)
             }
 
-            val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
