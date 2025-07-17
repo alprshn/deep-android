@@ -111,6 +111,12 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
     implementation ("androidx.savedstate:savedstate:1.3.0")
 
+    //RevenueCat
+    implementation("com.revenuecat.purchases:purchases:8.17.1")
+
+
+
+
     //Haze
     implementation("dev.chrisbanes.haze:haze:1.6.4")
     implementation("dev.chrisbanes.haze:haze-materials:1.6.4")
@@ -122,6 +128,8 @@ dependencies {
     //Timline Lib for old version
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
+    //Json
+    implementation("com.google.code.gson:gson:2.13.1")
 
 
     // Test dependencies

@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.kami_apps.deepwork.deep_work_app.domain.data.AppIcon
 import com.kami_apps.deepwork.deep_work_app.domain.data.InstalledApp
 import com.kami_apps.deepwork.deep_work_app.domain.repository.AppRepository
@@ -13,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import com.kami_apps.deepwork.R
+import com.kami_apps.deepwork.deep_work_app.data.model.AppIconConfig
+import java.io.InputStreamReader
 
 class AppRepositoryImpl(
     private val context: Context
@@ -74,30 +78,24 @@ class AppRepositoryImpl(
 
     override suspend fun getAvailableAppIcons(): List<AppIcon> = withContext(Dispatchers.IO) {
         val currentIcon = getCurrentAppIcon()
-        
-        listOf(
-            AppIcon(
-                id = "original",
-                name = "Original",
-                activityAlias = DEFAULT_ALIAS,
-                iconRes = R.mipmap.ic_launcher,
-                isSelected = currentIcon.id == "original"
-            ),
-            AppIcon(
-                id = "blue",
-                name = "Blue",
-                activityAlias = BLUE_ALIAS,
-                iconRes = R.mipmap.ic_blue,
-                isSelected = currentIcon.id == "blue"
-            ),
-            AppIcon(
-                id = "white", 
-                name = "White",
-                activityAlias = WHITE_ALIAS,
-                iconRes = R.mipmap.ic_white,
-                isSelected = currentIcon.id == "white"
+        val gson = Gson()
+        val inputStream = context.resources.openRawResource(R.raw.app_icons)
+        val reader = InputStreamReader(inputStream)
+        val type = object : TypeToken<List<AppIconConfig>>() {}.type
+        val iconConfigs: List<AppIconConfig> = gson.fromJson(reader, type)
+
+        iconConfigs.map { config ->
+            val iconResId = context.resources.getIdentifier(
+                config.iconResName, "mipmap", context.packageName
             )
-        )
+            AppIcon(
+                id = config.id,
+                name = config.name,
+                activityAlias = config.activityAlias,
+                iconRes = iconResId, // Dynamically get the resource ID
+                isSelected = currentIcon.id == config.id
+            )
+        }
     }
 
     override suspend fun getCurrentAppIcon(): AppIcon = withContext(Dispatchers.IO) {

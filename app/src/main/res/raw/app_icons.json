@@ -1,0 +1,20 @@
+[
+  {
+    "id": "original",
+    "name": "Original",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityDefault",
+    "iconResName": "ic_launcher"
+  },
+  {
+    "id": "blue",
+    "name": "Blue",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityBlue",
+    "iconResName": "ic_blue"
+  },
+  {
+    "id": "white",
+    "name": "White",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityRed",
+    "iconResName": "ic_white"
+  }
+]

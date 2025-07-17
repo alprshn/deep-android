@@ -206,8 +206,6 @@ fun AppIconItem(
 ) {
     val context = LocalContext.current
     val borderColor = if (isSelected) Color(0xFF0A84FF) else Color.Transparent
-    val backgroundColor =
-        if (isSelected) Color(0xFF0A84FF).copy(alpha = 0.1f) else Color(0xFF1D1A1F)
 
     // Convert mipmap resource to bitmap
     val iconBitmap = remember(icon.iconRes) {
@@ -294,7 +292,7 @@ fun AppIconItemPreview() {
                     id = "selected",
                     name = "Selected",
                     activityAlias = "test.alias",
-                    iconRes = com.kami_apps.deepwork.R.mipmap.ic_launcher,
+                    iconRes = com.kami_apps.deepwork.R.mipmap.ic_white,
                     isSelected = true
                 ),
                 isSelected = true,
@@ -341,7 +339,7 @@ fun AppIconGridPreview() {
             id = "original",
             name = "Original",
             activityAlias = "test.alias.original",
-            iconRes = com.kami_apps.deepwork.R.mipmap.ic_launcher,
+            iconRes = com.kami_apps.deepwork.R.mipmap.ic_blue,
             isSelected = true
         ),
         AppIcon(
