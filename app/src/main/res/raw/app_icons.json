@@ -16,5 +16,41 @@
     "name": "White",
     "activityAlias": "com.kami_apps.deepwork.MainActivityRed",
     "iconResName": "ic_white"
+  },
+  {
+    "id": "yellow",
+    "name": "Yellow",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityYellow",
+    "iconResName": "ic_yellow"
+  },
+  {
+    "id": "sun",
+    "name": "Sun",
+    "activityAlias": "com.kami_apps.deepwork.MainActivitySun",
+    "iconResName": "ic_sun"
+  },
+  {
+    "id": "rainbow",
+    "name": "Rainbow",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityRainbow",
+    "iconResName": "ic_rainbow"
+  },
+  {
+    "id": "sweet",
+    "name": "Sweet",
+    "activityAlias": "com.kami_apps.deepwork.MainActivitySweet",
+    "iconResName": "ic_sweet"
+  },
+  {
+    "id": "metal",
+    "name": "Metal",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityMetal",
+    "iconResName": "ic_metal"
+  },
+  {
+    "id": "sky",
+    "name": "Sky",
+    "activityAlias": "com.kami_apps.deepwork.MainActivitySky",
+    "iconResName": "ic_sky"
   }
 ]
