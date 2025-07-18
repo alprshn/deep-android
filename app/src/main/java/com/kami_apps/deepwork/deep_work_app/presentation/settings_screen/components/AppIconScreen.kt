@@ -225,37 +225,32 @@ fun AppIconItem(
             Image(
                 bitmap = bitmap,
                 contentDescription = icon.name,
-                                 modifier = Modifier
-                     .size(80.dp)
-                     .clip(RoundedCornerShape(12.dp))
-                     .border(
-                         width = if (isSelected) 2.dp else 0.dp,
-                         color = borderColor,
-                         shape = RoundedCornerShape(12.dp)
-                     )
+                modifier = Modifier
+                    .border(
+                        width = if (isSelected) 2.dp else 0.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .size(80.dp)
+
             )
-                     } ?: run {
-                 // Fallback in case bitmap conversion fails
-                 Box(
-                     modifier = Modifier
-                         .size(50.dp)
-                         .clip(RoundedCornerShape(12.dp))
-                         .background(Color.Gray, RoundedCornerShape(12.dp))
-                         .border(
-                             width = if (isSelected) 2.dp else 0.dp,
-                             color = borderColor,
-                             shape = RoundedCornerShape(12.dp)
-                         ),
-                     contentAlignment = Alignment.Center
-                 ) {
-                     Text(
-                         text = icon.name.first().toString(),
-                         color = Color.Gray,
-                         fontSize = 24.sp,
-                         fontWeight = FontWeight.Bold
-                     )
-                 }
-             }
+        } ?: run {
+            // Fallback in case bitmap conversion fails
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Gray, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = icon.name.first().toString(),
+                    color = Color.Gray,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         Text(
             text = icon.name,
             color = Color.White,

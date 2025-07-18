@@ -1,6 +1,9 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.settings_screen
-
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,8 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.outlined.AppBlocking
@@ -47,17 +52,20 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import com.kami_apps.deepwork.deep_work_app.data.util.darken
 import com.kami_apps.deepwork.deep_work_app.data.util.lighten
 import androidx.navigation.NavHostController
-
+import com.kami_apps.deepwork.R
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 @Composable
 fun SettingsScreen(navController: NavHostController? = null) {
     val scrollState = rememberScrollState()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +95,7 @@ fun SettingsScreen(navController: NavHostController? = null) {
                 Column {
                     SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
                     SettingsBoxesItem(
-                        text = "App Icon", 
+                        text = "App Icon",
                         icon = Icons.Default.Apps,
                         onClickSettingsBoxesItem = {
                             navController?.navigate("AppIcon")
@@ -95,11 +103,11 @@ fun SettingsScreen(navController: NavHostController? = null) {
                     )
                     SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
                     SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
-                                    SettingsBoxesItem(
-                    text = "Manage Tags",
-                    icon = Icons.Rounded.Sell,
-                    dividerVisible = false
-                )
+                    SettingsBoxesItem(
+                        text = "Manage Tags",
+                        icon = Icons.Rounded.Sell,
+                        dividerVisible = false
+                    )
                 }
             }
 
@@ -131,7 +139,26 @@ fun SettingsScreen(navController: NavHostController? = null) {
             }
             SettingsBoxes(headerVisibility = false, headerName = "")
 
-            SettingsBoxes(true,"MORE APPS")
+            Text(
+                "MORE APPS",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color.Gray,
+                modifier = Modifier.padding(start = 15.dp)
+            )
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+            ) {
+                Column {
+                    SettingsAppItem(dividerVisible = false)
+                }
+            }
+
+
         }
     }
 }
@@ -148,7 +175,9 @@ fun SettingsBoxes(headerVisibility: Boolean, headerName: String) {
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Normal,
                 color = Color.Gray,
-                modifier = Modifier.padding(start = 15.dp).padding(bottom = 5.dp)
+                modifier = Modifier
+                    .padding(start = 15.dp)
+                    .padding(bottom = 5.dp)
             )
         }
         Card(
@@ -177,11 +206,14 @@ fun SettingsBoxesItem(
     onClickSettingsBoxesItem: () -> Unit = {}
 ) {
 
-    Column(modifier = Modifier.fillMaxWidth().clickable(
-        onClick = onClickSettingsBoxesItem,
-        indication = ripple(color = Color.White.copy(alpha = 0.1f)),
-        interactionSource = remember { MutableInteractionSource() }
-    )) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                onClick = onClickSettingsBoxesItem,
+                indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                interactionSource = remember { MutableInteractionSource() }
+            )) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -209,10 +241,90 @@ fun SettingsBoxesItem(
     }
 }
 
+
+@Composable
+fun SettingsAppItem(
+    dividerVisible: Boolean = true,
+    icon: Painter = painterResource(id = R.drawable.ic_futurebaby), // örnek ikon
+    title: String = "Future Baby Generate AI",
+    subtitle: String = "Face Swapper & Deepfake Reface",
+    link: String = "https://play.google.com/store/apps/details?id=com.babyai.futurebaby"
+
+
+) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                    context.startActivity(intent)
+                },
+                indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                interactionSource = remember { MutableInteractionSource() }
+            )) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Metinler
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
+                Text(
+                    text = subtitle,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Default.ArrowForwardIos,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(24.dp)
+            )
+
+        }
+        AnimatedVisibility(visible = dividerVisible) {
+            Divider(
+                color = Color.Gray.copy(alpha = 0.2f),
+                modifier = Modifier.padding(start = 56.dp)
+            )
+        }
+
+    }
+}
+
+
 @Preview
 @Composable
 fun SettingsScreenPreview() {
     SettingsScreen()
+}
+
+
+@Preview
+@Composable
+fun SettingsScreen_2Preview() {
+    SettingsAppItem()
 }
 
 

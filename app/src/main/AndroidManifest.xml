@@ -109,10 +109,98 @@
 
     <!-- Alternatif İkon 2 -->
     <activity-alias
-        android:name=".MainActivityRed"
+        android:name=".MainActivityWhite"
         android:enabled="false"
         android:exported="true"
         android:icon="@mipmap/ic_white"
+        android:label="@string/app_name"
+        android:targetActivity=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity-alias>
+
+    <!-- Alternatif İkon 3 -->
+    <activity-alias
+        android:name=".MainActivityYellow"
+        android:enabled="false"
+        android:exported="true"
+        android:icon="@mipmap/ic_yellow"
+        android:label="@string/app_name"
+        android:targetActivity=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity-alias>
+
+    <!-- Alternatif İkon 4 -->
+    <activity-alias
+        android:name=".MainActivitySun"
+        android:enabled="false"
+        android:exported="true"
+        android:icon="@mipmap/ic_sun"
+        android:label="@string/app_name"
+        android:targetActivity=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity-alias>
+
+
+    <!-- Alternatif İkon 5 -->
+    <activity-alias
+        android:name=".MainActivityRainbow"
+        android:enabled="false"
+        android:exported="true"
+        android:icon="@mipmap/ic_rainbow"
+        android:label="@string/app_name"
+        android:targetActivity=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity-alias>
+
+
+    <!-- Alternatif İkon 6 -->
+    <activity-alias
+        android:name=".MainActivitySweet"
+        android:enabled="false"
+        android:exported="true"
+        android:icon="@mipmap/ic_sweet"
+        android:label="@string/app_name"
+        android:targetActivity=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity-alias>
+
+
+    <!-- Alternatif İkon 7 -->
+    <activity-alias
+        android:name=".MainActivityMetal"
+        android:enabled="false"
+        android:exported="true"
+        android:icon="@mipmap/ic_metal"
+        android:label="@string/app_name"
+        android:targetActivity=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity-alias>
+
+
+    <!-- Alternatif İkon 8 -->
+    <activity-alias
+        android:name=".MainActivitySky"
+        android:enabled="false"
+        android:exported="true"
+        android:icon="@mipmap/ic_sky"
         android:label="@string/app_name"
         android:targetActivity=".MainActivity">
         <intent-filter>

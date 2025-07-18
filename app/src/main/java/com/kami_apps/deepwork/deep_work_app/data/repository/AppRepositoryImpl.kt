@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import com.kami_apps.deepwork.R
 import com.kami_apps.deepwork.deep_work_app.data.model.AppIconConfig
+import java.io.IOException
 import java.io.InputStreamReader
 
 class AppRepositoryImpl(
@@ -25,19 +26,46 @@ class AppRepositoryImpl(
     private val packageManager = context.packageManager
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences("app_blocking_prefs", Context.MODE_PRIVATE)
     private val _blockedAppsFlow = MutableStateFlow<List<String>>(emptyList())
-    
+
+
+    // Store the loaded icon configurations
+    private var allAppIconConfigs: List<AppIconConfig> = emptyList()
+
     companion object {
-        private const val BASE_PACKAGE = "com.kami_apps.deepwork"
-        private const val DEFAULT_ALIAS = "$BASE_PACKAGE.MainActivityDefault"
-        private const val BLUE_ALIAS = "$BASE_PACKAGE.MainActivityBlue" 
-        private const val WHITE_ALIAS = "$BASE_PACKAGE.MainActivityRed"
         private const val BLOCKED_APPS_KEY = "blocked_apps"
     }
     
     init {
         // Initialize blocked apps flow
         _blockedAppsFlow.value = getBlockedAppsFromPrefs()
+
+        // Load app icon configurations during initialization
+        // This should be done carefully, potentially in a background thread
+        // For simplicity here, we'll do it synchronously for now, but
+        // a better approach for production might be lazy loading or
+        // loading on a separate coroutine if startup time is critical.
+        loadAppIconConfigs()
+
     }
+
+    // New private function to load icon configurations
+    private fun loadAppIconConfigs() {
+        try {
+            val gson = Gson()
+            val inputStream = context.resources.openRawResource(R.raw.app_icons)
+            val reader = InputStreamReader(inputStream)
+            val type = object : TypeToken<List<AppIconConfig>>() {}.type
+            allAppIconConfigs = gson.fromJson(reader, type)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            // Handle error: log it, maybe provide a default set of icons
+            allAppIconConfigs = emptyList() // Or a default list if critical
+        } catch (e: Exception) { // Catching other potential exceptions from Gson
+            e.printStackTrace()
+            allAppIconConfigs = emptyList()
+        }
+    }
+
 
     private suspend fun getAllInstalledApps(): List<InstalledApp> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
@@ -84,7 +112,7 @@ class AppRepositoryImpl(
         val type = object : TypeToken<List<AppIconConfig>>() {}.type
         val iconConfigs: List<AppIconConfig> = gson.fromJson(reader, type)
 
-        iconConfigs.map { config ->
+        allAppIconConfigs.map { config ->
             val iconResId = context.resources.getIdentifier(
                 config.iconResName, "mipmap", context.packageName
             )
@@ -99,62 +127,59 @@ class AppRepositoryImpl(
     }
 
     override suspend fun getCurrentAppIcon(): AppIcon = withContext(Dispatchers.IO) {
-        val enabledState = try {
-            packageManager.getComponentEnabledSetting(
-                android.content.ComponentName(context, DEFAULT_ALIAS)
-            )
-        } catch (e: Exception) {
-            PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+        // Iterate through all known app icon configurations to find the currently enabled one
+        for (config in allAppIconConfigs) {
+            try {
+                val enabledState = packageManager.getComponentEnabledSetting(
+                    android.content.ComponentName(context, config.activityAlias)
+                )
+                if (enabledState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                    val iconResId = context.resources.getIdentifier(
+                        config.iconResName, "mipmap", context.packageName
+                    )
+                    return@withContext AppIcon(config.id, config.name, config.activityAlias, iconResId, true)
+                }
+            } catch (e: Exception) {
+                // Component not found or other issue, continue to next
+                e.printStackTrace()
+            }
         }
 
-        val blueEnabledState = try {
-            packageManager.getComponentEnabledSetting(
-                android.content.ComponentName(context, BLUE_ALIAS)
+        // If no specific alias is enabled, assume the "original" or default one is active.
+        // Find the "original" config or return a sensible default.
+        val originalConfig = allAppIconConfigs.firstOrNull { it.id == "original" }
+        if (originalConfig != null) {
+            val iconResId = context.resources.getIdentifier(
+                originalConfig.iconResName, "mipmap", context.packageName
             )
-        } catch (e: Exception) {
-            PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-        }
-
-        val whiteEnabledState = try {
-            packageManager.getComponentEnabledSetting(
-                android.content.ComponentName(context, WHITE_ALIAS)
-            )
-        } catch (e: Exception) {
-            PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-        }
-
-        when {
-            blueEnabledState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> {
-                AppIcon("blue", "Blue", BLUE_ALIAS, R.mipmap.ic_blue, true)
-            }
-            whiteEnabledState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> {
-                AppIcon("white", "White", WHITE_ALIAS, R.mipmap.ic_white, true)
-            }
-            else -> {
-                AppIcon("original", "Original", DEFAULT_ALIAS, R.mipmap.ic_launcher, true)
-            }
+            AppIcon(originalConfig.id, originalConfig.name, originalConfig.activityAlias, iconResId, true)
+        } else {
+            // Fallback if "original" isn't found in config or if config loading failed
+            AppIcon("default_fallback", "Default", "${context.packageName}.MainActivityDefault", R.mipmap.ic_launcher, true)
         }
     }
+
+
 
     override suspend fun changeAppIcon(iconId: String): Boolean = withContext(Dispatchers.IO) {
         try {
             // Önce tüm alias'ları disable et
             disableAllAliases()
-            
+
             // Seçilen icon'u enable et
-            val targetAlias = when (iconId) {
-                "blue" -> BLUE_ALIAS
-                "white" -> WHITE_ALIAS
-                else -> DEFAULT_ALIAS
+            val targetAliasConfig = allAppIconConfigs.firstOrNull { it.id == iconId }
+
+            if (targetAliasConfig != null) {
+                packageManager.setComponentEnabledSetting(
+                    android.content.ComponentName(context, targetAliasConfig.activityAlias),
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+                true
+            } else {
+                // If iconId not found in configs, cannot change
+                false
             }
-            
-            packageManager.setComponentEnabledSetting(
-                android.content.ComponentName(context, targetAlias),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP
-            )
-            
-            true
         } catch (e: Exception) {
             e.printStackTrace()
             false
@@ -206,9 +231,11 @@ class AppRepositoryImpl(
             .apply()
     }
 
+    // Dynamically get all aliases from the loaded configurations
     private fun disableAllAliases() {
-        val aliases = listOf(DEFAULT_ALIAS, BLUE_ALIAS, WHITE_ALIAS)
-        
+        // Get all alias strings from the loaded configurations
+        val aliases = allAppIconConfigs.map { it.activityAlias }
+
         aliases.forEach { alias ->
             try {
                 packageManager.setComponentEnabledSetting(
@@ -217,7 +244,9 @@ class AppRepositoryImpl(
                     PackageManager.DONT_KILL_APP
                 )
             } catch (e: Exception) {
-                // Ignore
+                // Ignore if the component is not found or other issues.
+                // This can happen if an alias was removed from config but is still "enabled" from a prior run.
+                // Log for debugging: e.printStackTrace()
             }
         }
     }

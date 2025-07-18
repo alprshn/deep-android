@@ -14,7 +14,7 @@
   {
     "id": "white",
     "name": "White",
-    "activityAlias": "com.kami_apps.deepwork.MainActivityRed",
+    "activityAlias": "com.kami_apps.deepwork.MainActivityWhite",
     "iconResName": "ic_white"
   },
   {
