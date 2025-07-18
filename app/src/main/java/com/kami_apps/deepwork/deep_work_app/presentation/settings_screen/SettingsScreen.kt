@@ -1,12 +1,15 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.settings_screen
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.remember
@@ -52,7 +55,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
@@ -148,7 +154,7 @@ fun SettingsScreen(navController: NavHostController? = null) {
             )
             Card(
                 modifier = Modifier
-                    .padding(vertical = 24.dp)
+                    .padding(top=5.dp)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
@@ -157,6 +163,9 @@ fun SettingsScreen(navController: NavHostController? = null) {
                     SettingsAppItem(dividerVisible = false)
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AppInfoSection()
 
 
         }
@@ -324,7 +333,7 @@ fun SettingsScreenPreview() {
 @Preview
 @Composable
 fun SettingsScreen_2Preview() {
-    SettingsAppItem()
+    AppInfoSection()
 }
 
 
@@ -486,5 +495,71 @@ fun SettingsSwitchItem(
             color = Color.Gray.copy(alpha = 0.2f),
             modifier = Modifier.padding(start = 56.dp)
         )
+    }
+}
+
+
+@Composable
+fun AppInfoSection(
+    context: Context = LocalContext.current,
+    icon: Painter = painterResource(id = R.mipmap.ic_launcher), // örnek ikon
+    appName: String = "Future Baby",
+    privacyPolicyUrl: String = "https://kamiapp.framer.website/page/privacy-policy",
+    termsUrl: String = "https://kamiapp.framer.website/page/terms-conditions"
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+// Resim eklenecek 
+        // App version
+        val appVersion = try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "Unknown"
+        } catch (e: PackageManager.NameNotFoundException) {
+            "Unknown"
+        }
+
+        Text(
+            text = appVersion,
+            color = Color.Gray,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Links row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Privacy policy",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                modifier = Modifier.clickable {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl))
+                    context.startActivity(intent)
+                }
+            )
+
+            Text(
+                text = "     ",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+
+            Text(
+                text = "Terms of service",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                modifier = Modifier.clickable {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(termsUrl))
+                    context.startActivity(intent)
+                }
+            )
+        }
     }
 }
