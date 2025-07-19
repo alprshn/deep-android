@@ -502,7 +502,7 @@ fun SettingsSwitchItem(
 @Composable
 fun AppInfoSection(
     context: Context = LocalContext.current,
-    icon: Painter = painterResource(id = R.mipmap.ic_launcher), // örnek ikon
+    //icon: Painter = painterResource(id = R.mipmap.ic_launcher), // örnek ikon
     appName: String = "Future Baby",
     privacyPolicyUrl: String = "https://kamiapp.framer.website/page/privacy-policy",
     termsUrl: String = "https://kamiapp.framer.website/page/terms-conditions"
@@ -511,7 +511,7 @@ fun AppInfoSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-// Resim eklenecek 
+// Resim eklenecek
         // App version
         val appVersion = try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)

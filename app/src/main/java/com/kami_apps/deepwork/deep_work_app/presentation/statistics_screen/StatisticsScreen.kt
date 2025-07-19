@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -35,12 +36,17 @@ import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.compo
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.SegmentedControlColors
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.SummaryCardsSection
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.FocusStatistics
-import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeElectricCarSales
-import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.JetpackComposeRockMetalRatios
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.HourlyFocusChart
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.DailyFocusChart
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.WeeklyPeakChart
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.MonthlyFocusChart
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.YearlyFocusChart
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.WeekdayAnalysisChart
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.TopTagsCard
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.SessionLogsCard
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.TopTag
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.SessionLog
+import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -50,15 +56,19 @@ fun StatisticsScreen(
 ) {
     val statisticsState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
     val items = listOf("Day", "Week", "Month", "Year")
-    var selectedSegmentIndex by remember { mutableIntStateOf(0) }
     var sampleStatistics by remember { mutableStateOf(FocusStatistics()) } // Örnek
 
-
-    // Tagları yükle
+    // Load data when screen first loads
     LaunchedEffect(Unit) {
         statisticsViewModel.loadAllTags()
         statisticsViewModel.loadTopTags()
         statisticsViewModel.loadStatisticsForSelectedTag()
+        statisticsViewModel.loadChartData()
+    }
+    
+    // Update charts when date or time period changes
+    LaunchedEffect(statisticsState.selectedDate, statisticsState.selectedTimeIndex) {
+        statisticsViewModel.loadChartData()
     }
 
 
@@ -126,8 +136,23 @@ fun StatisticsScreen(
                     }
                 }
 
-                // Kullanıcı tarafından oluşturulan taglar
-                items(statisticsState.allTags) { tags ->
+                // User created tags - with dummy data for testing
+                val dummyTags = listOf(
+                    Tags(1, "Programming", "💻", "18402806360702976000"),  // Red
+                    Tags(2, "Reading", "📚", "18402806360702976000"),     // Teal
+                    Tags(3, "Writing", "✍️", "18402806360702976000"),     // Blue
+                    Tags(4, "Research", "🔍", "18402806360702976000"),    // Green
+                    Tags(5, "Learning", "🎓", "18402806360702976000"),     // Orange
+                    Tags(6, "Design", "🎨", "18402806360702976000"),      // Pink
+                    Tags(7, "Music", "🎵", "18402806360702976000"),       // Light Blue
+                    Tags(8, "Exercise", "💪", "18402806360702976000"),   // Purple
+                    Tags(9, "Meditation", "🧘", "18402806360702976000"),  // Cyan
+                    Tags(10, "Cooking", "👨‍🍳", "18402806360702976000,,,")   // Yellow
+                )
+                
+                val tagsToShow = if (true) dummyTags else statisticsState.allTags // TODO: Change to USE_DUMMY_DATA
+                
+                items(tagsToShow) { tags ->
                     val tagColor = parseTagColor(tags.tagColor)
 
                     val isSelected = statisticsState.selectedTagId == tags.tagId
@@ -167,8 +192,10 @@ fun StatisticsScreen(
             }
             ModernSegmentedControl(
                 items = items,
-                selectedIndex = selectedSegmentIndex,
-                onItemSelected = { selectedSegmentIndex = it },
+                selectedIndex = statisticsState.selectedTimeIndex,
+                onItemSelected = { timeIndex -> 
+                    statisticsViewModel.updateTimeIndex(timeIndex)
+                },
                 showSeparators = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -181,50 +208,133 @@ fun StatisticsScreen(
                     separatorColor = Color.Gray.copy(alpha = 0.2f)
                 )
             )
+            // Date selector - Updates all charts when date is changed
             DateSelector(
-                selectedTimeIndex = selectedSegmentIndex,
+                selectedTimeIndex = statisticsState.selectedTimeIndex,
                 onDateChanged = { selectedDate ->
-                    // Burada seçilen tarihe göre veri filtreleme yapılabilir
-                    // Örneğin: statisticsViewModel.filterByDate(selectedDate, selectedTagId)
+                    // This triggers chart data updates for the selected date
+                    statisticsViewModel.updateSelectedDate(selectedDate)
                 },
             )
         }
-// Summary Cards Section
-
-        sampleStatistics = FocusStatistics(
-            totalFocusTime = statisticsState.totalFocusTime,
-            totalSessions = statisticsState.totalSessionCount,
-            averageDuration = statisticsState.averageFocusTime
-        )
+        // Summary Cards Section - Use dummy data for testing
+        sampleStatistics = if (true) { // TODO: Change to USE_DUMMY_DATA constant
+            FocusStatistics(
+                totalFocusTime = "178h 45m",
+                totalSessions = 156,
+                averageDuration = "2h 18m"
+            )
+        } else {
+            FocusStatistics(
+                totalFocusTime = statisticsState.totalFocusTime,
+                totalSessions = statisticsState.totalSessionCount,
+                averageDuration = statisticsState.averageFocusTime
+            )
+        }
 
 
         SummaryCardsSection(
             statistics = sampleStatistics,
         )
 
-        JetpackComposeElectricCarSales()
+        // Charts based on selected time period
+        when (statisticsState.selectedTimeIndex) {
+            0 -> { // Day view
+                HourlyFocusChart(
+                    hourlyFocusData = statisticsState.hourlyFocusData,
+                    totalFocusTime = statisticsState.totalFocusTime
+                )
+            }
+            1 -> { // Week view
+                DailyFocusChart(
+                    dailyFocusData = statisticsState.dailyFocusData,
+                    totalFocusTime = statisticsState.totalFocusTime
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                WeeklyPeakChart(
+                    hourlyFocusData = statisticsState.hourlyFocusData,
+                    peakHour = statisticsState.peakHour
+                )
+            }
+            2 -> { // Month view
+                MonthlyFocusChart(
+                    monthlyFocusData = statisticsState.monthlyFocusData,
+                    totalFocusTime = statisticsState.totalFocusTime
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                WeeklyPeakChart(
+                    hourlyFocusData = statisticsState.hourlyFocusData,
+                    peakHour = statisticsState.peakHour
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                WeekdayAnalysisChart(
+                    weekdayFocusData = statisticsState.weekdayFocusData,
+                    peakWeekday = statisticsState.peakWeekday
+                )
+            }
+            3 -> { // Year view
+                YearlyFocusChart(
+                    yearlyFocusData = statisticsState.yearlyFocusData,
+                    totalFocusTime = statisticsState.totalFocusTime
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                WeeklyPeakChart(
+                    hourlyFocusData = statisticsState.hourlyFocusData,
+                    peakHour = statisticsState.peakHour
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                WeekdayAnalysisChart(
+                    weekdayFocusData = statisticsState.weekdayFocusData,
+                    peakWeekday = statisticsState.peakWeekday
+                )
+            }
+        }
 
-        JetpackComposeRockMetalRatios()
-
-
-
-
-
+        // Top Tags with dummy data for testing
         TopTagsCard(
-            topTags = statisticsState.topTags
+            topTags = if (true) { // TODO: Change to USE_DUMMY_DATA constant
+                listOf(
+                    TopTag("Programming", "💻", 89),
+                    TopTag("Reading", "📚", 67),
+                    TopTag("Writing", "✍️", 45),
+                    TopTag("Research", "🔍", 34),
+                    TopTag("Learning", "🎓", 28),
+                    TopTag("Design", "🎨", 23),
+                    TopTag("Music", "🎵", 18),
+                    TopTag("Exercise", "💪", 15)
+                )
+            } else {
+                statisticsState.topTags
+            }
         )
 
-        // Sample data for Session Logs
+        // Enhanced Session Logs with more dummy data for testing
         val sampleSessionLogs = listOf(
-            SessionLog("Coding", "💻", "24.05.2025", "11:10", "1h 54m"),
-            SessionLog("Coding", "💻", "20.05.2025", "17:35", "0m"),
-            SessionLog("Coding", "💻", "19.05.2025", "10:45", "1h 24m"),
-            SessionLog("Physics", "⚛️", "14.05.2025", "23:16", "0m"),
-            SessionLog("Coding", "💻", "11.05.2025", "13:25", "5h 9m"),
-            SessionLog("Coding", "💻", "10.05.2025", "15:42", "1h 56m"),
-            SessionLog("Coding", "💻", "8.05.2025", "09:23", "8h 14m"),
-            SessionLog("Coding", "💻", "6.05.2025", "10:41", "4h 42m"),
-            SessionLog("Coding", "💻", "5.05.2025", "19:01", "0m")
+            SessionLog("Programming", "💻", "19.07.2025", "09:15", "3h 45m"),
+            SessionLog("Reading", "📚", "19.07.2025", "14:30", "1h 20m"),
+            SessionLog("Writing", "✍️", "18.07.2025", "11:00", "2h 15m"),
+            SessionLog("Research", "🔍", "18.07.2025", "16:45", "1h 55m"),
+            SessionLog("Programming", "💻", "17.07.2025", "08:30", "4h 30m"),
+            SessionLog("Design", "🎨", "17.07.2025", "13:20", "2h 40m"),
+            SessionLog("Learning", "🎓", "16.07.2025", "10:15", "3h 10m"),
+            SessionLog("Music Practice", "🎵", "16.07.2025", "19:00", "1h 30m"),
+            SessionLog("Exercise", "💪", "15.07.2025", "07:00", "1h 15m"),
+            SessionLog("Programming", "💻", "15.07.2025", "15:30", "2h 50m"),
+            SessionLog("Reading", "📚", "14.07.2025", "12:00", "1h 40m"),
+            SessionLog("Writing", "✍️", "14.07.2025", "17:15", "2h 25m"),
+            SessionLog("Research", "🔍", "13.07.2025", "09:45", "3h 05m"),
+            SessionLog("Programming", "💻", "13.07.2025", "14:10", "4h 20m"),
+            SessionLog("Design", "🎨", "12.07.2025", "11:30", "2h 10m")
         )
 
         SessionLogsCard(
