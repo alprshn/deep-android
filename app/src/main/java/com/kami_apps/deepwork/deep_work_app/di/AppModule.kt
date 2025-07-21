@@ -7,6 +7,7 @@ import com.kami_apps.deepwork.deep_work_app.data.repository.AppRepositoryImpl
 import com.kami_apps.deepwork.deep_work_app.data.repository.SessionsRepositoryImpl
 import com.kami_apps.deepwork.deep_work_app.data.repository.TagsRepositoryImpl
 import com.kami_apps.deepwork.deep_work_app.data.repository.UserPreferencesRepositoryImpl
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import com.kami_apps.deepwork.deep_work_app.domain.repository.AppRepository
 import com.kami_apps.deepwork.deep_work_app.domain.repository.SessionsRepository
 import com.kami_apps.deepwork.deep_work_app.domain.repository.TagsRepository
@@ -52,5 +53,10 @@ class AppModule {
         return AppRepositoryImpl(context)
     }
 
+    @Provides
+    @Singleton
+    fun providePremiumManager(@ApplicationContext context: Context): PremiumManager {
+        return PremiumManager(context)
+    }
 
  }

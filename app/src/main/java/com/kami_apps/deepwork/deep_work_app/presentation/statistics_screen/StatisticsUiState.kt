@@ -10,6 +10,7 @@ import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.compo
 import java.time.LocalDate
 
 data class StatisticsUiState(
+    val isPremium: Boolean = false,
     val allTags: List<Tags> = emptyList(),
     val topTags: List<TopTag> = emptyList(),
     val selectedTagId: Int = 0, // 0 = All Tags

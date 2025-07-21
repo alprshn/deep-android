@@ -20,8 +20,8 @@ android {
         applicationId = "com.kami_apps.deepwork"
         minSdk = 25
         targetSdk = 35
-        versionCode = 91
-        versionName = "0.9.1 (Test)"
+        versionCode = 93
+        versionName = "0.9.3 (Test)"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

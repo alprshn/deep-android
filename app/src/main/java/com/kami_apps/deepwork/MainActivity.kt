@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +29,13 @@ import com.kami_apps.deepwork.deep_work_app.presentation.navigation.RootNavigati
 import com.kami_apps.deepwork.deep_work_app.presentation.navigation.bottom_bar.BottomBarTabs
 import com.kami_apps.deepwork.deep_work_app.presentation.navigation.bottom_bar.tabs
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
+import com.kami_apps.deepwork.deep_work_app.presentation.paywall_screen.PaywallScreen
+import androidx.compose.foundation.layout.Box
 import com.kami_apps.deepwork.ui.theme.DeepWorkTheme
 import dagger.hilt.android.AndroidEntryPoint
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
+import androidx.compose.runtime.LaunchedEffect
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -46,6 +52,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController: NavHostController = rememberNavController()
             var selectedIndex by remember { mutableIntStateOf(0) }
+            var showPaywall by remember { mutableStateOf(false) }
             val stopWatchViewModel: StopwatchViewModel = hiltViewModel()
 
             val timerUiState by stopWatchViewModel.timerUIState.collectAsState()
@@ -53,25 +60,39 @@ class MainActivity : ComponentActivity() {
             val currentRoute = navBackStackEntry?.destination?.route
 
             DeepWorkTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = Color.Black,
-                    bottomBar = {
-                        // Onboarding ekranında bottom bar'ı gösterme
-                        if (currentRoute != "onboarding") {
-                            BottomBarTabs(tabs = tabs, selectedTab = selectedIndex, onTabSelected = {
-                                selectedIndex = tabs.indexOf(it)
-                                navController.navigate(it.title) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        containerColor = Color.Black,
+                        bottomBar = {
+                            // Onboarding ekranında bottom bar'ı gösterme
+                            if (currentRoute != "onboarding") {
+                                BottomBarTabs(tabs = tabs, selectedTab = selectedIndex, onTabSelected = {
+                                    selectedIndex = tabs.indexOf(it)
+                                    navController.navigate(it.title) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            })
-                        }
-                    }) { innerPadding ->
-                    RootNavigationGraph(navController = navController, innerPadding)
+                                })
+                            }
+                        }) { innerPadding ->
+                        RootNavigationGraph(
+                            navController = navController, 
+                            innerPadding = innerPadding,
+                            onShowPaywall = { showPaywall = true }
+                        )
+                    }
+                    
+                    // Paywall Overlay
+                    if (showPaywall) {
+                        PaywallScreen(
+                            onDismiss = { showPaywall = false },
+                            onSubscribe = { showPaywall = false }
+                        )
+                    }
                 }
             }
         }

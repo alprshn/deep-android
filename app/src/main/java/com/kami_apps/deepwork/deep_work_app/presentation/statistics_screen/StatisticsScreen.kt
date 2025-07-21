@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kami_apps.deepwork.deep_work_app.data.util.parseTagColor
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.DateSelector
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.ModernSegmentedControl
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.SegmentedControlColors
@@ -52,7 +53,7 @@ import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun StatisticsScreen(
-    statisticsViewModel: StatisticsViewModel = hiltViewModel(),
+    statisticsViewModel: StatisticsViewModel = hiltViewModel()
 ) {
     val statisticsState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
     val items = listOf("Day", "Week", "Month", "Year")
@@ -150,7 +151,7 @@ fun StatisticsScreen(
                     Tags(10, "Cooking", "👨‍🍳", "18402806360702976000,,,")   // Yellow
                 )
                 
-                val tagsToShow = if (true) dummyTags else statisticsState.allTags // TODO: Change to USE_DUMMY_DATA
+                val tagsToShow = if (!statisticsState.isPremium) dummyTags else statisticsState.allTags // Show dummy tags for non-premium users
                 
                 items(tagsToShow) { tags ->
                     val tagColor = parseTagColor(tags.tagColor)
@@ -217,8 +218,8 @@ fun StatisticsScreen(
                 },
             )
         }
-        // Summary Cards Section - Use dummy data for testing
-        sampleStatistics = if (true) { // TODO: Change to USE_DUMMY_DATA constant
+        // Summary Cards Section - Use dummy data for non-premium users
+        sampleStatistics = if (!statisticsState.isPremium) {
             FocusStatistics(
                 totalFocusTime = "178h 45m",
                 totalSessions = 156,
@@ -300,9 +301,9 @@ fun StatisticsScreen(
             }
         }
 
-        // Top Tags with dummy data for testing
+        // Top Tags with dummy data for non-premium users
         TopTagsCard(
-            topTags = if (true) { // TODO: Change to USE_DUMMY_DATA constant
+            topTags = if (!statisticsState.isPremium) {
                 listOf(
                     TopTag("Programming", "💻", 89),
                     TopTag("Reading", "📚", 67),

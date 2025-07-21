@@ -21,6 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -36,7 +37,8 @@ class StopwatchViewModel @Inject constructor(
     private val startFocusSession: StartFocusSessionUseCase,
     private val stopFocusSession: StopFocusSessionUseCase,
     private val getAllTagsUseCase: GetAllTagsUseCase,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val premiumManager: PremiumManager
 ) : ViewModel(), StopwatchActions {
 
     private val _uiState =
@@ -55,6 +57,14 @@ class StopwatchViewModel @Inject constructor(
 
     val lapTimes = stopwatchManager.lapTimes
 
+    init {
+        // Observe premium status
+        viewModelScope.launch {
+            premiumManager.isPremium.collectLatest { isPremium ->
+                _timerUIState.value = _timerUIState.value.copy(isPremium = isPremium)
+            }
+        }
+    }
 
     override fun start() {
         viewModelScope.launch {

@@ -18,7 +18,11 @@ import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.Timelin
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerScreen
 
 @Composable
-fun RootNavigationGraph(navController: NavHostController, innerPadding: PaddingValues){
+fun RootNavigationGraph(
+    navController: NavHostController, 
+    innerPadding: PaddingValues,
+    onShowPaywall: () -> Unit = {}
+){
     val context = LocalContext.current
     var startDestination by remember { mutableStateOf("onboarding") }
     
@@ -53,7 +57,7 @@ fun RootNavigationGraph(navController: NavHostController, innerPadding: PaddingV
         composable(BottomBarTab.Statistics.title){StatisticsScreen()}
         composable(BottomBarTab.Timer.title){TimerScreen()}
         composable(BottomBarTab.Timeline.title){TimelineScreen()}
-        composable(BottomBarTab.Settings.title){SettingsScreen(navController)}
+        composable(BottomBarTab.Settings.title){SettingsScreen(navController, onShowPaywall)}
         composable("SelectBlockApps") { SelectBlockAppsScreen(navController) }
         composable("AppIcon") { AppIconScreen(navController) }
    }

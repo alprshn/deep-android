@@ -3,8 +3,10 @@ package com.kami_apps.deepwork.deep_work_app.presentation.settings_screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kami_apps.deepwork.deep_work_app.domain.repository.AppRepository
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val premiumManager: PremiumManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -25,6 +28,15 @@ class SettingsViewModel @Inject constructor(
     }
     
     init {
+        // Observe premium status
+        viewModelScope.launch {
+            premiumManager.isPremium.collectLatest { isPremium ->
+                _uiState.update { currentState ->
+                    currentState.copy(isPremium = isPremium)
+                }
+            }
+        }
+        
         // Observe blocked apps changes
         viewModelScope.launch {
             appRepository.getBlockedAppsFlow().collect { blockedApps ->

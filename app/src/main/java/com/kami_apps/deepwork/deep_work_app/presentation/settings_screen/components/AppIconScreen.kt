@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +49,10 @@ import androidx.navigation.NavHostController
 import androidx.wear.compose.material.Text
 import com.kami_apps.deepwork.deep_work_app.domain.data.AppIcon
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.SettingsViewModel
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.alpha
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppIconScreen(
@@ -56,6 +61,7 @@ fun AppIconScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.loadAppIcons()
@@ -169,9 +175,19 @@ fun AppIconScreen(
                                     icon = icon,
                                     isSelected = icon.isSelected,
                                     isLoading = state.isIconLoading,
+                                    isPremium = state.isPremium,
                                     onClick = {
                                         if (!state.isIconLoading && !icon.isSelected) {
-                                            viewModel.changeAppIcon(icon.id)
+                                            // Premium kontrolü
+                                            if (!state.isPremium && icon.id != "original") {
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        "⭐ Premium required! Free users can only use the original icon. Upgrade to unlock all icons."
+                                                    )
+                                                }
+                                            } else {
+                                                viewModel.changeAppIcon(icon.id)
+                                            }
                                         }
                                     }
                                 )
@@ -202,10 +218,12 @@ fun AppIconItem(
     icon: AppIcon,
     isSelected: Boolean,
     isLoading: Boolean,
+    isPremium: Boolean = true,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
     val borderColor = if (isSelected) Color(0xFF0A84FF) else Color.Transparent
+    val isLocked = !isPremium && icon.id != "original"
 
     // Convert mipmap resource to bitmap
     val iconBitmap = remember(icon.iconRes) {
@@ -221,39 +239,62 @@ fun AppIconItem(
         modifier = Modifier
             .clickable(enabled = !isLoading) { onClick() }
     ) {
-        iconBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap,
-                contentDescription = icon.name,
-                modifier = Modifier
-                    .border(
-                        width = if (isSelected) 2.dp else 0.dp,
-                        color = borderColor,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .size(80.dp)
-
-            )
-        } ?: run {
-            // Fallback in case bitmap conversion fails
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.Gray, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = icon.name.first().toString(),
-                    color = Color.Gray,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+        Box {
+            iconBitmap?.let { bitmap ->
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = icon.name,
+                    modifier = Modifier
+                        .border(
+                            width = if (isSelected) 2.dp else 0.dp,
+                            color = borderColor,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .size(80.dp)
+                        .let { if (isLocked) it.alpha(0.5f) else it }
                 )
+            } ?: run {
+                // Fallback in case bitmap conversion fails
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Gray, RoundedCornerShape(12.dp))
+                        .let { if (isLocked) it.alpha(0.5f) else it },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon.name.first().toString(),
+                        color = Color.Gray,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            // Lock overlay for premium icons
+            if (isLocked) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(
+                            Color.Black.copy(alpha = 0.6f),
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Premium Required",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
         Text(
-            text = icon.name,
-            color = Color.White,
+            text = if (isLocked) "${icon.name} 🔒" else icon.name,
+            color = if (isLocked) Color.Gray else Color.White,
             fontSize = 14.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.padding(top = 8.dp)

@@ -5,6 +5,8 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 data class TimerUiState(
+    // Premium status
+    val isPremium: Boolean = false,
     // Genel state'ler
     var isTimerMode: Boolean = false, // true: Timer, false: Stopwatch
     var isStarted: Boolean = false,

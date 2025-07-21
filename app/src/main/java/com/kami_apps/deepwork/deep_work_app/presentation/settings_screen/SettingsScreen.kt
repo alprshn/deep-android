@@ -70,7 +70,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 
 @Composable
-fun SettingsScreen(navController: NavHostController? = null) {
+fun SettingsScreen(
+    navController: NavHostController? = null,
+    onShowPaywall: () -> Unit = {}
+) {
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -90,7 +93,9 @@ fun SettingsScreen(navController: NavHostController? = null) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
-            PremiumStatusCard({})
+            PremiumStatusCard(
+                onClick = onShowPaywall
+            )
             Card(
                 modifier = Modifier
                     .padding(vertical = 24.dp)

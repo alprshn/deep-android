@@ -4,6 +4,8 @@ import android.app.Application
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.kami_apps.deepwork.deep_work_app.data.manager.RevenueCatManager
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -12,9 +14,19 @@ class DeepWorkApp : Application(), Configuration.Provider {
 
     @Inject
     lateinit var hiltWorkerFactory: HiltWorkerFactory
+    
+    @Inject
+    lateinit var premiumManager: PremiumManager
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Initialize RevenueCat first
+        RevenueCatManager.init(this)
+        
+        // Initialize PremiumManager after RevenueCat is ready
+        premiumManager.initialize()
+        
         // Manuel initialize etmeyin - sadece Configuration.Provider implement edin
         // WorkManager kendi kendine başlatılacak ve sizin configuration'ınızı kullanacak
     }

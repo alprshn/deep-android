@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 
 // TODO: Set to false when real data is ready
 private const val USE_DUMMY_DATA = true
@@ -49,7 +50,8 @@ class StatisticsViewModel @Inject constructor(
     private val getDailyFocusDataUseCase: GetDailyFocusDataUseCase,
     private val getMonthlyFocusDataUseCase: GetMonthlyFocusDataUseCase,
     private val getYearlyFocusDataUseCase: GetYearlyFocusDataUseCase,
-    private val getWeekdayFocusDataUseCase: GetWeekdayFocusDataUseCase
+    private val getWeekdayFocusDataUseCase: GetWeekdayFocusDataUseCase,
+    private val premiumManager: PremiumManager
 ) : ViewModel(), StatisticsActions {
 
 
@@ -59,6 +61,17 @@ class StatisticsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = StatisticsUiState()
     )
+
+    init {
+        // Observe premium status
+        viewModelScope.launch {
+            premiumManager.isPremium.collectLatest { isPremium ->
+                _uiState.update { currentState ->
+                    currentState.copy(isPremium = isPremium)
+                }
+            }
+        }
+    }
 
 
 

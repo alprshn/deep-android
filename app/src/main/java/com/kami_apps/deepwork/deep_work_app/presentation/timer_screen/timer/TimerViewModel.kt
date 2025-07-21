@@ -20,6 +20,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -33,7 +34,8 @@ class TimerViewModel @Inject constructor(
     private val addTag: AddTagUseCase,
     private val startFocusSession: StartFocusSessionUseCase,
     private val getAllTagsUseCase: GetAllTagsUseCase,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val premiumManager: PremiumManager
 ) : ViewModel(), TimerActions {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Success(timerManager.timerState))
@@ -46,6 +48,15 @@ class TimerViewModel @Inject constructor(
     val timerUIState: StateFlow<TimerUiState> = _timerUIState.asStateFlow()
 
     val timerState = timerManager.timerState.asLiveData()
+
+    init {
+        // Observe premium status
+        viewModelScope.launch {
+            premiumManager.isPremium.collectLatest { isPremium ->
+                _timerUIState.value = _timerUIState.value.copy(isPremium = isPremium)
+            }
+        }
+    }
 
     override fun setHour(hour: Int) {
         timerManager.setTHour(hour)
