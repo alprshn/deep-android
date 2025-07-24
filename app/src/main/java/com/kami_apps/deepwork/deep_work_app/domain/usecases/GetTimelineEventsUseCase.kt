@@ -56,6 +56,7 @@ class GetTimelineEventsUseCase @Inject constructor(
         Log.d("GetTimelineEventsUseCase", "Mapping session ${session.sessionId}: timestamp ${session.startTime!!.time} -> LocalDateTime $startDateTime")
         
         return Event(
+            sessionId = session.sessionId,
             name = tag.tagName,
             color = parseTagColor(tag.tagColor),
             start = startDateTime,

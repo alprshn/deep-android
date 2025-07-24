@@ -3,14 +3,20 @@ package com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTimelineEventsUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.DeleteSessionUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.EditSessionUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.repository.SessionsRepository
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.Event
+import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.SessionDetails
+import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
+import com.kami_apps.deepwork.deep_work_app.data.local.entities.Sessions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,11 +28,17 @@ import android.util.Log
 @HiltViewModel
 class TimelineViewModel @Inject constructor(
     private val getTimelineEventsUseCase: GetTimelineEventsUseCase,
-    private val sessionsRepository: SessionsRepository
+    private val deleteSessionUseCase: DeleteSessionUseCase,
+    private val editSessionUseCase: EditSessionUseCase,
+    private val sessionsRepository: SessionsRepository,
+    private val premiumManager: PremiumManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TimelineUiState())
     val uiState: StateFlow<TimelineUiState> = _uiState.asStateFlow()
+
+    // Expose premium status
+    val isPremium = premiumManager.isPremium
 
     init {
         loadAllSessions() // Debug - load all sessions first
@@ -36,6 +48,61 @@ class TimelineViewModel @Inject constructor(
     fun onDateSelected(date: LocalDate) {
         _uiState.update { it.copy(selectedDate = date) }
         loadEventsForDate(date)
+    }
+
+    fun deleteSession(sessionId: Int) {
+        viewModelScope.launch {
+            try {
+                // Get the session to delete
+                val session = sessionsRepository.getSessionsById(sessionId)
+                session?.let {
+                    deleteSessionUseCase(it)
+                    Log.d("TimelineViewModel", "Session deleted successfully: $sessionId")
+                    // Refresh events for current date
+                    loadEventsForDate(_uiState.value.selectedDate)
+                }
+            } catch (e: Exception) {
+                Log.e("TimelineViewModel", "Error deleting session", e)
+                _uiState.update { 
+                    it.copy(error = "Failed to delete session: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun updateSession(sessionDetails: SessionDetails) {
+        viewModelScope.launch {
+            try {
+                // Get the original session
+                val originalSession = sessionsRepository.getSessionsById(sessionDetails.id)
+                originalSession?.let { session ->
+                    // Create updated session
+                    val updatedSession = session.copy(
+                        startTime = Date.from(
+                            sessionDetails.startTime
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toInstant()
+                        ),
+                        finishTime = Date.from(
+                            sessionDetails.endTime
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toInstant()
+                        ),
+                        duration = formatDurationFromDateTime(sessionDetails.startTime, sessionDetails.endTime)
+                    )
+                    
+                    editSessionUseCase(updatedSession)
+                    Log.d("TimelineViewModel", "Session updated successfully: ${sessionDetails.id}")
+                    // Refresh events for current date
+                    loadEventsForDate(_uiState.value.selectedDate)
+                }
+            } catch (e: Exception) {
+                Log.e("TimelineViewModel", "Error updating session", e)
+                _uiState.update { 
+                    it.copy(error = "Failed to update session: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun loadEventsForDate(date: LocalDate) {
@@ -106,6 +173,19 @@ class TimelineViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("TimelineViewModel", "Error loading all sessions", e)
             }
+        }
+    }
+
+    private fun formatDurationFromDateTime(startTime: java.time.LocalDateTime, endTime: java.time.LocalDateTime): String {
+        val duration = java.time.Duration.between(startTime, endTime)
+        val totalMinutes = duration.toMinutes()
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        
+        return when {
+            hours > 0L -> "${hours}:${minutes.toString().padStart(2, '0')}"
+            minutes > 0L -> "0:${minutes.toString().padStart(2, '0')}"
+            else -> "0:01" // Minimum 1 minute
         }
     }
 }

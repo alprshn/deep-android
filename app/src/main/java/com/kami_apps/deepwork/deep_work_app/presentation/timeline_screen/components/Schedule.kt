@@ -20,6 +20,7 @@ fun Schedule(
     events: List<Event>,
     modifier: Modifier = Modifier,
     eventContent: @Composable (event: Event) -> Unit = { BasicEvent(event = it) },
+    onEventClick: ((Event) -> Unit)? = null,
     minDate: LocalDate = events.minByOrNull(Event::start)?.start?.toLocalDate() ?: LocalDate.now(),
     maxDate: LocalDate = events.maxByOrNull(Event::end)?.end?.toLocalDate() ?: LocalDate.now(),
 ) {
@@ -36,7 +37,12 @@ fun Schedule(
     Column(modifier = modifier.background(Color(0xFF1C1C1E)).padding(horizontal = 12.dp)) {
         BasicSchedule(
             events = events,
-            eventContent = eventContent,
+            eventContent = { event ->
+                BasicEvent(
+                    event = event,
+                    onClick = if (onEventClick != null) { { onEventClick(event) } } else null
+                )
+            },
             minDate = minDate,
             maxDate = maxDate,
             dayWidth = dayWidth,

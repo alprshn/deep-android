@@ -183,21 +183,50 @@ fun SelectBlockAppsScreen(
             )
         }
 
-        // Permission check
+        // Permission check - simplified version
         if (!hasAllPermissions) {
-            PermissionRequiredCard(
-                missingPermissions = missingPermissions,
-                onRequestPermission = { permissionType ->
-                    when (permissionType) {
-                        PermissionHelper.PermissionType.USAGE_STATS -> 
-                            PermissionHelper.requestUsageStatsPermission(context)
-                        PermissionHelper.PermissionType.OVERLAY ->
-                            PermissionHelper.requestOverlayPermission(context)
-                        PermissionHelper.PermissionType.BATTERY_OPTIMIZATION ->
-                            PermissionHelper.requestBatteryOptimizationDisable(context)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = "Warning",
+                            tint = Color(0xFFFF9500),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            "Permissions Required",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     }
+                    
+                    Text(
+                        "Please grant the required permissions from the onboarding screen to enable app blocking feature.",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 12.dp)
+                    )
+                    
+                    Text(
+                        "Missing permissions: ${missingPermissions.joinToString(", ") { it.displayName }}",
+                        color = Color.Red.copy(alpha = 0.7f),
+                        fontSize = 12.sp
+                    )
                 }
-            )
+            }
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -288,98 +317,6 @@ fun SelectBlockAppsScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun PermissionRequiredCard(
-    missingPermissions: List<PermissionHelper.PermissionType>,
-    onRequestPermission: (PermissionHelper.PermissionType) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = "Warning",
-                    tint = Color(0xFFFF9500),
-                    modifier = Modifier.size(24.dp)
-                )
-                Text(
-                    "Permissions Required",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-            
-            Text(
-                "App blocking requires the following permissions:",
-                color = Color.Gray,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
-            
-            missingPermissions.forEach { permission ->
-                PermissionItem(
-                    permission = permission,
-                    onRequest = { onRequestPermission(permission) }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun PermissionItem(
-    permission: PermissionHelper.PermissionType,
-    onRequest: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                permission.displayName,
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                permission.description,
-                color = Color.Gray,
-                fontSize = 12.sp
-            )
-        }
-        
-        Button(
-            onClick = onRequest,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF0A84FF)
-            ),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                "Grant",
-                fontSize = 12.sp,
-                color = Color.White
-            )
         }
     }
 }

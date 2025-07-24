@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kami_apps.deepwork.deep_work_app.domain.repository.AppRepository
 import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
+import com.kami_apps.deepwork.deep_work_app.data.manager.RevenueCatManager
+import com.kami_apps.deepwork.deep_work_app.domain.data.AppIcon
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetUserPreferencesUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.ChangeUserPreferencesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -13,18 +17,39 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import android.util.Log
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val appRepository: AppRepository,
-    private val premiumManager: PremiumManager
+    private val premiumManager: PremiumManager,
+    private val revenueCatManager: RevenueCatManager,
+    private val getUserPreferencesUseCase: GetUserPreferencesUseCase,
+    private val changeUserPreferencesUseCase: ChangeUserPreferencesUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    private val _restoreMessage = MutableStateFlow<String?>(null)
+    val restoreMessage: StateFlow<String?> = _restoreMessage.asStateFlow()
+    
+    private val _isRestoring = MutableStateFlow(false)
+    val isRestoring: StateFlow<Boolean> = _isRestoring.asStateFlow()
+    
+    // Haptic feedback state
+    private val _isHapticEnabled = MutableStateFlow(false)
+    val isHapticEnabled: StateFlow<Boolean> = _isHapticEnabled.asStateFlow()
+    
+    // Premium status
+    val isPremium: StateFlow<Boolean> = premiumManager.isPremium
+
     companion object {
         private const val PAGE_SIZE = 20
+        private const val TAG = "SettingsViewModel"
     }
     
     init {
@@ -36,6 +61,9 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
+        
+        // Load user preferences
+        loadUserPreferences()
         
         // Observe blocked apps changes
         viewModelScope.launch {
@@ -240,6 +268,66 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { 
                     it.copy(error = e.message)
                 }
+            }
+        }
+    }
+
+    fun restorePurchases() {
+        _isRestoring.value = true
+        _restoreMessage.value = null
+        
+        revenueCatManager.restorePurchases(
+            onSuccess = { customerInfo ->
+                _isRestoring.value = false
+                val isPremium = customerInfo.entitlements.active.containsKey("deepwork_premium")
+                
+                if (isPremium) {
+                    premiumManager.setPremiumStatus(true)
+                    _restoreMessage.value = "✅ Purchases restored successfully! You now have premium access."
+                } else {
+                    _restoreMessage.value = "ℹ️ No active purchases found to restore."
+                }
+            },
+            onError = { error ->
+                _isRestoring.value = false
+                _restoreMessage.value = "❌ Failed to restore purchases: ${error.message}"
+            }
+        )
+    }
+    
+    fun clearRestoreMessage() {
+        _restoreMessage.value = null
+    }
+
+    private fun loadUserPreferences() {
+        viewModelScope.launch {
+            try {
+                val userPreferences = getUserPreferencesUseCase()
+                _isHapticEnabled.value = userPreferences?.haptic ?: false
+                Log.d(TAG, "Loaded haptic feedback setting: ${_isHapticEnabled.value}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load user preferences", e)
+                _isHapticEnabled.value = false // Default to false on error
+            }
+        }
+    }
+
+    fun toggleHapticFeedback() {
+        viewModelScope.launch {
+            try {
+                val newHapticEnabled = !_isHapticEnabled.value
+                _isHapticEnabled.value = newHapticEnabled
+                
+                // Update user preferences with current theme and new haptic setting
+                val currentPrefs = getUserPreferencesUseCase()
+                val currentTheme = currentPrefs?.theme ?: "default"
+                changeUserPreferencesUseCase(currentTheme, newHapticEnabled)
+                
+                Log.d(TAG, "Haptic feedback toggled to: $newHapticEnabled")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to change haptic feedback", e)
+                // Revert the state on error
+                _isHapticEnabled.value = !_isHapticEnabled.value
             }
         }
     }

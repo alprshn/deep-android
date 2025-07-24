@@ -13,6 +13,7 @@ import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.Onboa
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.SettingsScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.components.AppIconScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.components.SelectBlockAppsScreen
+import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.components.ManageTagsScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.StatisticsScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.TimelineScreen
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerScreen
@@ -54,11 +55,12 @@ fun RootNavigationGraph(
         }
         
         // Ana uygulama ekranları
-        composable(BottomBarTab.Statistics.title){StatisticsScreen()}
+        composable(BottomBarTab.Statistics.title){StatisticsScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Timer.title){TimerScreen()}
-        composable(BottomBarTab.Timeline.title){TimelineScreen()}
+        composable(BottomBarTab.Timeline.title){TimelineScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Settings.title){SettingsScreen(navController, onShowPaywall)}
         composable("SelectBlockApps") { SelectBlockAppsScreen(navController) }
         composable("AppIcon") { AppIconScreen(navController) }
+        composable("ManageTags") { ManageTagsScreen(navController) }
    }
 }

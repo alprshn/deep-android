@@ -186,7 +186,7 @@ fun AppIconScreen(
                                                     )
                                                 }
                                             } else {
-                                                viewModel.changeAppIcon(icon.id)
+                                            viewModel.changeAppIcon(icon.id)
                                             }
                                         }
                                     }
@@ -240,35 +240,35 @@ fun AppIconItem(
             .clickable(enabled = !isLoading) { onClick() }
     ) {
         Box {
-            iconBitmap?.let { bitmap ->
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = icon.name,
-                    modifier = Modifier
-                        .border(
-                            width = if (isSelected) 2.dp else 0.dp,
-                            color = borderColor,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .size(80.dp)
+        iconBitmap?.let { bitmap ->
+            Image(
+                bitmap = bitmap,
+                contentDescription = icon.name,
+                modifier = Modifier
+                    .border(
+                        width = if (isSelected) 2.dp else 0.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .size(80.dp)
                         .let { if (isLocked) it.alpha(0.5f) else it }
-                )
-            } ?: run {
-                // Fallback in case bitmap conversion fails
-                Box(
-                    modifier = Modifier
+            )
+        } ?: run {
+            // Fallback in case bitmap conversion fails
+            Box(
+                modifier = Modifier
                         .size(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
                         .background(Color.Gray, RoundedCornerShape(12.dp))
                         .let { if (isLocked) it.alpha(0.5f) else it },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = icon.name.first().toString(),
-                        color = Color.Gray,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = icon.name.first().toString(),
+                    color = Color.Gray,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
                 }
             }
             

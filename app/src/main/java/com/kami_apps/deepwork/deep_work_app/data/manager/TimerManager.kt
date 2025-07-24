@@ -14,6 +14,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import com.kami_apps.deepwork.deep_work_app.util.helper.CountDownTimerHelper
+import com.kami_apps.deepwork.deep_work_app.util.helper.TimerNotificationHelper
 import com.kami_apps.deepwork.deep_work_app.data.workManager.worker.TimerRunningWorker
 import com.kami_apps.deepwork.deep_work_app.data.workManager.worker.TimerCompletedWorker
 import com.kami_apps.deepwork.deep_work_app.data.workManager.worker.TIMER_RUNNING_TAG
@@ -23,6 +24,7 @@ import com.kami_apps.deepwork.deep_work_app.data.workManager.worker.TIMER_COMPLE
 @Singleton
 class TimerManager @Inject constructor(
     private val workRequestManager: WorkRequestManager,
+    private val timerNotificationHelper: TimerNotificationHelper
 ) {
 
     private val timeInMillisFlow = MutableStateFlow(0L)
@@ -106,6 +108,10 @@ class TimerManager @Inject constructor(
     fun pause() {
         countDownTimerHelper?.pause()
         isPlayingFlow.value = false
+        // Cancel the worker and remove notification when pausing
+        workRequestManager.cancelWorker(TIMER_RUNNING_TAG)
+        timerNotificationHelper.removeTimerRunningNotification()
+        android.util.Log.d("TimerManager", "Timer paused, notification removed")
     }
 
     fun reset() {
@@ -114,8 +120,10 @@ class TimerManager @Inject constructor(
         val originalTimeText = timeInMillisFlow.value.formatTime()
         handleTimerValues(false, originalTimeText, 1f) // progress = 1 (tam dolu)
         isDoneFlow.value = true
+        // Cancel worker and remove notification when resetting
         workRequestManager.cancelWorker(TIMER_RUNNING_TAG)
-        android.util.Log.d("TimerManager", "Timer reset to: $originalTimeText (worker cancelled)")
+        timerNotificationHelper.removeTimerRunningNotification()
+        android.util.Log.d("TimerManager", "Timer reset to: $originalTimeText (worker cancelled, notification removed)")
     }
 
     fun start() {

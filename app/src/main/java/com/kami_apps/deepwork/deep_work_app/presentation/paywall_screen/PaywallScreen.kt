@@ -50,6 +50,16 @@ import com.kami_apps.deepwork.deep_work_app.presentation.paywall_screen.componen
 import com.kami_apps.deepwork.deep_work_app.presentation.paywall_screen.components.GradientButton
 import com.kami_apps.deepwork.deep_work_app.presentation.paywall_screen.components.SubscriptionOptionCard
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import com.kami_apps.deepwork.deep_work_app.presentation.components.end_session_bar.EndSessionBar
+import com.kami_apps.deepwork.deep_work_app.presentation.components.tag_sheet_bar.TagBottomSheet
+import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
+import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.timer.TimerViewModel
+import com.kami_apps.deepwork.ui.theme.TagColors
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 @Composable
 fun PaywallScreen(
@@ -58,6 +68,14 @@ fun PaywallScreen(
     modifier: Modifier = Modifier,
     viewModel: PaywallViewModel = hiltViewModel()
 ) {
+    // Status bar'ı siyah yap
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as Activity).window
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        window.statusBarColor = Color.Black.toArgb()
+    }
+
     // Alpha animasyonları - layout shifting önlemek için
     val titleAlpha by animateFloatAsState(
         targetValue = 1f,
@@ -615,3 +633,4 @@ private fun PaywallScreenPreview() {
         }
     }
 }
+ 

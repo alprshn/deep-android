@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Vibration
@@ -68,23 +69,52 @@ import androidx.navigation.NavHostController
 import com.kami_apps.deepwork.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Snackbar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavHostController? = null,
-    onShowPaywall: () -> Unit = {}
+    onShowPaywall: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val restoreMessage by viewModel.restoreMessage.collectAsStateWithLifecycle()
+    val isRestoring by viewModel.isRestoring.collectAsStateWithLifecycle()
+    val isHapticEnabled by viewModel.isHapticEnabled.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(horizontal = 16.dp)
-            .verticalScroll(scrollState)
-    ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Show restore message as snackbar
+    LaunchedEffect(restoreMessage) {
+        restoreMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearRestoreMessage()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.Black)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState)
         ) {
             Text(
                 text = "Settings",
@@ -94,7 +124,8 @@ fun SettingsScreen(
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             PremiumStatusCard(
-                onClick = onShowPaywall
+                onClick = onShowPaywall,
+                isPremium = isPremium
             )
             Card(
                 modifier = Modifier
@@ -103,6 +134,8 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
             ) {
+                val context = LocalContext.current // Composable fonksiyonun başında alınmalı
+
                 Column {
                     SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
                     SettingsBoxesItem(
@@ -113,11 +146,19 @@ fun SettingsScreen(
                         }
                     )
                     SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
-                    SettingsSwitchItem("Haptic Feedback", false, {}, Icons.Default.Vibration)
+                    SettingsSwitchItem(
+                        title = "Haptic Feedback", 
+                        isChecked = isHapticEnabled, 
+                        onCheckedChange = { viewModel.toggleHapticFeedback() }, 
+                        icon = Icons.Default.Vibration
+                    )
                     SettingsBoxesItem(
                         text = "Manage Tags",
                         icon = Icons.Rounded.Sell,
-                        dividerVisible = false
+                        dividerVisible = false,
+                        onClickSettingsBoxesItem = {
+                            navController?.navigate("ManageTags")
+                        }
                     )
                 }
             }
@@ -148,7 +189,7 @@ fun SettingsScreen(
                     )
                 }
             }
-            SettingsBoxes(headerVisibility = false, headerName = "")
+            SettingsBoxes(headerVisibility = false, headerName = "", isRestoring = isRestoring, viewModel = viewModel)
 
             Text(
                 "MORE APPS",
@@ -159,7 +200,7 @@ fun SettingsScreen(
             )
             Card(
                 modifier = Modifier
-                    .padding(top=5.dp)
+                    .padding(top = 5.dp)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
@@ -172,13 +213,24 @@ fun SettingsScreen(
 
             AppInfoSection()
 
-
+        }
+        
+        // Snackbar Host
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF2C2C2E),
+                contentColor = Color.White
+            )
         }
     }
 }
 
 @Composable
-fun SettingsBoxes(headerVisibility: Boolean, headerName: String) {
+fun SettingsBoxes(headerVisibility: Boolean, headerName: String, viewModel: SettingsViewModel = hiltViewModel(), isRestoring: Boolean = false) {
     Column(
         modifier = Modifier
             .padding(vertical = 24.dp)
@@ -203,57 +255,22 @@ fun SettingsBoxes(headerVisibility: Boolean, headerName: String) {
                 SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
                 SettingsBoxesItem(text = "Rate Us", icon = Icons.Rounded.StarBorder)
                 SettingsBoxesItem(
-                    dividerVisible = false,
                     text = "Restore Purchases",
-                    icon = Icons.Outlined.Replay
+                    icon = Icons.Default.Refresh,
+                    onClickSettingsBoxesItem = {
+                        if (!isRestoring) {
+                            viewModel.restorePurchases()
+                        }
+                    },
+                    showProgress = isRestoring,
+                    dividerVisible = false
                 )
             }
         }
     }
 }
 
-@Composable
-fun SettingsBoxesItem(
-    dividerVisible: Boolean = true,
-    icon: ImageVector = Icons.Default.Bolt,
-    text: String = "Deneme",
-    onClickSettingsBoxesItem: () -> Unit = {}
-) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                onClick = onClickSettingsBoxesItem,
-                indication = ripple(color = Color.White.copy(alpha = 0.1f)),
-                interactionSource = remember { MutableInteractionSource() }
-            )) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = "Play",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = text,
-                modifier = Modifier.padding(start = 15.dp),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal
-            )
-        }
-        AnimatedVisibility(visible = dividerVisible) {
-            Divider(
-                color = Color.Gray.copy(alpha = 0.2f),
-                modifier = Modifier.padding(start = 56.dp)
-            )
-        }
-
-    }
-}
 
 
 @Composable
@@ -331,7 +348,6 @@ fun SettingsAppItem(
 @Preview
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen()
 }
 
 
@@ -345,8 +361,9 @@ fun SettingsScreen_2Preview() {
 @Composable
 fun PremiumStatusCardButton(
     onClick: () -> Unit,
+    isPremium: Boolean = false,
     baseColor: Color = Color(0xFF0A84FF), // Varsayılan mavi ton
-    imageVector: ImageVector = Icons.Filled.Bolt,
+    imageVector: ImageVector = if (isPremium) Icons.Filled.Favorite else Icons.Filled.Bolt,
 ) {
 
     val gradientColors = listOf(
@@ -374,12 +391,17 @@ fun PremiumStatusCardButton(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = imageVector,
-                contentDescription = "Play",
+                contentDescription = if (isPremium) "Premium User" else "Upgrade",
                 tint = Color.White,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Upgrade", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = if (isPremium) "Thank You" else "Upgrade", 
+                fontSize = 20.sp, 
+                fontWeight = FontWeight.Bold, 
+                color = Color.White
+            )
         }
     }
 }
@@ -387,6 +409,7 @@ fun PremiumStatusCardButton(
 @Composable
 fun PremiumStatusCard(
     onClick: () -> Unit,
+    isPremium: Boolean = false,
     baseColor: Color = Color(0xFF0A84FF), // Varsayılan mavi ton
 ) {
 
@@ -415,7 +438,12 @@ fun PremiumStatusCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Upgrade to", fontSize = 20.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    text = if (isPremium) "You are" else "Upgrade to", 
+                    fontSize = 20.sp, 
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
@@ -429,19 +457,27 @@ fun PremiumStatusCard(
                         "PRO",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
+                        color = Color.White,
                         modifier = Modifier.padding(vertical = 2.dp)
                     )
                 }
             }
             Text(
-                text = "Switch to Pro plan to get access to unlimited tags, sessions stats, timeline view an more",
+                text = if (isPremium) {
+                    "Thanks for supporting us! You have access to all premium features including unlimited tags, detailed statistics, and timeline view."
+                } else {
+                    "Switch to Pro plan to get access to unlimited tags, sessions stats, timeline view an more"
+                },
                 color = Color.Gray,
                 fontSize = 16.sp,
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .padding(bottom = 16.dp)
             )
-            PremiumStatusCardButton(onClick)
+            PremiumStatusCardButton(
+                onClick = onClick,
+                isPremium = isPremium
+            )
 
         }
     }
@@ -564,6 +600,57 @@ fun AppInfoSection(
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(termsUrl))
                     context.startActivity(intent)
                 }
+            )
+        }
+    }
+}
+
+@Composable
+fun SettingsBoxesItem(
+    text: String,
+    icon: ImageVector,
+    dividerVisible: Boolean = true,
+    showProgress: Boolean = false,
+    onClickSettingsBoxesItem: () -> Unit = { }
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = onClickSettingsBoxesItem,
+                    indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                    interactionSource = remember { MutableInteractionSource() }
+                )
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = text,
+                color = Color.White,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f)
+            )
+
+            if (showProgress) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White.copy(alpha = 0.6f),
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+        if (dividerVisible) {
+            Divider(
+                color = Color.Gray.copy(alpha = 0.2f),
+                modifier = Modifier.padding(start = 56.dp)
             )
         }
     }

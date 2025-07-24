@@ -56,6 +56,15 @@ import com.kami_apps.deepwork.R
 import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.OnboardingPage
 import kotlin.math.sin
 import kotlin.math.cos
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.platform.LocalContext
+import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
 
 @Composable
 fun OnboardingPageContent(
@@ -1403,6 +1412,178 @@ private fun FifthPageAnimatedContent(
                         onMaybeLater()
                     }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun PermissionsChecklist(
+    onAllPermissionsGranted: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    
+    // Track permission states
+    var usageStatsPermission by remember { mutableStateOf(PermissionHelper.hasUsageStatsPermission(context)) }
+    var overlayPermission by remember { mutableStateOf(PermissionHelper.hasOverlayPermission(context)) }
+    var batteryOptimization by remember { mutableStateOf(PermissionHelper.isBatteryOptimizationDisabled(context)) }
+    
+    // Check if all permissions are granted
+    val allGranted = usageStatsPermission && overlayPermission && batteryOptimization
+    
+    // Call callback when all permissions granted
+    LaunchedEffect(allGranted) {
+        if (allGranted) {
+            onAllPermissionsGranted()
+        }
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Usage Stats Permission
+        PermissionChecklistItem(
+            title = "App Usage Access",
+            description = "Required to monitor app usage for blocking",
+            isGranted = usageStatsPermission,
+            onRequest = {
+                PermissionHelper.requestUsageStatsPermission(context)
+                // Update state after request (user would need to come back)
+                usageStatsPermission = PermissionHelper.hasUsageStatsPermission(context)
+            }
+        )
+        
+        // Overlay Permission
+        PermissionChecklistItem(
+            title = "Display Over Other Apps",
+            description = "Required to show app blocking overlay",
+            isGranted = overlayPermission,
+            onRequest = {
+                PermissionHelper.requestOverlayPermission(context)
+                // Update state after request
+                overlayPermission = PermissionHelper.hasOverlayPermission(context)
+            }
+        )
+        
+        // Battery Optimization
+        PermissionChecklistItem(
+            title = "Battery Optimization",
+            description = "Prevent the app from being killed in background",
+            isGranted = batteryOptimization,
+            onRequest = {
+                PermissionHelper.requestBatteryOptimizationDisable(context)
+                // Update state after request
+                batteryOptimization = PermissionHelper.isBatteryOptimizationDisabled(context)
+            }
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Status indicator
+        if (allGranted) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "All permissions granted",
+                    tint = Color(0xFF34C759),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "All permissions granted!",
+                    color = Color(0xFF34C759),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        } else {
+            Text(
+                "Tap on each permission to grant access",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+fun PermissionChecklistItem(
+    title: String,
+    description: String,
+    isGranted: Boolean,
+    onRequest: () -> Unit
+) {
+    Card (
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { if (!isGranted) onRequest() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isGranted) 
+                Color(0xFF1C2E1C) 
+            else 
+                Color(0xFF1C1C1E)
+        ),
+        border = if (isGranted) 
+            androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF34C759)) 
+        else null
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Status Icon
+            Icon(
+                imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.CheckCircleOutline,
+                contentDescription = if (isGranted) "Granted" else "Not Granted",
+                tint = if (isGranted) Color(0xFF34C759) else Color.Gray,
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = description,
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp
+                )
+            }
+            
+            // Grant button for non-granted permissions
+            if (!isGranted) {
+                Button(
+                    onClick = onRequest,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF0A84FF)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "Grant",
+                        fontSize = 12.sp,
+                        color = Color.White
+                    )
+                }
             }
         }
     }

@@ -18,6 +18,7 @@ import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTopTagsBySessionC
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalFocusTimeByTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalFocusTimeUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetTotalSessionCountUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetRecentSessionsUseCase
 import java.time.LocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,7 @@ class StatisticsViewModel @Inject constructor(
     private val getMonthlyFocusDataUseCase: GetMonthlyFocusDataUseCase,
     private val getYearlyFocusDataUseCase: GetYearlyFocusDataUseCase,
     private val getWeekdayFocusDataUseCase: GetWeekdayFocusDataUseCase,
+    private val getRecentSessionsUseCase: GetRecentSessionsUseCase,
     private val premiumManager: PremiumManager
 ) : ViewModel(), StatisticsActions {
 
@@ -478,6 +480,30 @@ class StatisticsViewModel @Inject constructor(
                     currentState.copy(
                         isLoading = false, // Yükleme bitti
                         errorMessage = "Etiketler yüklenirken bir hata oluştu: ${e.localizedMessage}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun loadSessionLogs() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                getRecentSessionsUseCase.invoke(limit = 15).collectLatest { sessionLogs ->
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            sessionLogs = sessionLogs,
+                            isLoading = false
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("StatisticsViewModel", "Error loading session logs: ${e.message}", e)
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        errorMessage = "Session logs yüklenirken bir hata oluştu: ${e.localizedMessage}"
                     )
                 }
             }

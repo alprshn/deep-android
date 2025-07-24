@@ -58,6 +58,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kami_apps.deepwork.deep_work_app.data.model.StopwatchState
@@ -92,10 +94,14 @@ fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
     timerViewModel: TimerViewModel = hiltViewModel()
 ) {
+    // Haptic feedback
+    val hapticFeedback = LocalHapticFeedback.current
+    val isHapticEnabled by timerViewModel.isHapticEnabled.collectAsState()
+    
     // UI State'leri
     val stopwatchUiState by stopWatchViewModel.timerUIState.collectAsState()
     val timerUiState by timerViewModel.timerUIState.collectAsState()
-
+    
     // Timer ve Stopwatch State'leri
     val stopwatchState by stopWatchViewModel.stopwatchState.observeAsState(
         StopwatchState(
@@ -106,7 +112,7 @@ fun TimerScreen(
             isReset = false
         )
     )
-
+    
     val timerState by timerViewModel.timerState.observeAsState(
         TimerState(
             timeInMillis = 0L,
@@ -119,7 +125,7 @@ fun TimerScreen(
             isDone = true
         )
     )
-
+    
     val tagContent by stopWatchViewModel.allTagList.collectAsStateWithLifecycle()
 
     // Local UI State'ler - MODE FIRST!
@@ -133,7 +139,7 @@ fun TimerScreen(
     var tagColor by remember { mutableStateOf(TagColors[selectedColorIndex]) }
     var chosenTagColor by remember { mutableStateOf("18402806360702976000") }
     var selectedEmoji by remember { mutableStateOf("😊") }
-
+    
     // Mode Selection State (false: Timer, true: Stopwatch) - MUST BE BEFORE isPremium!
     var isStopwatchMode by remember { mutableStateOf(false) }
 
@@ -142,7 +148,7 @@ fun TimerScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var colorBackgroundGradientValue by remember { mutableFloatStateOf(0.2f) }
-
+    
     // Timer spesifik state'ler
     var timerMinutes by remember { mutableStateOf(25) }
 
@@ -155,7 +161,7 @@ fun TimerScreen(
 
     // Derived state'ler - hangi moda göre UI state'i belirlenir
     val currentUiState = if (isStopwatchMode) stopwatchUiState else timerUiState
-    val isCurrentlyStarted = if (isStopwatchMode)
+    val isCurrentlyStarted = if (isStopwatchMode) 
         stopwatchUiState.stopWatchIsStarted else timerState.isPlaying
 
     val animatedColorBackgroundGradientValue by animateFloatAsState(
@@ -221,322 +227,327 @@ fun TimerScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize(),
+            ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    Column(
-                        modifier = Modifier.animateContentSize(
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = FastOutSlowInEasing
-                            )
+                    modifier = Modifier.animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = FastOutSlowInEasing
                         )
+                    )
+                ) {
+                    AnimatedVisibility(
+                        visible = !isCurrentlyStarted,
+                        enter = fadeIn(tween(durationMillis = 500)),
+                        exit = fadeOut(tween(durationMillis = 500))
                     ) {
-                        AnimatedVisibility(
-                            visible = !isCurrentlyStarted,
-                            enter = fadeIn(tween(durationMillis = 500)),
-                            exit = fadeOut(tween(durationMillis = 500))
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(70.dp),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(70.dp),
-                                verticalArrangement = Arrangement.Top,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                items(listSnacks) { snack ->
-                                    AnimatedVisibility(
-                                        visible = snack != selectedSnack,
-                                        modifier = Modifier.animateItem()
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .sharedBounds(
+                            items(listSnacks) { snack ->
+                                AnimatedVisibility(
+                                    visible = snack != selectedSnack,
+                                    modifier = Modifier.animateItem()
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .sharedBounds(
                                                     sharedContentState = rememberSharedContentState(
                                                         key = "${snack.name}-bounds"
                                                     ),
-                                                    animatedVisibilityScope = this,
-                                                )
-                                                .background(Color.Transparent)
-                                                .clip(shapeForSharedElement)
-                                        ) {
-                                            SnackContents(
-                                                snack = snack,
-                                                modifier = Modifier.sharedElement(
+                                                animatedVisibilityScope = this,
+                                            )
+                                            .background(Color.Transparent)
+                                            .clip(shapeForSharedElement)
+                                    ) {
+                                        SnackContents(
+                                            snack = snack,
+                                            modifier = Modifier.sharedElement(
                                                     sharedContentState = rememberSharedContentState(
                                                         key = snack.name
                                                     ),
-                                                    animatedVisibilityScope = this@AnimatedVisibility,
-                                                ),
-                                                onClick = { selectedSnack = snack },
-                                                heightButton = 50,
-                                                textColor = Color.White,
-                                                emoji = currentUiState.selectedTagEmoji,
-                                                modifierText = Modifier.sharedBounds(
+                                                animatedVisibilityScope = this@AnimatedVisibility,
+                                            ),
+                                            onClick = { selectedSnack = snack },
+                                            heightButton = 50,
+                                            textColor = Color.White,
+                                            emoji = currentUiState.selectedTagEmoji,
+                                            modifierText = Modifier.sharedBounds(
                                                     sharedContentState = rememberSharedContentState(
                                                         key = "${snack.name}-text"
                                                     ),
-                                                    animatedVisibilityScope = this@AnimatedVisibility
-                                                )
+                                                animatedVisibilityScope = this@AnimatedVisibility
                                             )
-                                        }
+                                        )
                                     }
                                 }
                             }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Timer/Stopwatch Toggle Bar
-                    TimerToggleBar(
-                        height = 50.dp,
-                        circleButtonPadding = 4.dp,
-                        circleBackgroundOnResource = chosenTagColor,
-                        onCheckedChanged = { isStopwatch ->
-                            if (!isCurrentlyStarted) {
-                                isStopwatchMode = isStopwatch
-                            }
-                        },
-                        selectedState = isStopwatchMode,
-                        toggleTimerUiState = isCurrentlyStarted
-                    )
-
-                    // Circular Progress Indicator
-                    if (isStopwatchMode) {
-                        // Stopwatch Mode
-                        CustomCircularProgressIndicator(
-                            modifier = Modifier
-                                .padding(vertical = 50.dp)
-                                .size(350.dp)
-                                .background(Color.Transparent),
-                            minuteCurrentValue = stopwatchState.minute,
-                            secondCurrentValue = stopwatchState.second,
-                            maxValue = stopwatchUiState.maxValue,
-                            minValue = stopwatchUiState.minValue,
-                            colorBackgroundGradientValue = animatedColorBackgroundGradientValue,
-                            onValueChange = { newValue ->
-                                stopwatchUiState.initialValueMinutes = newValue.toString()
-                            },
-                            timerState = false,
-                            colorBackgroundGradient = chosenTagColor,
-                            progressTagEmoji = selectedEmoji,
-                            progressTagName = selectedTagText,
-                            progressStartState = stopwatchUiState.stopWatchIsStarted,
-                            isTimerMode = false,
-                            timerProgress = 0f,
-                            isTimerRunning = false
-                        )
-                    } else {
-                        // Timer Mode
-                        CustomCircularProgressIndicator(
-                            modifier = Modifier
-                                .padding(vertical = 50.dp)
-                                .size(350.dp)
-                                .background(Color.Transparent),
-                            minuteCurrentValue = String.format("%02d", timerState.minute),
-                            secondCurrentValue = String.format("%02d", timerState.second),
-                            maxValue = 60,
-                            minValue = 0,
-                            colorBackgroundGradientValue = animatedColorBackgroundGradientValue,
-                            onValueChange = { newValue ->
-                                if (!timerState.isPlaying) {
-                                    timerMinutes = newValue
-                                    timerViewModel.setTimerFromMinutes(newValue)
-                                    Log.d("TimerScreen", "Timer minutes set to: $newValue")
-                                }
-                            },
-                            timerState = false,
-                            colorBackgroundGradient = chosenTagColor,
-                            progressTagEmoji = selectedEmoji,
-                            progressTagName = selectedTagText,
-                            progressStartState = timerState.isPlaying,
-                            isTimerMode = true,
-                            timerProgress = timerState.progress, // TimerManager zaten kalan zamanın oranını veriyor
-                            isTimerRunning = timerState.isPlaying
-                        )
-                    }
-
-                    // Action Buttons
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Reset/Replay Button
-                        AnimatedVisibility(
-                            visible = isCurrentlyStarted,
-                            enter = fadeIn(animationSpec = tween(500, easing = EaseInOutQuart)) +
-                                    scaleIn(
-                                        animationSpec = tween(500, easing = EaseInOutQuart),
-                                        initialScale = 0.7f
-                                    ),
-                            exit = fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)) +
-                                    scaleOut(
-                                        animationSpec = tween(300, easing = EaseInOutQuart),
-                                        targetScale = 0.7f
-                                    )
-                        ) {
-                            TimeEditButtons(
-                                onClick = {
-                                    if (isStopwatchMode) {
-                                        stopWatchViewModel.reset()
-                                    } else {
-                                        timerViewModel.reset()
-                                    }
-                                    colorBackgroundGradientValue = 0.2f
-                                },
-                                baseColor = Color.Gray,
-                                icon = Icons.Filled.Replay
-                            )
-                        }
-
-                        // Play/Pause Button
-                        if (!isCurrentlyStarted) {
-                            StartButton(
-                                onClick = {
-                                    if (currentUiState.tagId == 0) {
-                                        Log.e("TAG", "Please select a tag")
-                                    } else {
-                                        if (isStopwatchMode) {
-                                            stopWatchViewModel.start()
-                                        } else {
-                                            timerViewModel.start()
-                                        }
-                                        colorBackgroundGradientValue = 0.4f
-                                    }
-                                },
-                                imageVector = Icons.Filled.PlayArrow,
-                                baseColor = chosenTagColor
-                            )
-                        } else {
-                            StartButton(
-                                onClick = {
-                                    if (isStopwatchMode) {
-                                        stopWatchViewModel.lap()
-                                    } else {
-                                        timerViewModel.pause()
-                                    }
-                                    colorBackgroundGradientValue = 0.2f
-                                },
-                                imageVector = Icons.Filled.Pause,
-                                baseColor = chosenTagColor
-                            )
-                        }
-
-                        // Stop Button
-                        AnimatedVisibility(
-                            visible = isCurrentlyStarted,
-                            enter = fadeIn(animationSpec = tween(500, easing = EaseInOutQuart)) +
-                                    scaleIn(
-                                        animationSpec = tween(500, easing = EaseInOutQuart),
-                                        initialScale = 0.7f
-                                    ),
-                            exit = fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)) +
-                                    scaleOut(
-                                        animationSpec = tween(300, easing = EaseInOutQuart),
-                                        targetScale = 0.7f
-                                    )
-                        ) {
-                            TimeEditButtons(
-                                onClick = { showEndSessionBar = true },
-                                baseColor = Color.Gray,
-                                icon = Icons.Default.Stop
-                            )
                         }
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Tag Selection Dialog
-                SnackEditDetails(
-                    snack = selectedSnack,
-                    onCloseClick = { selectedSnack = null },
-                    visibleTagItems = currentUiState.visibleTagItems,
-                    addTagClick = { showBottomSheet = true },
-                    tagContent = tagContent,
-                    onTagClick = { tag ->
-                        if (isStopwatchMode) {
-                            stopwatchUiState.selectedTagEmoji = tag.tagEmoji
-                            stopwatchUiState.tagId = tag.tagId
-                        } else {
-                            timerUiState.selectedTagEmoji = tag.tagEmoji
-                            timerUiState.tagId = tag.tagId
+                // Timer/Stopwatch Toggle Bar
+                TimerToggleBar(
+                    height = 50.dp,
+                    circleButtonPadding = 4.dp,
+                    circleBackgroundOnResource = chosenTagColor,
+                    onCheckedChanged = { isStopwatch ->
+                        if (!isCurrentlyStarted) {
+                            isStopwatchMode = isStopwatch
+                            
+                            // Haptic feedback for mode selection
+                            if (isHapticEnabled) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
                         }
-                        selectedTagText = tag.tagName
-                        listSnacks[0].name = selectedTagText
-                        chosenTagColor = tag.tagColor
-                        selectedEmoji = tag.tagEmoji
-                        Log.e("chosenTagColor", "TimerScreen: $chosenTagColor")
                     },
-                    selectedTagEmoji = currentUiState.selectedTagEmoji,
-                    selectedTagText = selectedTagText,
+                    selectedState = isStopwatchMode,
+                    toggleTimerUiState = isCurrentlyStarted
                 )
 
-                // End Session Dialog
-                if (showEndSessionBar) {
-                    EndSessionBar(
-                        endSession = {
-                            showEndSessionBar = false
-                            if (isStopwatchMode) {
-                                stopWatchViewModel.stop()
-                            } else {
-                                timerViewModel.completeSession()
-                            }
-                            colorBackgroundGradientValue = 0.2f
+                // Circular Progress Indicator
+                if (isStopwatchMode) {
+                    // Stopwatch Mode
+                    CustomCircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 50.dp)
+                            .size(350.dp)
+                            .background(Color.Transparent),
+                        minuteCurrentValue = stopwatchState.minute,
+                        secondCurrentValue = stopwatchState.second,
+                        maxValue = stopwatchUiState.maxValue,
+                        minValue = stopwatchUiState.minValue,
+                        colorBackgroundGradientValue = animatedColorBackgroundGradientValue,
+                        onValueChange = { newValue ->
+                            stopwatchUiState.initialValueMinutes = newValue.toString()
                         },
-                        keepGoingButtonColor = chosenTagColor,
-                        onClickKeepGoing = { showEndSessionBar = false }
+                        timerState = false,
+                        colorBackgroundGradient = chosenTagColor,
+                        progressTagEmoji = selectedEmoji,
+                        progressTagName = selectedTagText,
+                        progressStartState = stopwatchUiState.stopWatchIsStarted,
+                        isTimerMode = false,
+                        timerProgress = 0f,
+                        isTimerRunning = false
+                    )
+                } else {
+                    // Timer Mode
+                    CustomCircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 50.dp)
+                            .size(350.dp)
+                            .background(Color.Transparent),
+                        minuteCurrentValue = String.format("%02d", timerState.minute),
+                        secondCurrentValue = String.format("%02d", timerState.second),
+                        maxValue = 60,
+                        minValue = 0,
+                        colorBackgroundGradientValue = animatedColorBackgroundGradientValue,
+                        onValueChange = { newValue ->
+                            if (!timerState.isPlaying) {
+                                timerMinutes = newValue
+                                timerViewModel.setTimerFromMinutes(newValue)
+                                Log.d("TimerScreen", "Timer minutes set to: $newValue")
+                            }
+                        },
+                        timerState = false,
+                        colorBackgroundGradient = chosenTagColor,
+                        progressTagEmoji = selectedEmoji,
+                        progressTagName = selectedTagText,
+                        progressStartState = timerState.isPlaying,
+                        isTimerMode = true,
+                        timerProgress = timerState.progress, // TimerManager zaten kalan zamanın oranını veriyor
+                        isTimerRunning = timerState.isPlaying
                     )
                 }
+
+                // Action Buttons
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Reset/Replay Button
+                    AnimatedVisibility(
+                        visible = isCurrentlyStarted,
+                        enter = fadeIn(animationSpec = tween(500, easing = EaseInOutQuart)) + 
+                                    scaleIn(
+                                        animationSpec = tween(500, easing = EaseInOutQuart),
+                                        initialScale = 0.7f
+                                    ),
+                        exit = fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)) + 
+                                    scaleOut(
+                                        animationSpec = tween(300, easing = EaseInOutQuart),
+                                        targetScale = 0.7f
+                                    )
+                    ) {
+                        TimeEditButtons(
+                            onClick = {
+                                if (isStopwatchMode) {
+                                    stopWatchViewModel.reset()
+                                } else {
+                                    timerViewModel.reset()
+                                }
+                                colorBackgroundGradientValue = 0.2f
+                            },
+                            baseColor = Color.Gray,
+                            icon = Icons.Filled.Replay
+                        )
+                    }
+
+                    // Play/Pause Button
+                    if (!isCurrentlyStarted) {
+                        StartButton(
+                            onClick = {
+                                if (currentUiState.tagId == 0) {
+                                    Log.e("TAG", "Please select a tag")
+                                } else {
+                                    if (isStopwatchMode) {
+                                        stopWatchViewModel.start()
+                                    } else {
+                                        timerViewModel.start()
+                                    }
+                                    colorBackgroundGradientValue = 0.4f
+                                }
+                            },
+                            imageVector = Icons.Filled.PlayArrow,
+                            baseColor = chosenTagColor
+                        )
+                    } else {
+                        StartButton(
+                            onClick = {
+                                if (isStopwatchMode) {
+                                    stopWatchViewModel.lap()
+                                } else {
+                                    timerViewModel.pause()
+                                }
+                                colorBackgroundGradientValue = 0.2f
+                            },
+                            imageVector = Icons.Filled.Pause,
+                            baseColor = chosenTagColor
+                        )
+                    }
+
+                    // Stop Button
+                    AnimatedVisibility(
+                        visible = isCurrentlyStarted,
+                        enter = fadeIn(animationSpec = tween(500, easing = EaseInOutQuart)) + 
+                                    scaleIn(
+                                        animationSpec = tween(500, easing = EaseInOutQuart),
+                                        initialScale = 0.7f
+                                    ),
+                        exit = fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)) + 
+                                    scaleOut(
+                                        animationSpec = tween(300, easing = EaseInOutQuart),
+                                        targetScale = 0.7f
+                                    )
+                    ) {
+                        TimeEditButtons(
+                            onClick = { showEndSessionBar = true },
+                            baseColor = Color.Gray,
+                            icon = Icons.Default.Stop
+                        )
+                    }
+                }
             }
+
+            // Tag Selection Dialog
+            SnackEditDetails(
+                snack = selectedSnack,
+                onCloseClick = { selectedSnack = null },
+                visibleTagItems = currentUiState.visibleTagItems,
+                addTagClick = { showBottomSheet = true },
+                tagContent = tagContent,
+                onTagClick = { tag ->
+                    if (isStopwatchMode) {
+                        stopwatchUiState.selectedTagEmoji = tag.tagEmoji
+                        stopwatchUiState.tagId = tag.tagId
+                    } else {
+                        timerUiState.selectedTagEmoji = tag.tagEmoji
+                        timerUiState.tagId = tag.tagId
+                    }
+                    selectedTagText = tag.tagName
+                    listSnacks[0].name = selectedTagText
+                    chosenTagColor = tag.tagColor
+                    selectedEmoji = tag.tagEmoji
+                    Log.e("chosenTagColor", "TimerScreen: $chosenTagColor")
+                },
+                selectedTagEmoji = currentUiState.selectedTagEmoji,
+                selectedTagText = selectedTagText,
+            )
+
+            // End Session Dialog
+            if (showEndSessionBar) {
+                EndSessionBar(
+                    endSession = {
+                        showEndSessionBar = false
+                        if (isStopwatchMode) {
+                            stopWatchViewModel.stop()
+                        } else {
+                            timerViewModel.completeSession()
+                        }
+                        colorBackgroundGradientValue = 0.2f
+                    },
+                    keepGoingButtonColor = chosenTagColor,
+                    onClickKeepGoing = { showEndSessionBar = false }
+                )
+            }
+        }
 
             // Snackbar for premium restrictions
             androidx.compose.material3.SnackbarHost(
                 hostState = snackbarHostState,
             )
-        }
     }
+}
 
-    @Preview
-    @Composable
-    fun TimerScreenPreview() {
-        Column(
+@Preview
+@Composable
+fun TimerScreenPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 70.dp)
+                .clip(shape = RoundedCornerShape(16.dp))
+                .background(Color.Blue.copy(alpha = 0.2f))
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
+            Text(
+                text = "selectedEmoji",
                 modifier = Modifier
-                    .padding(horizontal = 70.dp)
-                    .clip(shape = RoundedCornerShape(16.dp))
-                    .background(Color.Blue.copy(alpha = 0.2f))
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "selectedEmoji",
-                    modifier = Modifier
-                        .padding(vertical = 15.dp)
-                        .padding(start = 20.dp),
-                    fontSize = 20.sp
-                )
-                Text(
-                    text = "New Tag",
-                    modifier = Modifier
-                        .padding(vertical = 15.dp)
-                        .padding(start = 10.dp),
-                    fontSize = 18.sp,
-                    color = Color.Blue,
-                    fontWeight = FontWeight.Bold
-                )
+                    .padding(vertical = 15.dp)
+                    .padding(start = 20.dp),
+                fontSize = 20.sp
+            )
+            Text(
+                text = "New Tag",
+                modifier = Modifier
+                    .padding(vertical = 15.dp)
+                    .padding(start = 10.dp),
+                fontSize = 18.sp,
+                color = Color.Blue,
+                fontWeight = FontWeight.Bold
+            )
             }
         }
     }

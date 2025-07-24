@@ -82,3 +82,58 @@ fun ShimmerEffectOnImage(
         )
     }
 }
+
+
+
+@Composable
+fun ShimmerEffect(
+    modifier: Modifier = Modifier,
+    widthOfShadowBrush: Int = 500,
+    angleOfAxisY: Float = 270f,
+    durationMillis: Int = 2000,
+    baseColor: Color = Color.Transparent,
+    shimmerColor: Color = Color.White,
+    // Yeni eklenen parametre: Shimmer'ın uygulanacağı şekil
+    shimmerShape: Shape = RoundedCornerShape(0.dp), // Varsayılan olarak dikdörtgen, yuvarlak köşeleri buradan ayarlayacağız
+    content: @Composable () -> Unit
+) {
+    val shimmerColors = listOf(
+        baseColor.copy(alpha = 0.3f),
+        shimmerColor.copy(alpha = 0.5f),
+        shimmerColor.copy(alpha = 1.0f),
+        shimmerColor.copy(alpha = 0.5f),
+        baseColor.copy(alpha = 0.3f),
+    )
+
+    val transition = rememberInfiniteTransition(label = "ShimmerEffectTransition")
+
+    val translateAnimation = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = (durationMillis + widthOfShadowBrush).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = durationMillis,
+                easing = LinearEasing,
+            ),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "Shimmer loading animation",
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(x = translateAnimation.value - widthOfShadowBrush, y = 0.0f),
+        end = Offset(x = translateAnimation.value, y = angleOfAxisY),
+    )
+
+    Box(
+        modifier = modifier
+            // Shimmer fırçasını ve şeklini doğrudan background modifikatörüne uyguluyoruz
+            .background(
+                brush = brush,
+                shape = shimmerShape // Buraya yeni şekil parametresini ekledik
+            )
+    ) {
+        content()
+    }
+}

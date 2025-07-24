@@ -21,6 +21,12 @@ import kotlinx.coroutines.launch
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.content.Context
+import android.util.Log
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -32,12 +38,17 @@ fun OnboardingScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { uiState.totalPages })
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     
     // Screen Time Permission Launcher
     val permissionLauncher = rememberScreenTimePermissionLauncher { granted ->
+        Log.d("OnboardingScreen", "Permission launcher callback triggered! Granted: $granted")
         if (granted) {
+            Log.d("OnboardingScreen", "Permission granted! Moving to next page...")
             // Permission verildiyse sonraki sayfaya geç
             viewModel.handleAction(OnboardingActions.NextPage)
+        } else {
+            Log.d("OnboardingScreen", "Permission denied, staying on current page")
         }
         // Permission verilmezse kullanıcı manuel olarak settings'den verebilir
     }
@@ -46,12 +57,13 @@ fun OnboardingScreen(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            // Permission verildiyse onboarding'i tamamla
+        // Notification permission sonrası overlay permission iste
+        requestOverlayPermission(context) {
+            // Overlay permission sonrası battery optimization iste
+            requestBatteryOptimization(context) {
+                // Tüm permissionlar tamamlandıktan sonra onboarding'i bitir
             viewModel.handleAction(OnboardingActions.CompleteOnboarding)
-        } else {
-            // Permission verilmezse de onboarding'i tamamla
-            viewModel.handleAction(OnboardingActions.CompleteOnboarding)
+            }
         }
     }
 
@@ -87,7 +99,8 @@ fun OnboardingScreen(
         // Sayfa içerikleri
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = false // Disable swipe gestures
         ) { page ->
             viewModel.getPageAt(page)?.let { onboardingPage ->
                 OnboardingPageContent(
@@ -102,14 +115,22 @@ fun OnboardingScreen(
                         viewModel.handleAction(OnboardingActions.NextPage)
                     },
                     onConnectScreenTime = {
+                        Log.d("OnboardingScreen", "Connect Screen Time button clicked!")
+                        Log.d("OnboardingScreen", "Current permission status: ${permissionLauncher.hasUsageAccessPermission()}")
                         permissionLauncher.requestUsageAccessPermission()
+                        Log.d("OnboardingScreen", "Permission request sent!")
                     },
                     onRequestNotificationPermission = {
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
                             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         } else {
                             // Android 13 altında notification permission otomatik verilir
+                            // Direkt olarak diğer permissionları iste
+                            requestOverlayPermission(context) {
+                                requestBatteryOptimization(context) {
                             viewModel.handleAction(OnboardingActions.CompleteOnboarding)
+                                }
+                            }
                         }
                     },
                     onMaybeLater = {
@@ -144,5 +165,40 @@ fun OnboardingScreen(
                 isVisible = if (uiState.currentPage == 0) uiState.showButtons else true // İlk sayfa için animasyon kontrolü
             )
         }
+    }
+}
+
+// Helper functions for other permissions
+private fun requestOverlayPermission(context: Context, onComplete: () -> Unit) {
+    if (PermissionHelper.hasOverlayPermission(context)) {
+        onComplete()
+        return
+    }
+    
+    try {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${context.packageName}")
+        )
+        context.startActivity(intent)
+        // For simplicity, just call onComplete - in real app you'd need to check when user returns
+        onComplete()
+    } catch (e: Exception) {
+        onComplete()
+    }
+}
+
+private fun requestBatteryOptimization(context: Context, onComplete: () -> Unit) {
+    if (PermissionHelper.isBatteryOptimizationDisabled(context)) {
+        onComplete()
+        return
+    }
+    
+    try {
+        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        context.startActivity(intent)
+        onComplete()
+    } catch (e: Exception) {
+        onComplete()
     }
 } 

@@ -20,6 +20,8 @@ class GetAverageFocusTimeByTagUseCase @Inject constructor (private val sessionsR
     }
 
     private fun calculateAverageTotalTime(durations: List<String>): String {
+        if (durations.isEmpty()) return "0m" // ⬅️ Sıfıra bölme kontrolü
+
         var totalSeconds = 0
         var totalMinutes = 0
 

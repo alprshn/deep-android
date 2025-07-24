@@ -19,12 +19,19 @@ fun Color.darken(factor: Float): Color {
 }
 
 
-fun parseTagColor(raw: String): Color = try {
-    // ❶ ULong formatı → doğrudan Color(value)
-    Color(raw.toULong())
-} catch (e: NumberFormatException) {
-    // ❷ "Color(r,g,b,a,…)" formatı varsa regex ile al
-    val re = Regex("""Color\(([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)""")
-    val (r, g, b, a) = re.find(raw)!!.destructured
-    Color(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
+fun parseTagColor(raw: String?): Color {
+    if (raw.isNullOrBlank()) return Color.Gray // ⬅️ Null veya boş kontrolü
+
+    return try {
+        Color(raw.toULong())
+    } catch (e: NumberFormatException) {
+        val re = Regex("""Color\(([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)""")
+        val matchResult = re.find(raw)
+        return if (matchResult != null) {
+            val (r, g, b, a) = matchResult.destructured
+            Color(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
+        } else {
+            Color.Gray // ⬅️ Hatalı format fallback
+        }
+    }
 }

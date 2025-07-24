@@ -131,6 +131,8 @@ dependencies {
     //Json
     implementation("com.google.code.gson:gson:2.13.1")
 
+    //Data Store
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Test dependencies
     testImplementation(libs.junit)

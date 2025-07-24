@@ -14,8 +14,10 @@ import com.kami_apps.deepwork.deep_work_app.data.service.AppBlockingService
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.AddTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetUserPreferencesUseCase
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerUiState
 import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
+import com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +30,7 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
 
+
 @HiltViewModel
 class TimerViewModel @Inject constructor(
     private val timerManager: TimerManager,
@@ -35,7 +38,9 @@ class TimerViewModel @Inject constructor(
     private val startFocusSession: StartFocusSessionUseCase,
     private val getAllTagsUseCase: GetAllTagsUseCase,
     @ApplicationContext private val context: Context,
-    private val premiumManager: PremiumManager
+    private val premiumManager: PremiumManager,
+    private val hapticFeedbackHelper: HapticFeedbackHelper,
+    private val getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel(), TimerActions {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Success(timerManager.timerState))
@@ -48,6 +53,10 @@ class TimerViewModel @Inject constructor(
     val timerUIState: StateFlow<TimerUiState> = _timerUIState.asStateFlow()
 
     val timerState = timerManager.timerState.asLiveData()
+    
+    // Haptic feedback state
+    private val _isHapticEnabled = MutableStateFlow(false)
+    val isHapticEnabled: StateFlow<Boolean> = _isHapticEnabled.asStateFlow()
 
     init {
         // Observe premium status
@@ -56,6 +65,39 @@ class TimerViewModel @Inject constructor(
                 _timerUIState.value = _timerUIState.value.copy(isPremium = isPremium)
             }
         }
+        
+        // Load haptic feedback preference
+        loadHapticPreference()
+    }
+    
+    private fun loadHapticPreference() {
+        viewModelScope.launch {
+            try {
+                val userPreferences = getUserPreferencesUseCase()
+                _isHapticEnabled.value = userPreferences?.haptic ?: false
+            } catch (e: Exception) {
+                Log.e("TimerViewModel", "Failed to load haptic preference", e)
+                _isHapticEnabled.value = false
+            }
+        }
+    }
+    
+    private fun performHapticFeedback(feedbackType: TimerHapticFeedbackType) {
+        if (_isHapticEnabled.value) {
+            when (feedbackType) {
+                TimerHapticFeedbackType.BUTTON_CLICK -> hapticFeedbackHelper.performButtonClick()
+                TimerHapticFeedbackType.IMPORTANT_ACTION -> hapticFeedbackHelper.performImportantAction()
+                TimerHapticFeedbackType.MODE_SELECTION -> hapticFeedbackHelper.performModeSelection()
+                TimerHapticFeedbackType.SLIDER_FEEDBACK -> hapticFeedbackHelper.performSliderFeedback()
+            }
+        }
+    }
+    
+    private enum class TimerHapticFeedbackType {
+        BUTTON_CLICK,
+        IMPORTANT_ACTION,
+        MODE_SELECTION,
+        SLIDER_FEEDBACK
     }
 
     override fun setHour(hour: Int) {
@@ -63,6 +105,9 @@ class TimerViewModel @Inject constructor(
     }
 
     override fun setMinute(minute: Int) {
+        // Haptic feedback for slider changes
+        performHapticFeedback(TimerHapticFeedbackType.SLIDER_FEEDBACK)
+        
         timerManager.setMinute(minute)
         timerManager.setCountDownTimer()
     }
@@ -75,8 +120,19 @@ class TimerViewModel @Inject constructor(
     override fun setCountDownTimer() {
         timerManager.setCountDownTimer()
     }
+    
+    fun setTimerFromMinutes(minutes: Int) {
+        // Haptic feedback for timer value change
+        performHapticFeedback(TimerHapticFeedbackType.SLIDER_FEEDBACK)
+        
+        timerManager.setMinute(minutes)
+        timerManager.setCountDownTimer()
+    }
 
     override fun start() {
+        // Haptic feedback for play button
+        performHapticFeedback(TimerHapticFeedbackType.BUTTON_CLICK)
+        
         viewModelScope.launch {
             val currentState = _timerUIState.value
             val currentMinutes = timerState.value?.minute ?: 0
@@ -119,6 +175,9 @@ class TimerViewModel @Inject constructor(
     }
 
     override fun pause() {
+        // Haptic feedback for pause button
+        performHapticFeedback(TimerHapticFeedbackType.BUTTON_CLICK)
+        
         timerManager.pause()
         _timerUIState.value = _timerUIState.value.copy(
             timerIsRunning = false
@@ -129,6 +188,9 @@ class TimerViewModel @Inject constructor(
     }
 
     override fun reset() {
+        // Haptic feedback for reset button (important action)
+        performHapticFeedback(TimerHapticFeedbackType.IMPORTANT_ACTION)
+        
         timerManager.reset()
         _timerUIState.value = _timerUIState.value.copy(
             startTime = null,
@@ -142,6 +204,9 @@ class TimerViewModel @Inject constructor(
     }
 
     fun completeSession() {
+        // Haptic feedback for completing session (important action)
+        performHapticFeedback(TimerHapticFeedbackType.IMPORTANT_ACTION)
+        
         val finish = Date()
         val currentState = _timerUIState.value
         val updatedState = currentState.copy(
@@ -203,12 +268,7 @@ class TimerViewModel @Inject constructor(
         }
     }
 
-    fun setTimerFromMinutes(minutes: Int) {
-        setMinute(minutes)
-        setSecond(0)
-        setHour(0)
-        setCountDownTimer()
-    }
+
     
     // App Blocking Helper Methods
     private fun startAppBlocking() {

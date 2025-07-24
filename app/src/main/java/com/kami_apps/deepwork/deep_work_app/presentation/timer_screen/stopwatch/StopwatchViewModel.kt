@@ -12,11 +12,15 @@ import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 import com.kami_apps.deepwork.deep_work_app.data.manager.StopwatchManager
 import com.kami_apps.deepwork.deep_work_app.data.service.AppBlockingService
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.AddTagUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.EditTagUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.DeleteTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StartFocusSessionUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.StopFocusSessionUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetUserPreferencesUseCase
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerUiState
 import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
+import com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -34,11 +38,15 @@ import javax.inject.Inject
 class StopwatchViewModel @Inject constructor(
     private val stopwatchManager: StopwatchManager,
     private val addTag: AddTagUseCase,
+    private val editTag: EditTagUseCase,
+    private val deleteTag: DeleteTagUseCase,
     private val startFocusSession: StartFocusSessionUseCase,
     private val stopFocusSession: StopFocusSessionUseCase,
     private val getAllTagsUseCase: GetAllTagsUseCase,
     @ApplicationContext private val context: Context,
-    private val premiumManager: PremiumManager
+    private val premiumManager: PremiumManager,
+    private val hapticFeedbackHelper: HapticFeedbackHelper,
+    private val getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel(), StopwatchActions {
 
     private val _uiState =
@@ -51,11 +59,11 @@ class StopwatchViewModel @Inject constructor(
     private val _timerUIState = MutableStateFlow(TimerUiState())
     val timerUIState: StateFlow<TimerUiState> = _timerUIState.asStateFlow()
 
-
     val stopwatchState = stopwatchManager.stopwatchState.asLiveData()
-
-
-    val lapTimes = stopwatchManager.lapTimes
+    
+    // Haptic feedback state
+    private val _isHapticEnabled = MutableStateFlow(false)
+    val isHapticEnabled: StateFlow<Boolean> = _isHapticEnabled.asStateFlow()
 
     init {
         // Observe premium status
@@ -64,9 +72,43 @@ class StopwatchViewModel @Inject constructor(
                 _timerUIState.value = _timerUIState.value.copy(isPremium = isPremium)
             }
         }
+        
+        // Load haptic feedback preference
+        loadHapticPreference()
+    }
+    
+    private fun loadHapticPreference() {
+        viewModelScope.launch {
+            try {
+                val userPreferences = getUserPreferencesUseCase()
+                _isHapticEnabled.value = userPreferences?.haptic ?: false
+            } catch (e: Exception) {
+                Log.e("StopwatchViewModel", "Failed to load haptic preference", e)
+                _isHapticEnabled.value = false
+            }
+        }
+    }
+    
+    private fun performHapticFeedback(feedbackType: StopwatchHapticFeedbackType) {
+        if (_isHapticEnabled.value) {
+            when (feedbackType) {
+                StopwatchHapticFeedbackType.BUTTON_CLICK -> hapticFeedbackHelper.performButtonClick()
+                StopwatchHapticFeedbackType.IMPORTANT_ACTION -> hapticFeedbackHelper.performImportantAction()
+                StopwatchHapticFeedbackType.MODE_SELECTION -> hapticFeedbackHelper.performModeSelection()
+            }
+        }
+    }
+    
+    private enum class StopwatchHapticFeedbackType {
+        BUTTON_CLICK,
+        IMPORTANT_ACTION,
+        MODE_SELECTION
     }
 
     override fun start() {
+        // Haptic feedback for start button
+        performHapticFeedback(StopwatchHapticFeedbackType.BUTTON_CLICK)
+        
         viewModelScope.launch {
             val currentState = _timerUIState.value
             
@@ -99,6 +141,9 @@ class StopwatchViewModel @Inject constructor(
     }
 
     override fun stop() {
+        // Haptic feedback for stop button (important action)
+        performHapticFeedback(StopwatchHapticFeedbackType.IMPORTANT_ACTION)
+        
         val finish = Date()
         val currentState = _timerUIState.value
         val updatedState = currentState.copy(
@@ -136,6 +181,9 @@ class StopwatchViewModel @Inject constructor(
     }
 
     override fun lap() {
+        // Haptic feedback for lap/pause button
+        performHapticFeedback(StopwatchHapticFeedbackType.BUTTON_CLICK)
+        
         stopwatchManager.stop()
         _timerUIState.value = _timerUIState.value.copy(stopWatchIsStarted = false)
         
@@ -148,6 +196,9 @@ class StopwatchViewModel @Inject constructor(
     }
 
     override fun reset() {
+        // Haptic feedback for reset button (important action)
+        performHapticFeedback(StopwatchHapticFeedbackType.IMPORTANT_ACTION)
+        
         stopwatchManager.reset()
         _timerUIState.value = _timerUIState.value.copy(
             stopWatchIsStarted = false,
@@ -176,6 +227,20 @@ class StopwatchViewModel @Inject constructor(
             getAllTagsUseCase.invoke().collectLatest {
                 _allTagList.tryEmit(it)
             }
+        }
+    }
+    
+    fun editTag(tag: Tags) {
+        viewModelScope.launch {
+            editTag.invoke(tag)
+            getAllTag() // Refresh the list
+        }
+    }
+    
+    fun deleteTag(tag: Tags) {
+        viewModelScope.launch {
+            deleteTag.invoke(tag)
+            getAllTag() // Refresh the list
         }
     }
     

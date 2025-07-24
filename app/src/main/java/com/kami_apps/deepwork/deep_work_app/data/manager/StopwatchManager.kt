@@ -5,6 +5,7 @@ import com.kami_apps.deepwork.deep_work_app.data.model.StopwatchState
 import com.kami_apps.deepwork.deep_work_app.data.workManager.worker.STOPWATCH_TAG
 import com.kami_apps.deepwork.deep_work_app.data.workManager.worker.StopwatchWorker
 import com.kami_apps.deepwork.deep_work_app.util.GlobalProperties.TIME_FORMAT
+import com.kami_apps.deepwork.deep_work_app.util.helper.StopwatchNotificationHelper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -18,6 +19,7 @@ import kotlin.time.Duration.Companion.seconds
 @Singleton
 class StopwatchManager @Inject constructor(
     private val workRequestManager: WorkRequestManager,
+    private val stopwatchNotificationHelper: StopwatchNotificationHelper
 ) {
 
     var lapTimes = mutableStateListOf<String>()
@@ -87,12 +89,16 @@ class StopwatchManager @Inject constructor(
     fun stop() {
         timer?.cancel()
         isPlayingFlow.value = false
+        // Remove notification when stopping without resetting
+        stopwatchNotificationHelper.removeStopwatchNotification()
+        android.util.Log.d("StopwatchManager", "Stopwatch stopped, notification removed")
     }
 
     fun reset() {
         isResetFlow.value = true
         workRequestManager.cancelWorker(STOPWATCH_TAG)
-        android.util.Log.d("StopwatchManager", "Stopwatch reset with worker cancelled")
+        stopwatchNotificationHelper.removeStopwatchNotification()
+        android.util.Log.d("StopwatchManager", "Stopwatch reset with worker cancelled, notification removed")
         stop()
         duration = Duration.ZERO
         updateStopwatchState()

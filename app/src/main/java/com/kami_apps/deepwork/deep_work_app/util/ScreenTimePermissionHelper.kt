@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.ui.platform.LocalContext
+import android.util.Log
 
 class ScreenTimePermissionHelper(private val context: Context) {
     
@@ -34,8 +35,11 @@ class ScreenTimePermissionHelper(private val context: Context) {
                     context.packageName
                 )
             }
-            mode == AppOpsManager.MODE_ALLOWED
+            val hasPermission = mode == AppOpsManager.MODE_ALLOWED
+            Log.d("ScreenTimePermissionHelper", "Usage access permission check: $hasPermission (mode: $mode)")
+            hasPermission
         } catch (e: Exception) {
+            Log.e("ScreenTimePermissionHelper", "Error checking usage access permission", e)
             false
         }
     }
@@ -102,12 +106,15 @@ fun rememberScreenTimePermissionLauncher(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        Log.d("ScreenTimePermissionHelper", "Activity result received, checking permission status...")
         // Settings'den dönüldüğünde permission durumunu kontrol et
-        onResult(helper.hasUsageAccessPermission())
+        val isGranted = helper.hasUsageAccessPermission()
+        Log.d("ScreenTimePermissionHelper", "Permission status after settings: $isGranted")
+        onResult(isGranted)
     }
     
     return remember { 
-        ScreenTimePermissionLauncher(helper, launcher) 
+        ScreenTimePermissionLauncher(helper, launcher, onResult) 
     }
 }
 
@@ -116,7 +123,8 @@ fun rememberScreenTimePermissionLauncher(
  */
 class ScreenTimePermissionLauncher(
     private val helper: ScreenTimePermissionHelper,
-    private val launcher: ActivityResultLauncher<Intent>
+    private val launcher: ActivityResultLauncher<Intent>,
+    private val onResult: (Boolean) -> Unit  // Add callback parameter
 ) {
     
     fun hasUsageAccessPermission(): Boolean = helper.hasUsageAccessPermission()
@@ -126,14 +134,20 @@ class ScreenTimePermissionLauncher(
     fun hasAllPermissions(): Boolean = helper.hasAllPermissions()
     
     fun requestUsageAccessPermission() {
+        Log.d("ScreenTimePermissionHelper", "requestUsageAccessPermission called")
         if (helper.hasUsageAccessPermission()) {
+            Log.d("ScreenTimePermissionHelper", "Permission already granted, calling callback directly")
+            onResult(true) // Call callback directly if permission already exists
             return
         }
+        Log.d("ScreenTimePermissionHelper", "Launching settings intent for usage access permission")
         launcher.launch(helper.createUsageAccessIntent())
     }
     
     fun requestOverlayPermission() {
         if (helper.hasOverlayPermission()) {
+            Log.d("ScreenTimePermissionHelper", "Overlay permission already granted")
+            onResult(true) // Call callback directly if permission already exists
             return
         }
         launcher.launch(helper.createOverlayPermissionIntent())
