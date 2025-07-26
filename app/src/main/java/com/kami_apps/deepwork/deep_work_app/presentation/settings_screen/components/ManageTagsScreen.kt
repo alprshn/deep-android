@@ -31,6 +31,8 @@ import com.kami_apps.deepwork.deep_work_app.presentation.components.tag_sheet_ba
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,12 +41,12 @@ fun ManageTagsScreen(
     viewModel: StopwatchViewModel = hiltViewModel()
 ) {
     val allTags by viewModel.allTagList.collectAsState()
-    
+
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingTag by remember { mutableStateOf<Tags?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var tagToDelete by remember { mutableStateOf<Tags?>(null) }
-    
+
     // For bottom sheet state
     var selectedEmoji by remember { mutableStateOf("😊") }
     var showEmojiPicker by remember { mutableStateOf(false) }
@@ -55,7 +57,7 @@ fun ManageTagsScreen(
     LaunchedEffect(Unit) {
         viewModel.getAllTag()
     }
-    
+
     // Set fields when editing existing tag
     LaunchedEffect(editingTag) {
         editingTag?.let { tag ->
@@ -63,8 +65,8 @@ fun ManageTagsScreen(
             selectedEmoji = tag.tagEmoji
             // Find color index from tag color
             val colorValue = parseTagColor(tag.tagColor).value
-            selectedColorIndex = com.kami_apps.deepwork.ui.theme.TagColors.indexOfFirst { 
-                it.value == colorValue 
+            selectedColorIndex = com.kami_apps.deepwork.ui.theme.TagColors.indexOfFirst {
+                it.value == colorValue
             }.takeIf { it >= 0 } ?: 7
             tagColor = com.kami_apps.deepwork.ui.theme.TagColors[selectedColorIndex]
         }
@@ -135,12 +137,12 @@ fun ManageTagsScreen(
             }
         }
     }
-    
+
     // Delete Confirmation Dialog
     if (showDeleteDialog && tagToDelete != null) {
         AlertDialog(
-            onDismissRequest = { 
-                showDeleteDialog = false 
+            onDismissRequest = {
+                showDeleteDialog = false
                 tagToDelete = null
             },
             title = {
@@ -189,8 +191,8 @@ fun ManageTagsScreen(
     // Tag Edit Bottom Sheet
     if (showBottomSheet && editingTag != null) {
         TagBottomSheet(
-            addTagDismiss = { 
-                showBottomSheet = false 
+            addTagDismiss = {
+                showBottomSheet = false
                 editingTag = null
             },
             selectedEmoji = selectedEmoji,
@@ -239,9 +241,8 @@ private fun TagItem(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1C1C1E)
+            containerColor = parseTagColor(tag.tagColor).copy(alpha = 0.35f)
         ),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
     ) {
         Row(
             modifier = Modifier
@@ -249,24 +250,25 @@ private fun TagItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Tag Color Circle
-            Box(
+
+            VerticalDivider(
+                color = parseTagColor(tag.tagColor),
                 modifier = Modifier
-                    .size(12.dp)
-                    .clip(CircleShape)
-                    .background(parseTagColor(tag.tagColor))
+                    .height(32.dp) // ← görünür hale getirir
+                    .clip(CircleShape),
+                thickness = 4.dp
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             // Tag Emoji
             Text(
                 text = tag.tagEmoji.takeIf { it.isNotBlank() } ?: "📖",
                 fontSize = 20.sp
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             // Tag Name
             Text(
                 text = tag.tagName,
@@ -277,32 +279,131 @@ private fun TagItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            
-            // Edit Button
-            IconButton(
-                onClick = onEditClick,
-                modifier = Modifier.size(40.dp)
+
+
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp)) // kare ve yuvarlatılmış köşe
+                    .background(parseTagColor(tag.tagColor).copy(alpha = 0.15f))
+                    .clickable { onEditClick },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit Tag",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(20.dp)
+                    tint = parseTagColor(tag.tagColor),
+                    modifier = Modifier.size(24.dp)
                 )
             }
-            
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             // Delete Button
-            IconButton(
-                onClick = onDeleteClick,
-                modifier = Modifier.size(40.dp)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp)) // kare ve yuvarlatılmış köşe
+                    .background(parseTagColor(tag.tagColor).copy(alpha = 0.15f))
+                    .clickable { onDeleteClick },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Tag",
-                    tint = Color.Red.copy(alpha = 0.7f),
-                    modifier = Modifier.size(20.dp)
+                    tint = parseTagColor(tag.tagColor),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+
+        }
+    }
+}
+
+
+@Composable
+@Preview
+fun TagItemPreview() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Red.copy(alpha = 0.20f)
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            VerticalDivider(
+                color = Color.Red,
+                modifier = Modifier
+                    .height(32.dp) // ← görünür hale getirir
+                    .clip(CircleShape),
+                thickness = 4.dp
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Tag Emoji
+            Text(
+                text = "📖",
+                fontSize = 20.sp
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Tag Name
+            Text(
+                text = "Deneme",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+
+
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp)) // kare ve yuvarlatılmış köşe
+                    .background(Color.Red.copy(alpha = 0.15f))
+                    .clickable { /* tıklanma aksiyonu */ },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Tag",
+                    tint = Color.Red,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Delete Button
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp)) // kare ve yuvarlatılmış köşe
+                    .background(Color.Red.copy(alpha = 0.15f))
+                    .clickable { /* tıklanma aksiyonu */ },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Tag",
+                    tint = Color.Red,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
     }
-} 
+}
