@@ -25,6 +25,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,9 +38,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -90,6 +93,7 @@ private val MarkerValueFormatter =
 private fun HourlyFocusChartContent(
     modelProducer: CartesianChartModelProducer,
     modifier: Modifier = Modifier,
+    lineColor: Color = Color.White
 ) {
     CartesianChartHost(
         chart =
@@ -97,7 +101,7 @@ private fun HourlyFocusChartContent(
                 rememberColumnCartesianLayer(
                     columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                         rememberLineComponent(
-                            fill = fill(Color.White),
+                            fill = fill(lineColor),
                             thickness = 40.dp,
                             shape = CorneredShape.rounded(
                                 topLeftPercent = 10,
@@ -151,17 +155,18 @@ private fun HourlyFocusChartContent(
 fun HourlyFocusChart(
     hourlyFocusData: List<HourlyFocusData>,
     totalFocusTime: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
-    
+    val exportTrigger = remember { mutableStateOf(false) } // 1. Export kontrol
+
     LaunchedEffect(hourlyFocusData) {
         modelProducer.runTransaction {
             if (hourlyFocusData.isNotEmpty()) {
-                columnSeries { 
-                    series(hourlyFocusData.map { it.totalMinutes }) 
+                columnSeries {
+                    series(hourlyFocusData.map { it.totalMinutes })
                 }
-                extras { 
+                extras {
                     it[BottomAxisLabelKey] = hourlyFocusData.map { data ->
                         String.format("%02d:00", data.hour)
                     }
@@ -213,7 +218,9 @@ fun HourlyFocusChart(
                 Icon(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .size(20.dp),
+                        .size(20.dp)
+                        .clickable { exportTrigger.value = true }, // 2. Tıklanınca paylaş
+
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White
@@ -245,6 +252,21 @@ fun HourlyFocusChart(
             HourlyFocusChartContent(modelProducer, modifier)
         }
     }
+    // 3. Export tetiklenince paylaş
+    if (exportTrigger.value) {
+        ExportAsBitmap(
+            title = "Hourly Focus Analysis",
+            subtitle = AnnotatedString("Total Focus Time: $totalFocusTime"),
+            content = {
+                HourlyFocusChartContent(
+                    modelProducer = modelProducer,
+                    modifier = Modifier,
+                    lineColor = Color.Black
+                )
+            },
+            onExported = { exportTrigger.value = false }
+        )
+    }
 }
 
 @Composable
@@ -267,8 +289,8 @@ private fun HourlyFocusChartPreview() {
         HourlyFocusData(19, 20),
         HourlyFocusData(20, 15)
     )
-    
-    HourlyPreviewBox { 
+
+    HourlyPreviewBox {
         HourlyFocusChart(
             hourlyFocusData = sampleData,
             totalFocusTime = "8h 30m"
@@ -281,7 +303,7 @@ private fun HourlyPreviewBox(content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = Modifier
             .background(Color.Black)
-            .padding(16.dp), 
+            .padding(16.dp),
         content = content
     )
 } 

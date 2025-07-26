@@ -60,8 +60,16 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.HourlyFocusData
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 
 private val YDecimalFormat = DecimalFormat("#.##", DecimalFormatSymbols(Locale.US))
 private val StartAxisValueFormatter = CartesianValueFormatter.decimal(YDecimalFormat)
@@ -78,8 +86,8 @@ private fun WeeklyPeakChartContent(
     modelProducer: CartesianChartModelProducer,
     peakHour: String,
     modifier: Modifier = Modifier,
+    lineColor: Color = Color.White // varsayılan beyaz
 ) {
-    val lineColor = Color.White
 
     val customMarker = rememberDefaultCartesianMarker(
         label = rememberTextComponent(
@@ -119,7 +127,7 @@ private fun WeeklyPeakChartContent(
                                 point = LineCartesianLayer.point(
                                     component = rememberShapeComponent(
                                         shape = CorneredShape.Pill,
-                                        fill = fill(Color.White),
+                                        fill = fill(lineColor),
                                     ),
                                     size = 12.dp,
                                 )
@@ -239,10 +247,44 @@ fun WeeklyPeakChart(
                         .padding(end = 16.dp)
                 )
 
+                var exportTrigger by remember { mutableStateOf(false) }
+
+                if (exportTrigger) {
+                    val subtitle = buildAnnotatedString {
+                        append("Most Focused on ")
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(peakHour)
+                        }
+                        append(" every day in general")
+                    }
+
+
+                    ExportAsBitmap(
+                        title = "Most Focused Period of The Day",
+                        subtitle = subtitle,
+                        content = {
+                            WeeklyPeakChartContent(
+                                modelProducer = modelProducer,
+                                 peakHour = peakHour,
+                                modifier = Modifier,
+                                lineColor = Color.Black // sadece export’ta siyah çizgi
+                            )
+                        },
+                        onExported = { exportTrigger = false }
+                    )
+                }
+
                 Icon(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .size(20.dp),
+                        .size(20.dp).clickable {
+                            exportTrigger = true
+                        },
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White

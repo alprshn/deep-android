@@ -24,6 +24,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,9 +37,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -89,6 +92,8 @@ private val MarkerValueFormatter =
 private fun YearlyFocusChartContent(
     modelProducer: CartesianChartModelProducer,
     modifier: Modifier = Modifier,
+    lineColor: Color = Color.White // varsayılan beyaz
+
 ) {
     CartesianChartHost(
         chart =
@@ -96,7 +101,7 @@ private fun YearlyFocusChartContent(
                 rememberColumnCartesianLayer(
                     columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                         rememberLineComponent(
-                            fill = fill(Color.White),
+                            fill = fill(lineColor),
                             thickness = 40.dp,
                             shape = CorneredShape.rounded(
                                 topLeftPercent = 10,
@@ -153,7 +158,8 @@ fun YearlyFocusChart(
     modifier: Modifier = Modifier
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
-    
+    val exportTrigger = remember { mutableStateOf(false) }
+
     LaunchedEffect(yearlyFocusData) {
         modelProducer.runTransaction {
             if (yearlyFocusData.isNotEmpty()) {
@@ -211,7 +217,9 @@ fun YearlyFocusChart(
                 Icon(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .size(20.dp),
+                        .size(20.dp).clickable {
+                            exportTrigger.value = true
+                        },
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White
@@ -243,6 +251,22 @@ fun YearlyFocusChart(
             YearlyFocusChartContent(modelProducer, modifier)
         }
     }
+
+    if (exportTrigger.value) {
+        ExportAsBitmap(
+            title = "Yearly Focus Analysis",
+            subtitle = AnnotatedString("Total Focus Time: $totalFocusTime"),
+            content = {
+                YearlyFocusChartContent(
+                    modelProducer = modelProducer,
+                    modifier = Modifier,
+                    lineColor = Color.Black
+                )
+            },
+            onExported = { exportTrigger.value = false }
+        )
+    }
+
 }
 
 @Composable

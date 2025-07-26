@@ -2,6 +2,7 @@ package com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.comp
 
 
 import android.graphics.Bitmap
+import android.view.View
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -92,7 +93,7 @@ fun ExportAsBitmap(
     AndroidView(
         factory = { ctx ->
             ComposeView(ctx).apply {
-                setBackgroundColor(android.graphics.Color.TRANSPARENT) // <- EKLENECEK
+                visibility = View.INVISIBLE // 👈 görünmez yap ama boyutu bozma
                 setContent {
                     ExportLayout(
                         title = title,
@@ -107,6 +108,9 @@ fun ExportAsBitmap(
                     onExported()
                 }, 500)
             }
-        }
+        },
+        modifier = Modifier.fillMaxWidth() // 👈 render boyutu tam olsun
+
     )
+
 }
