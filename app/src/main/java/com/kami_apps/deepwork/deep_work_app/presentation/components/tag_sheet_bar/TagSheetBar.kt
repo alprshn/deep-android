@@ -46,6 +46,7 @@ import com.kami_apps.deepwork.ui.theme.TagColors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagBottomSheet(
+    title: String = "Add New Tag", // ← burada varsayılanı ver
     addTagDismiss: () -> Unit = {},
     selectedEmoji: String,
     showEmojiPicker: Boolean,
@@ -81,7 +82,7 @@ fun TagBottomSheet(
                 .padding(top = 15.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Add New Tag", color = Color.White)
+            Text(text = title, color = Color.White, modifier = Modifier.padding(vertical = 5.dp))
             Row(
                 modifier = Modifier
                     .padding(10.dp)

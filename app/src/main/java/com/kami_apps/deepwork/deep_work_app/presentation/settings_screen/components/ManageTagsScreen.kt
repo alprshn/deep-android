@@ -191,6 +191,7 @@ fun ManageTagsScreen(
     // Tag Edit Bottom Sheet
     if (showBottomSheet && editingTag != null) {
         TagBottomSheet(
+            title = "Edit Tag",
             addTagDismiss = {
                 showBottomSheet = false
                 editingTag = null
@@ -241,7 +242,7 @@ private fun TagItem(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = parseTagColor(tag.tagColor).copy(alpha = 0.35f)
+            containerColor = parseTagColor(tag.tagColor).copy(alpha = 0.15f)
         ),
     ) {
         Row(
@@ -286,7 +287,7 @@ private fun TagItem(
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp)) // kare ve yuvarlatılmış köşe
                     .background(parseTagColor(tag.tagColor).copy(alpha = 0.15f))
-                    .clickable { onEditClick },
+                    .clickable { onEditClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -304,14 +305,14 @@ private fun TagItem(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp)) // kare ve yuvarlatılmış köşe
-                    .background(parseTagColor(tag.tagColor).copy(alpha = 0.15f))
-                    .clickable { onDeleteClick },
+                    .background(Color(0XFFda4844).copy(alpha = 0.30f))
+                    .clickable { onDeleteClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Tag",
-                    tint = parseTagColor(tag.tagColor),
+                    tint = Color(0XFFda4844),
                     modifier = Modifier.size(24.dp)
                 )
             }
