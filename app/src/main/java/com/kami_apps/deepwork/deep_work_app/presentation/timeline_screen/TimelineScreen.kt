@@ -36,6 +36,7 @@ import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.compone
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.SessionDetailsBottomSheet
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.EditSessionBottomSheet
 import com.kami_apps.deepwork.deep_work_app.presentation.components.PremiumCard
+import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.DatePickerModal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Instant
@@ -181,49 +182,21 @@ fun TimelineScreen(
         
         // Date Picker Dialog
         if (showDatePicker) {
-            val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = System.currentTimeMillis()
-            )
-            
-            DatePickerDialog(
-                onDismissRequest = { 
+            DatePickerModal(
+                onDateSelected = { millis ->
+                    val date = millis?.let {
+                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    }
+                    date?.let { datePickerCallback?.invoke(it) }
                     showDatePicker = false
                     datePickerCallback = null
                 },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let { millis ->
-                                val date = Instant.ofEpochMilli(millis)
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate()
-                                datePickerCallback?.invoke(date)
-                            }
-                            showDatePicker = false
-                            datePickerCallback = null
-                        }
-                    ) {
-                        Text("OK", color = Color(0xFF30D158))
-                    }
+                onDismiss = {
+                    showDatePicker = false
+                    datePickerCallback = null
                 },
-                dismissButton = {
-                    TextButton(
-                        onClick = { 
-                            showDatePicker = false
-                            datePickerCallback = null
-                        }
-                    ) {
-                        Text("Cancel", color = Color.Gray)
-                    }
-                }
-            ) {
-                DatePicker(
-                    state = datePickerState,
-                    colors = androidx.compose.material3.DatePickerDefaults.colors(
-                        containerColor = Color(0xFF2C2C2E)
-                    )
-                )
-            }
+                initialSelectedDateMillis = System.currentTimeMillis() // veya başka bir tarih
+            )
         }
         
         // Time Picker Dialog
