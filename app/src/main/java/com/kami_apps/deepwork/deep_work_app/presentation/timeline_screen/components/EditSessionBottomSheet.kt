@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,55 +48,69 @@ fun EditSessionBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
         containerColor = Color(0xFF1C1C1E),
-        contentColor = Color.White
+        contentColor = Color.White,
+        dragHandle = null // ✅ Bu satırı ekle, çizgiyi kaldırır
+
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Tag row
-            EditFieldItem(
-                icon = sessionDetails.tagEmoji,
-                label = sessionDetails.tagName,
-                value = ""
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth().padding(vertical = 16.dp)
+                    .background(Color(0xFF3A3A3C), RoundedCornerShape(12.dp)),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
 
-            // Date row
-            EditFieldItem(
-                label = "Date",
-                value = editedDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy")),
-                onClick = {
-                    onDatePicker(editedDate) { newDate -> editedDate = newDate }
-                }
-            )
 
-            // Time row
-            EditFieldItem(
-                label = "Start Time",
-                value = editedStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                onClick = {
-                    onTimePicker(editedStartTime) { newTime -> editedStartTime = newTime }
-                }
-            )
+                EditFieldItem(
+                    icon = sessionDetails.tagEmoji,
+                    label = sessionDetails.tagName,
+                    value = ""
+                )
 
-            // End Time (computed)
-            EditFieldItem(
-                label = "End Time",
-                value = editedStartTime.plusMinutes(editedDurationMinutes.toLong()).format(DateTimeFormatter.ofPattern("HH:mm")),
-                isClickable = false
-            )
+                // Date row
+                EditFieldItem(
+                    label = "Date",
+                    value = editedDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy")),
+                    onClick = {
+                        onDatePicker(editedDate) { newDate -> editedDate = newDate }
+                    },
+                    useCard = true
+                )
 
-            // Duration
-            EditFieldItem(
-                label = "Duration",
-                value = formatDuration(editedDurationMinutes),
-                onClick = {
+                // Time row
+                EditFieldItem(
+                    label = "Start Time",
+                    value = editedStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                    onClick = {
+                        onTimePicker(editedStartTime) { newTime -> editedStartTime = newTime }
+                    },
+                    useCard = true
 
-                }
-            )
+                )
 
+                // End Time (computed)
+                EditFieldItem(
+                    label = "End Time",
+                    value = editedStartTime.plusMinutes(editedDurationMinutes.toLong())
+                        .format(DateTimeFormatter.ofPattern("HH:mm")),
+                    isClickable = false
+                )
+
+                // Duration
+                EditFieldItem(
+                    label = "Duration",
+                    value = formatDuration(editedDurationMinutes),
+                    onClick = {
+
+                    },
+                    divider = false
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             // Save Button
@@ -104,7 +119,8 @@ fun EditSessionBottomSheet(
                     val updated = sessionDetails.copy(
                         date = editedDate.atTime(editedStartTime),
                         startTime = editedDate.atTime(editedStartTime),
-                        endTime = editedDate.atTime(editedStartTime).plusMinutes(editedDurationMinutes.toLong()),
+                        endTime = editedDate.atTime(editedStartTime)
+                            .plusMinutes(editedDurationMinutes.toLong()),
                         duration = formatDuration(editedDurationMinutes)
                     )
                     onSave(updated)
@@ -112,7 +128,8 @@ fun EditSessionBottomSheet(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp).border(
+                    .height(56.dp)
+                    .border(
                         1.dp,
                         Color(0xFF30D158),
                         RoundedCornerShape(24.dp)
@@ -124,10 +141,14 @@ fun EditSessionBottomSheet(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
                     tint = Color(0xFF30D158),
-                    modifier = Modifier.size(30.dp).padding(end = 8.dp)
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(end = 8.dp)
                 )
-                Text("Save Changes", color = Color(0xFF30D158),
-                    fontSize = 18.sp)
+                Text(
+                    "Save Changes", color = Color(0xFF30D158),
+                    fontSize = 18.sp
+                )
             }
         }
     }
@@ -139,15 +160,17 @@ private fun EditFieldItem(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
+    divider: Boolean = true,
     isClickable: Boolean = true,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    useCard: Boolean = false, // <-- yeni parametre
+
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFF3A3A3C), RoundedCornerShape(12.dp))
             .clickable(enabled = isClickable, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -159,9 +182,36 @@ private fun EditFieldItem(
                     modifier = Modifier.padding(end = 8.dp)
                 )
             }
-            Text(text = label, color = Color.LightGray, fontSize = 14.sp)
+            Text(text = label, color = Color.LightGray, fontSize = 16.sp)
         }
-        Text(text = value, color = Color.White, fontSize = 14.sp)
+
+        if (useCard) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color.Gray),
+                shape = RoundedCornerShape(5.dp),
+            ) {
+                Text(
+                    text = value,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                )
+            }
+        } else {
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+            )
+        }
+    }
+    if (divider) {
+        Divider(
+            color = Color.Gray.copy(alpha = 0.2f),
+            thickness = 1.dp,
+            modifier = Modifier.padding(start = 16.dp)
+        )
     }
 }
 
@@ -207,7 +257,7 @@ private fun DurationEditField(
                         Text("Hours", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
                             value = hours.toString(),
-                            onValueChange = { 
+                            onValueChange = {
                                 hours = it.toIntOrNull()?.coerceIn(0, 23) ?: 0
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -228,7 +278,7 @@ private fun DurationEditField(
                         Text("Minutes", color = Color.Gray, fontSize = 14.sp)
                         OutlinedTextField(
                             value = minutes.toString(),
-                            onValueChange = { 
+                            onValueChange = {
                                 minutes = it.toIntOrNull()?.coerceIn(0, 59) ?: 0
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -273,15 +323,19 @@ private fun parseDurationToMinutes(duration: String): Int {
                 val minutes = parts[1].trim().toInt()
                 hours * 60 + minutes
             }
+
             duration.contains("h") -> {
                 duration.replace("h", "").trim().toInt() * 60
             }
+
             duration.contains("min") -> {
                 duration.replace("min", "").trim().toInt()
             }
+
             duration.contains("m") -> {
                 duration.replace("m", "").trim().toInt()
             }
+
             else -> {
                 duration.toIntOrNull() ?: 0
             }
@@ -298,6 +352,7 @@ private fun formatDuration(minutes: Int): String {
             val remainingMinutes = minutes % 60
             if (remainingMinutes > 0) "${hours}h ${remainingMinutes}m" else "${hours}h"
         }
+
         minutes > 0 -> "${minutes} min"
         else -> "0 min"
     }
@@ -306,18 +361,51 @@ private fun formatDuration(minutes: Int): String {
 @Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 fun EditSessionBottomSheetSimplifiedPreview() {
-    EditSessionBottomSheet(
-        sessionDetails = SessionDetails(
-            id = 1,
-            tagName = "No Tag",
-            tagColor = "#000000", // gereksiz burada
-            tagEmoji = "📝",
-            date = LocalDateTime.of(2025, 7, 22, 13, 2),
-            startTime = LocalDateTime.of(2025, 7, 22, 13, 2),
-            endTime = LocalDateTime.of(2025, 7, 22, 13, 2),
-            duration = "0 min"
-        ),
-        onDismiss = {},
-        onSave = {}
-    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .background(Color(0xFF3A3A3C), RoundedCornerShape(12.dp)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // Tag row
+        EditFieldItem(
+            icon = "\uD83D\uDCD3",
+            label = "No Tag",
+            value = ""
+        )
+
+        // Date row
+        EditFieldItem(
+            label = "Date",
+            value = "26 Jul, 2025",
+            useCard = true
+
+        )
+
+        // Time row
+        EditFieldItem(
+            label = "Start Time",
+            value = "26 Jul, 2025",
+            useCard = true
+
+        )
+
+        // End Time (computed)
+        EditFieldItem(
+            label = "End Time",
+            value = "13:02",
+            isClickable = true
+        )
+
+        // Duration
+        EditFieldItem(
+            label = "Duration",
+            value = "0 minutes",
+            onClick = {
+
+            },
+            divider = false
+        )
+    }
 }

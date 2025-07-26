@@ -69,7 +69,8 @@ fun SessionDetailsBottomSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Title
             Text(
@@ -107,14 +108,13 @@ fun SessionDetailsBottomSheet(
                 icon = Icons.TwoTone.HourglassBottom,
                 label = "Time:",
                 value = sessionDetails.duration,
-                isLast = true
             )
 
             // Action Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp),
+                    .padding(top = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Delete Button
@@ -133,10 +133,12 @@ fun SessionDetailsBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
-                        modifier = Modifier.padding(8.dp).size(30.dp)
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .padding(end = 4.dp)
+                            .size(24.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Delete",fontSize = 18.sp)
+                    Text("Delete", fontSize = 16.sp)
                 }
 
                 // Edit Button
@@ -149,15 +151,20 @@ fun SessionDetailsBottomSheet(
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color(0xFF30D158),
                         containerColor = Color(0xFF30D158).copy(alpha = 0.1f)
-                    )
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF30D158))
+
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        modifier = Modifier.padding(8.dp).size(30.dp)
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .padding(end = 4.dp)
+                            .size(24.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Edit",fontSize = 18.sp)
+                    Text("Edit", fontSize = 16.sp)
+
                 }
             }
         }
@@ -173,15 +180,13 @@ private fun SessionDetailItem(
     secondaryLabel: String? = null,
     secondaryValue: String? = null,
     isTag: Boolean = false,
-    isLast: Boolean = false
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = if (isLast) 0.dp else 16.dp)
             .border(
-                1.dp,
-                Color.Gray,
+                1.5.dp,
+                Color.Gray.copy(alpha = 0.4f),
                 RoundedCornerShape(12.dp)
             )
     ) {
@@ -198,9 +203,9 @@ private fun SessionDetailItem(
             if (emoji != null) {
                 Text(
                     text = emoji,
-                    fontSize = 20.sp,
+                    fontSize = 24.sp,
                     modifier = Modifier
-                        .padding(end = 12.dp)
+                        .padding(end = 8.dp).padding(vertical = 2.dp)
                 )
             } else if (icon != null) {
                 Icon(
@@ -208,8 +213,8 @@ private fun SessionDetailItem(
                     contentDescription = label,
                     tint = Color.Gray,
                     modifier = Modifier
-                        .size(30.dp)
-                        .padding(end = 12.dp)
+                        .size(36.dp)
+                        .padding(end = 8.dp)
                 )
             }
 
@@ -241,7 +246,7 @@ private fun SessionDetailItem(
                             Text(
                                 text = label,
                                 color = Color.Gray,
-                                fontSize = 14.sp,
+                                fontSize = 16.sp,
                                 modifier = Modifier.padding(end = 4.dp)
                             )
                             value?.let {
@@ -261,8 +266,8 @@ private fun SessionDetailItem(
                                 Text(
                                     text = secondaryLabel,
                                     color = Color.Gray,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(end = 4.dp)
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(end = 6.dp)
 
                                 )
                                 Text(
@@ -283,31 +288,34 @@ private fun SessionDetailItem(
 @Preview
 @Composable
 fun SessionDetailsBottomSheetPreview() {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Delete Button
-        OutlinedButton(
-            onClick = {
-            },
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = Color(0xFFFF453A),
-                containerColor = Color(0xFFFF453A).copy(alpha = 0.1f)
-            ),
-            border = BorderStroke(1.dp, Color(0xFFFF453A))
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Delete",
-                modifier = Modifier.padding(8.dp).size(30.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Delete",fontSize = 18.sp)
-        }
+        // Title
+        Text(
+            text = "Session Details",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
 
+        SessionDetailItem(
+            emoji = "\uD83D\uDCD3",
+            label = "No Tag",
+            isTag = true,
+        )
+
+        // Date
+        SessionDetailItem(
+            icon = Icons.Default.CalendarMonth,
+            label = "Date:",
+            value = "26 Jul, 2025"
+        )
     }
 }

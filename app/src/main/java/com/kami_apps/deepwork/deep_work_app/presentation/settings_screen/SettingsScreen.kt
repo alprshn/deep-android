@@ -149,7 +149,14 @@ fun SettingsScreen(
                     SettingsSwitchItem(
                         title = "Haptic Feedback", 
                         isChecked = isHapticEnabled, 
-                        onCheckedChange = { viewModel.toggleHapticFeedback() }, 
+                        onCheckedChange = { 
+                            // Haptic feedback when toggling ON (not OFF)
+                            if (!isHapticEnabled) {
+                                val hapticHelper = com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper(context)
+                                hapticHelper.performButtonClick()
+                            }
+                            viewModel.toggleHapticFeedback() 
+                        }, 
                         icon = Icons.Default.Vibration
                     )
                     SettingsBoxesItem(

@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Date
@@ -53,14 +55,16 @@ class TimelineViewModel @Inject constructor(
     fun deleteSession(sessionId: Int) {
         viewModelScope.launch {
             try {
-                // Get the session to delete
-                val session = sessionsRepository.getSessionsById(sessionId)
-                session?.let {
-                    deleteSessionUseCase(it)
-                    Log.d("TimelineViewModel", "Session deleted successfully: $sessionId")
-                    // Refresh events for current date
-                    loadEventsForDate(_uiState.value.selectedDate)
+                withContext(Dispatchers.IO) {
+                    // Get the session to delete
+                    val session = sessionsRepository.getSessionsById(sessionId)
+                    session?.let {
+                        deleteSessionUseCase(it)
+                        Log.d("TimelineViewModel", "Session deleted successfully: $sessionId")
+                    }
                 }
+                // Refresh events for current date on main thread
+                loadEventsForDate(_uiState.value.selectedDate)
             } catch (e: Exception) {
                 Log.e("TimelineViewModel", "Error deleting session", e)
                 _uiState.update { 
@@ -73,29 +77,31 @@ class TimelineViewModel @Inject constructor(
     fun updateSession(sessionDetails: SessionDetails) {
         viewModelScope.launch {
             try {
-                // Get the original session
-                val originalSession = sessionsRepository.getSessionsById(sessionDetails.id)
-                originalSession?.let { session ->
-                    // Create updated session
-                    val updatedSession = session.copy(
-                        startTime = Date.from(
-                            sessionDetails.startTime
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toInstant()
-                        ),
-                        finishTime = Date.from(
-                            sessionDetails.endTime
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toInstant()
-                        ),
-                        duration = formatDurationFromDateTime(sessionDetails.startTime, sessionDetails.endTime)
-                    )
-                    
-                    editSessionUseCase(updatedSession)
-                    Log.d("TimelineViewModel", "Session updated successfully: ${sessionDetails.id}")
-                    // Refresh events for current date
-                    loadEventsForDate(_uiState.value.selectedDate)
+                withContext(Dispatchers.IO) {
+                    // Get the original session
+                    val originalSession = sessionsRepository.getSessionsById(sessionDetails.id)
+                    originalSession?.let { session ->
+                        // Create updated session
+                        val updatedSession = session.copy(
+                            startTime = Date.from(
+                                sessionDetails.startTime
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toInstant()
+                            ),
+                            finishTime = Date.from(
+                                sessionDetails.endTime
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toInstant()
+                            ),
+                            duration = formatDurationFromDateTime(sessionDetails.startTime, sessionDetails.endTime)
+                        )
+                        
+                        editSessionUseCase(updatedSession)
+                        Log.d("TimelineViewModel", "Session updated successfully: ${sessionDetails.id}")
+                    }
                 }
+                // Refresh events for current date on main thread
+                loadEventsForDate(_uiState.value.selectedDate)
             } catch (e: Exception) {
                 Log.e("TimelineViewModel", "Error updating session", e)
                 _uiState.update { 

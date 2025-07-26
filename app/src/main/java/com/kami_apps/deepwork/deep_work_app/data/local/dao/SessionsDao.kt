@@ -18,10 +18,10 @@ interface SessionsDao{
     suspend fun insertSession(session: Sessions)
 
     @Update
-    fun updateSessions(session:Sessions)
+    suspend fun updateSessions(session:Sessions)
 
     @Delete
-    fun deleteSessions(session:Sessions)
+    suspend fun deleteSessions(session:Sessions)
 
     @Query("SELECT * FROM sessions_table WHERE session_id = :sessionId")
     suspend fun getSessionsById(sessionId: Int): Sessions

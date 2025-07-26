@@ -56,8 +56,13 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.WeekdayFocusData
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import com.patrykandpatrick.vico.compose.cartesian.layer.point
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 
@@ -73,7 +78,7 @@ private val WeekdayValueFormatter = CartesianValueFormatter { _, x, _ ->
 }
 
 @Composable
-private fun WeekdayAnalysisChartContent(
+fun WeekdayAnalysisChartContent(
     modelProducer: CartesianChartModelProducer,
     peakWeekday: String,
     modifier: Modifier = Modifier,
@@ -237,11 +242,24 @@ fun WeekdayAnalysisChart(
                         .weight(1f)
                         .padding(end = 16.dp)
                 )
+                val context = LocalContext.current
+                var exportTrigger by remember { mutableStateOf(false) }
+
+                if (exportTrigger) {
+                    WeekdayAnalysisChartExportable(
+                        weekdayFocusData = weekdayFocusData,
+                        peakWeekday = peakWeekday,
+                        onExported = { exportTrigger = false }
+                    )
+                }
 
                 Icon(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .size(20.dp),
+                        .size(20.dp)
+                        .clickable {
+                            exportTrigger = true
+                        },
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White
