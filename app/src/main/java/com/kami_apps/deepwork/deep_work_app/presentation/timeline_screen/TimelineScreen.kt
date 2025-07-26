@@ -98,18 +98,7 @@ fun TimelineScreen(
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                    
-                    uiState.events.isEmpty() -> {
-                        Text(
-                            text = "No focus sessions found for this date",
-                            color = Color.Gray,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(16.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
+
                     
                     else -> {
                         // Schedule showing events for selected date

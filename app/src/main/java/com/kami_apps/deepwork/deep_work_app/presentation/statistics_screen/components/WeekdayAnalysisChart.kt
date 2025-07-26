@@ -63,6 +63,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.patrykandpatrick.vico.compose.cartesian.layer.point
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 
@@ -82,8 +85,9 @@ fun WeekdayAnalysisChartContent(
     modelProducer: CartesianChartModelProducer,
     peakWeekday: String,
     modifier: Modifier = Modifier,
+    lineColor: Color = Color.White // varsayılan beyaz
+
 ) {
-    val lineColor = Color.White
 
     val customMarker = rememberDefaultCartesianMarker(
         label = rememberTextComponent(
@@ -123,7 +127,7 @@ fun WeekdayAnalysisChartContent(
                                 point = LineCartesianLayer.point(
                                     component = rememberShapeComponent(
                                         shape = CorneredShape.Pill,
-                                        fill = fill(Color.White),
+                                        fill = fill(lineColor),
                                     ),
                                     size = 12.dp,
                                 )
@@ -246,9 +250,31 @@ fun WeekdayAnalysisChart(
                 var exportTrigger by remember { mutableStateOf(false) }
 
                 if (exportTrigger) {
-                    WeekdayAnalysisChartExportable(
-                        weekdayFocusData = weekdayFocusData,
-                        peakWeekday = peakWeekday,
+                    val subtitle = buildAnnotatedString {
+                        append("Most Focused on ")
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(peakWeekday)
+                        }
+                        append(" every week in general")
+                    }
+
+
+                    ExportAsBitmap(
+                        title = "Most Focused Day of The Week",
+                        subtitle = subtitle,
+                        content = {
+                            WeekdayAnalysisChartContent(
+                                modelProducer = modelProducer,
+                                peakWeekday = peakWeekday,
+                                modifier = Modifier,
+                                lineColor = Color.Black // sadece export’ta siyah çizgi
+                            )
+                        },
                         onExported = { exportTrigger = false }
                     )
                 }

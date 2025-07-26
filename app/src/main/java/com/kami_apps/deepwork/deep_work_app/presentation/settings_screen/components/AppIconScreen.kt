@@ -157,13 +157,6 @@ fun AppIconScreen(
                     Column(
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Text(
-                            "Choose your app icon",
-                            color = Color.Gray,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(bottom = 24.dp)
-                        )
-
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(3),
                             verticalArrangement = Arrangement.spacedBy(16.dp),

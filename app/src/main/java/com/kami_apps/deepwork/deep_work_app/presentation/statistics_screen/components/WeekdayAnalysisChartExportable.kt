@@ -3,69 +3,111 @@ package com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.comp
 
 import android.graphics.Bitmap
 import android.widget.Toast
-import androidx.compose.runtime.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.kami_apps.deepwork.R
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.WeekdayFocusData
 import com.kami_apps.deepwork.deep_work_app.util.captureToBitmap
 import com.kami_apps.deepwork.deep_work_app.util.saveBitmapToGallery
+import com.kami_apps.deepwork.deep_work_app.util.shareBitmap
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 
 @Composable
-fun WeekdayAnalysisChartExportable(
-    weekdayFocusData: List<WeekdayFocusData>,
-    peakWeekday: String,
-    onExported: () -> Unit
+fun ExportLayout(
+    title: String,
+    subtitle: AnnotatedString,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(24.dp))
+            .background(color = Color.White)
+            .padding(horizontal = 24.dp).padding(top = 16.dp)
+        ,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            textAlign = TextAlign.Start
+        )
+
+        Text(
+            text = subtitle,
+            fontSize = 16.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Start
+        )
+
+        content()
+
+        Image(
+            painter = painterResource(id = R.drawable.exp_layout_logo), // logon sabit
+            contentDescription = "Logo",
+            modifier = Modifier.size(80.dp),
+            contentScale = ContentScale.Fit
+        )
+    }
+}
+
+
+@Composable
+fun ExportAsBitmap(
+    title: String,
+    subtitle: AnnotatedString,
+    content: @Composable () -> Unit,
+    onExported: () -> Unit,
+
 ) {
     val context = LocalContext.current
-    val modelProducer = remember { CartesianChartModelProducer() }
 
-    // modeli yükle (hazır hale getir)
-    LaunchedEffect(weekdayFocusData) {
-        modelProducer.runTransaction {
-            if (weekdayFocusData.isNotEmpty()) {
-                lineSeries {
-                    // Ana çizgi
-                    series(
-                        x = weekdayFocusData.map { it.dayOfWeek },
-                        y = weekdayFocusData.map { it.totalMinutes }
-                    )
-
-                    // En yüksek noktayı göster
-                    val maxData = weekdayFocusData.maxByOrNull { it.totalMinutes }
-                    if (maxData != null && maxData.totalMinutes > 0) {
-                        series(
-                            x = listOf(maxData.dayOfWeek),
-                            y = listOf(maxData.totalMinutes)
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    // AndroidView ile render al
     AndroidView(
         factory = { ctx ->
             ComposeView(ctx).apply {
+                setBackgroundColor(android.graphics.Color.TRANSPARENT) // <- EKLENECEK
                 setContent {
-                    WeekdayAnalysisChartContent(
-                        modelProducer = modelProducer,
-                        peakWeekday = peakWeekday
+                    ExportLayout(
+                        title = title,
+                        subtitle = subtitle,
+                        content = content
                     )
                 }
 
-                // GÖRÜNTÜNÜ BURADA AL
                 postDelayed({
                     val bitmap = this.captureToBitmap()
-                    saveBitmapToGallery(context, bitmap)
-                    Toast.makeText(context, "Grafik başarıyla kaydedildi.", Toast.LENGTH_SHORT).show()
+                    shareBitmap(context, bitmap) // artık galeriye değil, paylaşım ekranına
                     onExported()
-                }, 500) // çizilmesini bekliyoruz
+                }, 500)
             }
         }
     )
 }
-
