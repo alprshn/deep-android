@@ -30,12 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.kami_apps.deepwork.R
-import com.kami_apps.deepwork.deep_work_app.domain.usecases.WeekdayFocusData
 import com.kami_apps.deepwork.deep_work_app.util.captureToBitmap
-import com.kami_apps.deepwork.deep_work_app.util.saveBitmapToGallery
 import com.kami_apps.deepwork.deep_work_app.util.shareBitmap
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 
 @Composable
 fun ExportLayout(
@@ -48,8 +44,8 @@ fun ExportLayout(
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(24.dp))
             .background(color = Color.White)
-            .padding(horizontal = 24.dp).padding(top = 16.dp)
-        ,
+            .padding(horizontal = 24.dp)
+            .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -58,14 +54,17 @@ fun ExportLayout(
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
+            modifier = Modifier.align(Alignment.Start)
+
         )
 
         Text(
             text = subtitle,
             fontSize = 16.sp,
             color = Color.Gray,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
+            modifier = Modifier.align(Alignment.Start)
         )
 
         content()
@@ -87,7 +86,7 @@ fun ExportAsBitmap(
     content: @Composable () -> Unit,
     onExported: () -> Unit,
 
-) {
+    ) {
     val context = LocalContext.current
 
     AndroidView(

@@ -24,6 +24,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,11 +37,19 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Icon
@@ -89,6 +98,8 @@ private val MarkerValueFormatter =
 private fun DailyFocusChartContent(
     modelProducer: CartesianChartModelProducer,
     modifier: Modifier = Modifier,
+    columnColor: Color = Color.White // varsayılan uygulama içi rengi
+
 ) {
     CartesianChartHost(
         chart =
@@ -96,7 +107,7 @@ private fun DailyFocusChartContent(
                 rememberColumnCartesianLayer(
                     columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                         rememberLineComponent(
-                            fill = fill(Color.White),
+                            fill = fill(columnColor),
                             thickness = 40.dp,
                             shape = CorneredShape.rounded(
                                 topLeftPercent = 10,
@@ -153,14 +164,16 @@ fun DailyFocusChart(
     modifier: Modifier = Modifier
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
-    
+    val context = LocalContext.current
+    var exportTrigger by remember { mutableStateOf(false) }
+
     LaunchedEffect(dailyFocusData) {
         modelProducer.runTransaction {
             if (dailyFocusData.isNotEmpty()) {
-                columnSeries { 
-                    series(dailyFocusData.map { it.totalMinutes }) 
+                columnSeries {
+                    series(dailyFocusData.map { it.totalMinutes })
                 }
-                extras { 
+                extras {
                     it[BottomAxisLabelKey] = dailyFocusData.map { data ->
                         data.dayName
                     }
@@ -173,6 +186,25 @@ fun DailyFocusChart(
                 extras { it[BottomAxisLabelKey] = emptyLabels }
             }
         }
+    }
+    if (exportTrigger) {
+        val subtitle = buildAnnotatedString {
+            append("Total Focused Time: ")
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                append(totalFocusTime)
+            }
+        }
+        ExportAsBitmap(
+            title = "Focused Time Distribution",
+            subtitle = subtitle,
+            content = {
+                DailyFocusChartContent(
+                    modelProducer = modelProducer,
+                    columnColor = Color.Black // sadece export’ta siyah
+                )
+            },
+            onExported = { exportTrigger = false }
+        )
     }
 
     Card(
@@ -210,7 +242,10 @@ fun DailyFocusChart(
                 Icon(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .size(20.dp),
+                        .size(20.dp).clickable {
+                            exportTrigger = true
+
+                        },
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
                     tint = Color.White
@@ -256,8 +291,9 @@ private fun DailyFocusChartPreview() {
         DailyFocusData(6, "Sat", 45, java.time.LocalDate.now().plusDays(5)),
         DailyFocusData(7, "Sun", 75, java.time.LocalDate.now().plusDays(6))
     )
-    
-    DailyPreviewBox { 
+
+    DailyPreviewBox {
+
         DailyFocusChart(
             dailyFocusData = sampleData,
             totalFocusTime = "12h 30m"
@@ -270,7 +306,7 @@ private fun DailyPreviewBox(content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = Modifier
             .background(Color.Black)
-            .padding(16.dp), 
+            .padding(16.dp),
         content = content
     )
 } 
