@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -19,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,7 +63,8 @@ fun EditSessionBottomSheet(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth().padding(vertical = 16.dp)
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
                     .background(Color(0xFF3A3A3C), RoundedCornerShape(12.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -102,13 +106,9 @@ fun EditSessionBottomSheet(
                 )
 
                 // Duration
-                EditFieldItem(
-                    label = "Duration",
-                    value = formatDuration(editedDurationMinutes),
-                    onClick = {
-
-                    },
-                    divider = false
+                SessionDetailTextField(
+                    value = "0",
+                    onValueChange = {}
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -386,7 +386,7 @@ fun EditSessionBottomSheetSimplifiedPreview() {
         // Time row
         EditFieldItem(
             label = "Start Time",
-            value = "26 Jul, 2025",
+            value = "12:05",
             useCard = true
 
         )
@@ -397,15 +397,70 @@ fun EditSessionBottomSheetSimplifiedPreview() {
             value = "13:02",
             isClickable = true
         )
-
-        // Duration
-        EditFieldItem(
-            label = "Duration",
-            value = "0 minutes",
-            onClick = {
-
-            },
-            divider = false
+        SessionDetailTextField(
+            value = "0",
+            onValueChange = {}
         )
+
+    }
+}
+
+
+@Composable
+fun SessionDetailTextField(
+    value: String = "0",
+    onValueChange: (String) -> Unit
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "Duration",
+            color = Color.LightGray,
+            fontSize = 16.sp
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+
+            ) {
+            BasicTextField(
+                value = value,
+                onValueChange = {
+                    onValueChange
+                },
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(32.dp)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                singleLine = true,
+                textStyle = TextStyle(
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    textAlign = TextAlign.End
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.CenterEnd // 👈 sağa hizalanmış
+                    ) {
+                        innerTextField()
+                    }
+                }
+            )
+
+
+            Text(
+                text = "minutes",
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
+        }
     }
 }
