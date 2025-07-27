@@ -3,9 +3,12 @@ package com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.compon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,6 +26,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.commandiron.wheel_picker_compose.WheelTimePicker
 import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
 import com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper
@@ -35,56 +39,56 @@ fun WheelTimePickerDialog(
     onTimeSelected: (LocalTime) -> Unit
 ) {
     var pickedTime by remember { mutableStateOf(initialTime) }
-    val context = LocalContext.current
-    val hapticFeedbackHelper = remember { HapticFeedbackHelper(context) }
-    
-    // Check haptic feedback setting
-    var isHapticEnabled by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(Unit) {
-        // Load haptic preference from settings (simplified - you could inject this)
-        isHapticEnabled = true // For now, always enable. You could get this from UserPreferences
-    }
 
-    AlertDialog(
-        onDismissRequest = {
-            onTimeSelected(pickedTime) // Kullanıcı dışarıya tıklayınca seçilen zamanı bildir
-            onDismissRequest()
-        },
-        confirmButton = {}, // Buton yok
-        containerColor = Color(0xFF2C2C2E),
-        text = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+    Dialog(onDismissRequest = {
+        onTimeSelected(pickedTime)
+        onDismissRequest()
+    }) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.4f)) // Arka plan
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C2C2E)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(6.dp),)
-                        .size(28.dp)
-                        .background(Color.Gray)
-                )
-                WheelTimePicker(
-                    startTime = initialTime,
-                    onSnappedTime = { snappedTime ->
-                        // Haptic feedback when wheel value changes
-                        if (isHapticEnabled && snappedTime != pickedTime) {
-                            hapticFeedbackHelper.performSliderFeedback()
-                        }
-                        pickedTime = snappedTime // sadece güncelle
-                    },
-                    textStyle = MaterialTheme.typography.titleMedium,
-                    selectorProperties = WheelPickerDefaults.selectorProperties(
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(10.dp),
-                        border = null,
-                        enabled = false
+                Box(contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(shape = RoundedCornerShape(6.dp))
+                            .size(28.dp)
+                            .background(Color.Gray)
                     )
-                )
+                    WheelTimePicker(
+                        startTime = initialTime,
+                        onSnappedTime = { snappedTime ->
+                            pickedTime = snappedTime
+                        },
+                        textStyle = MaterialTheme.typography.titleMedium,
+                        selectorProperties = WheelPickerDefaults.selectorProperties(
+                            color = Color.Gray,
+                            shape = RoundedCornerShape(10.dp),
+                            border = null,
+                            enabled = false
+                        ),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                    )
+                }
+
             }
+
         }
-    )
+    }
 }
 
 
