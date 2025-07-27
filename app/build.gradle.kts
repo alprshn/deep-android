@@ -134,6 +134,10 @@ dependencies {
     //Data Store
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
+    //Wheel Picker For Time
+    implementation("com.github.commandiron:WheelPickerCompose:1.1.11") // 👈 Kütüphane
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")  // 👈 Desugaring
+
     // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

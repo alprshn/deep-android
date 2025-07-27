@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.commandiron.wheel_picker_compose.WheelTimePicker
+import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.CalendarApp
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.Schedule
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.Event
@@ -37,6 +39,7 @@ import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.compone
 import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.EditSessionBottomSheet
 import com.kami_apps.deepwork.deep_work_app.presentation.components.PremiumCard
 import com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.components.DatePickerModal
+import com.kami_apps.deepwork.deep_work_app.presentation.timeline_screen.components.WheelTimePickerDialog
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Instant
@@ -56,7 +59,7 @@ fun TimelineScreen(
     var showEditSheet by remember { mutableStateOf(false) }
     var sessionToEdit by remember { mutableStateOf<SessionDetails?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var showWheelTimePicker  by remember { mutableStateOf(false) }
     var datePickerCallback by remember { mutableStateOf<((LocalDate) -> Unit)?>(null) }
     var timePickerCallback by remember { mutableStateOf<((LocalTime) -> Unit)?>(null) }
     
@@ -164,7 +167,7 @@ fun TimelineScreen(
                 },
                 onTimePicker = { currentTime, callback ->
                     timePickerCallback = callback
-                    showTimePicker = true
+                    showWheelTimePicker = true
                 }
             )
         }
@@ -189,66 +192,22 @@ fun TimelineScreen(
         }
         
         // Time Picker Dialog
-        if (showTimePicker) {
-            val timePickerState = rememberTimePickerState(
-                initialHour = 12,
-                initialMinute = 0
-            )
-            
-            TimePickerDialog(
-                onDismissRequest = { 
-                    showTimePicker = false
+        if (showWheelTimePicker) {
+            WheelTimePickerDialog (
+                initialTime = LocalTime.now(),
+                onDismissRequest = {
+                    showWheelTimePicker = false
                     timePickerCallback = null
                 },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            val time = LocalTime.of(timePickerState.hour, timePickerState.minute)
-                            timePickerCallback?.invoke(time)
-                            showTimePicker = false
-                            timePickerCallback = null
-                        }
-                    ) {
-                        Text("OK", color = Color(0xFF30D158))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { 
-                            showTimePicker = false
-                            timePickerCallback = null
-                        }
-                    ) {
-                        Text("Cancel", color = Color.Gray)
-                    }
+                onTimeSelected = { time ->
+                    timePickerCallback?.invoke(time)
+                    showWheelTimePicker = false
+                    timePickerCallback = null
                 }
-            ) {
-                TimePicker(
-                    state = timePickerState,
-                    colors = androidx.compose.material3.TimePickerDefaults.colors(
-                        clockDialColor = Color(0xFF2C2C2E),
-                        selectorColor = Color(0xFF30D158)
-                    )
-                )
-            }
+            )
+
         }
     }
-}
-
-@Composable
-fun TimePickerDialog(
-    onDismissRequest: () -> Unit,
-    confirmButton: @Composable () -> Unit,
-    dismissButton: @Composable (() -> Unit)? = null,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = confirmButton,
-        dismissButton = dismissButton,
-        text = content,
-        containerColor = Color(0xFF2C2C2E)
-    )
 }
 
 private fun mapEventToSessionDetails(event: Event): SessionDetails {
@@ -275,3 +234,6 @@ private fun calculateDurationString(start: java.time.LocalDateTime, end: java.ti
         else -> "< 1 min"
     }
 }
+
+
+
