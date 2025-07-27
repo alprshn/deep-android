@@ -1,32 +1,55 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen
 
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.components.OnboardingButtonSection
 import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.components.OnboardingPageContent
-import com.kami_apps.deepwork.deep_work_app.util.rememberScreenTimePermissionLauncher
-import kotlinx.coroutines.launch
+import com.kami_apps.deepwork.deep_work_app.util.ScreenTimePermissionHelper
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import com.kami_apps.deepwork.deep_work_app.presentation.onboarding_screen.components.OnboardingButtonSection
+import com.kami_apps.deepwork.deep_work_app.util.rememberScreenTimePermissionLauncher
+import kotlinx.coroutines.launch
+import androidx.activity.compose.rememberLauncherForActivityResult
 import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.content.Context
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.SettingsApplications
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -128,13 +151,20 @@ fun OnboardingScreen(
                             // Direkt olarak diğer permissionları iste
                             requestOverlayPermission(context) {
                                 requestBatteryOptimization(context) {
-                            viewModel.handleAction(OnboardingActions.CompleteOnboarding)
+                                    // Continue onboarding after all permissions
+                                    viewModel.handleAction(OnboardingActions.NextPage)
                                 }
                             }
                         }
                     },
                     onMaybeLater = {
-                        viewModel.handleAction(OnboardingActions.MaybeLater)
+                        viewModel.handleAction(OnboardingActions.NextPage)
+                    },
+                    onRequestOverlayPermission = {
+                        requestOverlayPermission(context) {}
+                    },
+                    onRequestBatteryOptimization = {
+                        requestBatteryOptimization(context) {}
                     }
                 )
             }

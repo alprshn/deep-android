@@ -68,8 +68,20 @@ class GetTimelineEventsUseCase @Inject constructor(
 
 // Extension function to convert Date to LocalDateTime
 private fun Date.toLocalDateTime(): java.time.LocalDateTime {
-    return java.time.LocalDateTime.ofInstant(
-        this.toInstant(),
-        java.time.ZoneId.systemDefault()
+    // Use Calendar to ensure local time without timezone shifts
+    val calendar = java.util.Calendar.getInstance().apply {
+        time = this@toLocalDateTime
+    }
+    
+    val localDateTime = java.time.LocalDateTime.of(
+        calendar.get(java.util.Calendar.YEAR),
+        calendar.get(java.util.Calendar.MONTH) + 1, // Calendar months are 0-based
+        calendar.get(java.util.Calendar.DAY_OF_MONTH),
+        calendar.get(java.util.Calendar.HOUR_OF_DAY),
+        calendar.get(java.util.Calendar.MINUTE),
+        calendar.get(java.util.Calendar.SECOND)
     )
+    
+    Log.d("GetTimelineEventsUseCase", "Converting ${this.time} millis (${this}) -> $localDateTime")
+    return localDateTime
 } 

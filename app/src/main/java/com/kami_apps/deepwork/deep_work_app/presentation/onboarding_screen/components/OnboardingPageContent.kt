@@ -58,13 +58,16 @@ import kotlin.math.sin
 import kotlin.math.cos
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.platform.LocalContext
 import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.BatteryAlert
 
 @Composable
 fun OnboardingPageContent(
@@ -74,7 +77,9 @@ fun OnboardingPageContent(
     onNextClick: () -> Unit = {},
     onConnectScreenTime: () -> Unit = {},
     onRequestNotificationPermission: () -> Unit = {},
-    onMaybeLater: () -> Unit = {}
+    onMaybeLater: () -> Unit = {},
+    onRequestOverlayPermission: () -> Unit = {},
+    onRequestBatteryOptimization: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -113,7 +118,9 @@ fun OnboardingPageContent(
                 FourthPageAnimatedContent(
                     page = page,
                     onShowButtons = onShowButtons,
-                    onConnectScreenTime = onConnectScreenTime
+                    onConnectScreenTime = onConnectScreenTime,
+                    onRequestOverlayPermission = onRequestOverlayPermission,
+                    onRequestBatteryOptimization = onRequestBatteryOptimization
                 )
             }
 
@@ -993,7 +1000,9 @@ private fun AnimatedFloatingEmojis(
 private fun FourthPageAnimatedContent(
     page: OnboardingPage,
     onShowButtons: () -> Unit = {},
-    onConnectScreenTime: () -> Unit = {}
+    onConnectScreenTime: () -> Unit = {},
+    onRequestOverlayPermission: () -> Unit = {},
+    onRequestBatteryOptimization: () -> Unit = {}
 ) {
     // Animasyon durumları
     var appIconsVisible by remember { mutableStateOf(false) }
@@ -1100,6 +1109,22 @@ private fun FourthPageAnimatedContent(
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
                 lineHeight = 22.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Permissions Checklist
+        AnimatedVisibility(
+            visible = descriptionVisible, // Same visibility as description
+            enter = fadeIn(animationSpec = tween(800)) + slideInVertically(
+                initialOffsetY = { it / 2 },
+                animationSpec = tween(800)
+            )
+        ) {
+            PermissionsChecklistSection(
+                onRequestOverlayPermission = onRequestOverlayPermission,
+                onRequestBatteryOptimization = onRequestBatteryOptimization
             )
         }
 
@@ -1584,6 +1609,126 @@ fun PermissionChecklistItem(
                         color = Color.White
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PermissionsChecklistSection(
+    onRequestOverlayPermission: () -> Unit,
+    onRequestBatteryOptimization: () -> Unit
+) {
+    val context = LocalContext.current
+    
+    // Permission states
+    var isOverlayPermissionGranted by remember { mutableStateOf(PermissionHelper.hasOverlayPermission(context)) }
+    var isBatteryOptimizationDisabled by remember { mutableStateOf(PermissionHelper.isBatteryOptimizationDisabled(context)) }
+    
+    // Check permissions periodically
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(1000) // Check every second
+            isOverlayPermissionGranted = PermissionHelper.hasOverlayPermission(context)
+            isBatteryOptimizationDisabled = PermissionHelper.isBatteryOptimizationDisabled(context)
+        }
+    }
+    
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Display Over Other Apps Permission
+        PermissionChecklistItem(
+            title = "Display Over Other Apps",
+            icon = Icons.Default.Security,
+            isGranted = isOverlayPermissionGranted,
+            onClick = {
+                if (!isOverlayPermissionGranted) {
+                    onRequestOverlayPermission()
+                }
+            }
+        )
+        
+        // Battery Optimization Permission
+        PermissionChecklistItem(
+            title = "Battery Optimization",
+            icon = Icons.Default.BatteryAlert,
+            isGranted = isBatteryOptimizationDisabled,
+            onClick = {
+                if (!isBatteryOptimizationDisabled) {
+                    onRequestBatteryOptimization()
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun PermissionChecklistItem(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isGranted: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { if (!isGranted) onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isGranted) Color(0xFF1E3A2E) else Color(0xFF2C2C2E)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        if (isGranted) Color(0xFF30D158) else Color(0xFF48484A),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isGranted) Icons.Default.CheckCircle else icon,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            
+            // Content
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Status
+            if (isGranted) {
+                Text(
+                    text = "✓",
+                    fontSize = 16.sp,
+                    color = Color(0xFF30D158),
+                    fontWeight = FontWeight.Bold
+                )
+            } else {
+                Text(
+                    text = "Tap",
+                    fontSize = 12.sp,
+                    color = Color(0xFF0A84FF),
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }

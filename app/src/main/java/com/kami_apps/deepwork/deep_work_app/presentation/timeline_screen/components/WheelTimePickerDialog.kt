@@ -14,15 +14,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.commandiron.wheel_picker_compose.WheelTimePicker
 import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
+import com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper
 import java.time.LocalTime
 
 @Composable
@@ -32,6 +35,16 @@ fun WheelTimePickerDialog(
     onTimeSelected: (LocalTime) -> Unit
 ) {
     var pickedTime by remember { mutableStateOf(initialTime) }
+    val context = LocalContext.current
+    val hapticFeedbackHelper = remember { HapticFeedbackHelper(context) }
+    
+    // Check haptic feedback setting
+    var isHapticEnabled by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        // Load haptic preference from settings (simplified - you could inject this)
+        isHapticEnabled = true // For now, always enable. You could get this from UserPreferences
+    }
 
     AlertDialog(
         onDismissRequest = {
@@ -45,18 +58,20 @@ fun WheelTimePickerDialog(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(6.dp),)
                         .size(28.dp)
                         .background(Color.Gray)
-
                 )
                 WheelTimePicker(
                     startTime = initialTime,
                     onSnappedTime = { snappedTime ->
+                        // Haptic feedback when wheel value changes
+                        if (isHapticEnabled && snappedTime != pickedTime) {
+                            hapticFeedbackHelper.performSliderFeedback()
+                        }
                         pickedTime = snappedTime // sadece güncelle
                     },
                     textStyle = MaterialTheme.typography.titleMedium,

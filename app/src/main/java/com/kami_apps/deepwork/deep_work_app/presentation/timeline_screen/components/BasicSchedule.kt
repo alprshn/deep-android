@@ -113,7 +113,7 @@ fun BasicSchedule(
             layout(width, height) {
                 Log.d("BasicSchedule", "Layout: width=$width, height=$height, placing ${placeablesWithEvents.size} events")
                 placeablesWithEvents.forEach { (placeable, event) ->
-                    val eventOffsetMinutes = ChronoUnit.MINUTES.between(LocalTime.MIN, event.start.toLocalTime())
+                    val eventOffsetMinutes = ChronoUnit.MINUTES.between(LocalTime.MIN, event.start.toLocalTime().plusHours(1) )
                     val eventY = ((eventOffsetMinutes / 60f) * hourHeight.toPx()).roundToInt()
                     val eventOffsetDays = ChronoUnit.DAYS.between(minDate, event.start.toLocalDate()).toInt()
                     val eventX = eventOffsetDays * dayWidth.roundToPx()

@@ -67,22 +67,22 @@ class HapticFeedbackHelper @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val effect = when (pattern) {
                     VibrationPattern.BUTTON_CLICK -> 
-                        VibrationEffect.createOneShot(25, VibrationEffect.DEFAULT_AMPLITUDE)
+                        VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE) // 25 -> 40
                     VibrationPattern.MODE_SELECTION -> 
-                        VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                        VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE) // 50 -> 80
                     VibrationPattern.SLIDER_TICK -> 
-                        VibrationEffect.createOneShot(15, 50)
+                        VibrationEffect.createOneShot(25, 80) // 15, 50 -> 25, 80
                     VibrationPattern.IMPORTANT_ACTION -> 
-                        VibrationEffect.createWaveform(longArrayOf(0, 100, 50, 100), -1)
+                        VibrationEffect.createWaveform(longArrayOf(0, 150, 80, 150), -1) // 100, 50, 100 -> 150, 80, 150
                 }
                 vibrator.vibrate(effect)
             } else {
                 @Suppress("DEPRECATION")
                 when (pattern) {
-                    VibrationPattern.BUTTON_CLICK -> vibrator.vibrate(25)
-                    VibrationPattern.MODE_SELECTION -> vibrator.vibrate(50)
-                    VibrationPattern.SLIDER_TICK -> vibrator.vibrate(15)
-                    VibrationPattern.IMPORTANT_ACTION -> vibrator.vibrate(longArrayOf(0, 100, 50, 100), -1)
+                    VibrationPattern.BUTTON_CLICK -> vibrator.vibrate(40) // 25 -> 40
+                    VibrationPattern.MODE_SELECTION -> vibrator.vibrate(80) // 50 -> 80
+                    VibrationPattern.SLIDER_TICK -> vibrator.vibrate(25) // 15 -> 25
+                    VibrationPattern.IMPORTANT_ACTION -> vibrator.vibrate(longArrayOf(0, 150, 80, 150), -1) // Updated pattern
                 }
             }
         } catch (e: Exception) {

@@ -46,6 +46,12 @@ fun EditSessionBottomSheet(
     var editedDate by remember { mutableStateOf(sessionDetails.date.toLocalDate()) }
     var editedStartTime by remember { mutableStateOf(sessionDetails.startTime.toLocalTime()) }
     var editedDurationMinutes by remember { mutableStateOf(parseDurationToMinutes(sessionDetails.duration)) }
+    var durationText by remember { mutableStateOf(editedDurationMinutes.toString()) }
+    
+    // Calculate end time whenever start time or duration changes
+    val editedEndTime = remember(editedStartTime, editedDurationMinutes) {
+        editedStartTime.plusMinutes(editedDurationMinutes.toLong())
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -100,15 +106,18 @@ fun EditSessionBottomSheet(
                 // End Time (computed)
                 EditFieldItem(
                     label = "End Time",
-                    value = editedStartTime.plusMinutes(editedDurationMinutes.toLong())
-                        .format(DateTimeFormatter.ofPattern("HH:mm")),
+                    value = editedEndTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                     isClickable = false
                 )
 
                 // Duration
                 SessionDetailTextField(
-                    value = "0",
-                    onValueChange = {}
+                    value = durationText,
+                    onValueChange = { newText ->
+                        durationText = newText
+                        // Parse as integer directly if it's a number
+                        editedDurationMinutes = newText.toIntOrNull() ?: editedDurationMinutes
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -119,8 +128,7 @@ fun EditSessionBottomSheet(
                     val updated = sessionDetails.copy(
                         date = editedDate.atTime(editedStartTime),
                         startTime = editedDate.atTime(editedStartTime),
-                        endTime = editedDate.atTime(editedStartTime)
-                            .plusMinutes(editedDurationMinutes.toLong()),
+                        endTime = editedDate.atTime(editedEndTime),
                         duration = formatDuration(editedDurationMinutes)
                     )
                     onSave(updated)
@@ -411,7 +419,6 @@ fun SessionDetailTextField(
     value: String = "0",
     onValueChange: (String) -> Unit
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -427,13 +434,10 @@ fun SessionDetailTextField(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-
-            ) {
+        ) {
             BasicTextField(
                 value = value,
-                onValueChange = {
-                    onValueChange
-                },
+                onValueChange = onValueChange, // Bu callback'i düzgün kullan
                 modifier = Modifier
                     .width(80.dp)
                     .height(32.dp)
@@ -454,7 +458,6 @@ fun SessionDetailTextField(
                     }
                 }
             )
-
 
             Text(
                 text = "minutes",
