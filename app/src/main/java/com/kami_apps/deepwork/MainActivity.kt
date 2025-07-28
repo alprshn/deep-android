@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Box
 import com.kami_apps.deepwork.ui.theme.DeepWorkTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
+import com.kami_apps.deepwork.deep_work_app.data.manager.ThemeManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column  
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,9 +50,12 @@ import androidx.navigation.compose.rememberNavController
 import com.kami_apps.deepwork.deep_work_app.presentation.components.PremiumCard
 import com.kami_apps.deepwork.deep_work_app.presentation.navigation.bottom_bar.BottomBarTabs
 import com.kami_apps.deepwork.deep_work_app.presentation.navigation.bottom_bar.tabs
+import jakarta.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var themeManager: ThemeManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -68,11 +72,17 @@ class MainActivity : ComponentActivity() {
             var showPaywall by remember { mutableStateOf(false) }
             val stopWatchViewModel: StopwatchViewModel = hiltViewModel()
 
+            // Theme management
+            val userTheme by themeManager.currentTheme.collectAsState()
+
             val timerUiState by stopWatchViewModel.timerUIState.collectAsState()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            DeepWorkTheme {
+            DeepWorkTheme(
+                userTheme = userTheme,
+                dynamicColor = false  // Disable dynamic color to use our custom colors
+            ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -173,6 +183,6 @@ fun Greeting(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    DeepWorkTheme {
+    DeepWorkTheme(userTheme = "Default") {
     }
 }

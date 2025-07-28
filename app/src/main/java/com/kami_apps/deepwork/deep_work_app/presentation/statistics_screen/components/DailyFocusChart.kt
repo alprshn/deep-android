@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -98,7 +99,7 @@ private val MarkerValueFormatter =
 private fun DailyFocusChartContent(
     modelProducer: CartesianChartModelProducer,
     modifier: Modifier = Modifier,
-    columnColor: Color = Color.White // varsayılan uygulama içi rengi
+    columnColor: Color = MaterialTheme.colorScheme.onPrimary // varsayılan uygulama içi rengi
 
 ) {
     CartesianChartHost(
@@ -211,10 +212,9 @@ fun DailyFocusChart(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF101012)
+            containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
     ) {
         Column(
             modifier = Modifier
@@ -231,7 +231,7 @@ fun DailyFocusChart(
             ) {
                 Text(
                     text = "Focused Time Distribution",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -248,7 +248,7 @@ fun DailyFocusChart(
                         },
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -259,14 +259,14 @@ fun DailyFocusChart(
             ) {
                 Text(
                     text = "Total Focused Time: ",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Light,
                     textAlign = TextAlign.Start,
                 )
                 Text(
                     text = totalFocusTime,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,

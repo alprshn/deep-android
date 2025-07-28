@@ -8,37 +8,115 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = DarkBlue,
+    onPrimary = Color.White,
+    primaryContainer = DarkBlue.copy(alpha = 0.3f),
+    onPrimaryContainer = Color.White,
+
+    secondary = DarkGreen,
+    onSecondary = Color.White,
+    secondaryContainer = DarkGreen.copy(alpha = 0.3f),
+    onSecondaryContainer = Color.White,
+
+    tertiary = DarkPurple,
+    onTertiary = Color.White,
+    tertiaryContainer = DarkPurple.copy(alpha = 0.3f),
+    onTertiaryContainer = Color.White,
+
+    background = DarkBackground,
+    onBackground = DarkOnBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkGray6,
+    onSurfaceVariant = DarkGray,
+
+
+    outline = DarkGray3,
+    outlineVariant = DarkGray5,
+    scrim = Color.Black,
+
+    inverseSurface = LightSurface,
+    inverseOnSurface = LightOnSurface,
+    inversePrimary = LightBlue,
+
+    surfaceDim = DarkGray6,
+    surfaceBright = DarkGray4,
+    surfaceContainerLowest = DarkBackground,
+    surfaceContainerLow = DarkGray6,
+    surfaceContainer = DarkGray5,
+    surfaceContainerHigh = DarkGray4,
+    surfaceContainerHighest = DarkGray3,
+    surfaceTint = DarkGray2,
+    error = DarkRed,
+    onError = Color.White,
+    errorContainer = DarkRed.copy(alpha = 0.3f),
+    onErrorContainer = Color.White,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = LightBlue,
+    onPrimary = Color.Black,
+    primaryContainer = LightBlue.copy(alpha = 0.1f),
+    onPrimaryContainer = LightBlue,
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
+    secondary = LightGreen,
     onSecondary = Color.White,
+    secondaryContainer = LightGreen.copy(alpha = 0.1f),
+    onSecondaryContainer = LightGreen,
+
+    tertiary = LightPurple,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    tertiaryContainer = LightPurple.copy(alpha = 0.1f),
+    onTertiaryContainer = LightPurple,
+
+    background = LightBackground,
+    onBackground = LightOnBackground,
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    surfaceVariant = LightGray6,
+    onSurfaceVariant = LightGray,
+
+    outline = LightGray3,
+    outlineVariant = LightGray5,
+    scrim = Color.Black,
+
+    inverseSurface = DarkSurface,
+    inverseOnSurface = DarkOnSurface,
+    inversePrimary = DarkBlue,
+
+    surfaceDim = LightGray6,
+    surfaceBright = Color.White,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = LightGray6,
+    surfaceContainer = LightGray5,
+    surfaceContainerHigh = LightGray4,
+    surfaceContainerHighest = LightGray3,
+    surfaceTint = Color.White,
+
+    error = LightRed,
+    onError = Color.White,
+    errorContainer = LightRed.copy(alpha = 0.1f),
+    onErrorContainer = LightRed,
 )
 
 @Composable
 fun DeepWorkTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    userTheme: String = "Default", // User selected theme: "Light", "Dark", "Default"
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val systemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = when (userTheme) {
+        "Light" -> false
+        "Dark" -> true
+        "Default" -> systemInDarkTheme
+        else -> systemInDarkTheme
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

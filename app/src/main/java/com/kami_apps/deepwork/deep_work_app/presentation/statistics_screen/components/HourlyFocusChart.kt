@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -93,7 +94,7 @@ private val MarkerValueFormatter =
 private fun HourlyFocusChartContent(
     modelProducer: CartesianChartModelProducer,
     modifier: Modifier = Modifier,
-    lineColor: Color = Color.White
+    lineColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     CartesianChartHost(
         chart =
@@ -187,10 +188,9 @@ fun HourlyFocusChart(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF101012)
+            containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f)),
+        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.3f)),
     ) {
         Column(
             modifier = Modifier
@@ -207,7 +207,7 @@ fun HourlyFocusChart(
             ) {
                 Text(
                     text = "Focused Time Distribution",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -223,7 +223,7 @@ fun HourlyFocusChart(
 
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -234,14 +234,14 @@ fun HourlyFocusChart(
             ) {
                 Text(
                     text = "Total Focused Time: ",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Light,
                     textAlign = TextAlign.Start,
                 )
                 Text(
                     text = totalFocusTime,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,

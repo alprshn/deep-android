@@ -82,7 +82,7 @@ fun StatisticsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
                 .padding(bottom = if (!statisticsState.isPremium) 80.dp else 0.dp), // Add bottom padding for PremiumCard
@@ -95,7 +95,7 @@ fun StatisticsScreen(
             ) {
                 Text(
                     text = "Statistics",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -118,9 +118,9 @@ fun StatisticsScreen(
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected)
-                                    Color.Gray
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                                 else
-                                    Color.Gray.copy(alpha = 0.2f)
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                             ),
                         ) {
                             Row(
@@ -134,7 +134,7 @@ fun StatisticsScreen(
                                 )
                                 Text(
                                     text = "All Tags",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Normal
                                 )
@@ -188,7 +188,7 @@ fun StatisticsScreen(
                                 )
                                 Text(
                                     text = tags.tagName,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Normal
                                 )
@@ -207,10 +207,10 @@ fun StatisticsScreen(
                         .fillMaxWidth()
                         .padding(vertical = 6.dp),
                     colors = SegmentedControlColors(
-                        containerBackground = Color(0xFF1C1C1E),
-                        selectedBackground = Color.Gray,
-                        selectedTextColor = Color.White,
-                        unselectedTextColor = Color.White,
+                        containerBackground = Color(0xff767680).copy(alpha = 0.2f),
+                        selectedBackground = MaterialTheme.colorScheme.surfaceTint,
+                        selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                        unselectedTextColor = MaterialTheme.colorScheme.onPrimary,
                         separatorColor = Color.Gray.copy(alpha = 0.2f)
                     )
                 )

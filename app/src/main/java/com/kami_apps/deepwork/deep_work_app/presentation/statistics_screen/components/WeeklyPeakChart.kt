@@ -63,6 +63,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -86,7 +87,7 @@ private fun WeeklyPeakChartContent(
     modelProducer: CartesianChartModelProducer,
     peakHour: String,
     modifier: Modifier = Modifier,
-    lineColor: Color = Color.White // varsayılan beyaz
+    lineColor: Color = MaterialTheme.colorScheme.onPrimary // varsayılan beyaz
 ) {
 
     val customMarker = rememberDefaultCartesianMarker(
@@ -219,10 +220,9 @@ fun WeeklyPeakChart(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF101012)
+            containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
     ) {
         Column(
             modifier = Modifier
@@ -239,7 +239,7 @@ fun WeeklyPeakChart(
             ) {
                 Text(
                     text = "Most Focused Period of The Day",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -287,7 +287,7 @@ fun WeeklyPeakChart(
                         },
                     imageVector = Icons.Default.IosShare,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -300,18 +300,18 @@ fun WeeklyPeakChart(
                     imageVector = Icons.Rounded.Schedule,
                     modifier = Modifier.padding(end = 8.dp),
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                 )
                 Text(
                     text = "Peak Time: ",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Light,
                     textAlign = TextAlign.Start,
                 )
                 Text(
                     text = peakHour,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,

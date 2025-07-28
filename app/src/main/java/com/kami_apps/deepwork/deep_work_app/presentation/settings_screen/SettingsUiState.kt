@@ -6,6 +6,10 @@ import com.kami_apps.deepwork.deep_work_app.domain.data.InstalledApp
 data class SettingsUiState(
     // Premium status
     val isPremium: Boolean = false,
+    
+    // Theme settings
+    val currentTheme: String = "Default", // "Light", "Dark", "Default"
+    
     // App installation related
     val installedApps: List<InstalledApp> = emptyList(),
     val isLoading: Boolean = false,

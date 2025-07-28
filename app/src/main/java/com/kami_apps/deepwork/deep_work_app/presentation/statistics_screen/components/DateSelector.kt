@@ -42,11 +42,11 @@ fun DateSelector(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFF101012), RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
             .border(
                 shape = RoundedCornerShape(12.dp),
                 width = 1.dp,
-                color = Color.Gray.copy(alpha = 0.2f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             )
             .padding(horizontal = 12.dp, vertical = 10.dp)
             .animateContentSize()//Color(0xFF101012)
@@ -112,7 +112,7 @@ private fun DaySelector(
     ) {
         Text(
             text = "Select Day",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal
         )
@@ -121,12 +121,12 @@ private fun DaySelector(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .background(Color(0xFF1C1C1E), RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
                 .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
             Text(
                 text = currentDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy")),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
@@ -169,7 +169,7 @@ private fun WeekSelector(
         Icon(
             imageVector = Icons.Default.ArrowBackIos,
             contentDescription = "Previous Week",
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.clickable { onPreviousWeek() }
         )
         Text(
@@ -178,14 +178,14 @@ private fun WeekSelector(
                     DateTimeFormatter.ofPattern("MMM dd")
                 )
             }",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal
         )
         Icon(
             imageVector = Icons.Default.ArrowForwardIos,
             contentDescription = "Next Week",
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.clickable { onNextWeek() }
         )
     }
@@ -233,14 +233,14 @@ private fun MonthYearSelector(
             ) {
                 Text(
                     text = months[currentDate.monthValue - 1],
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
                 Icon(
                     imageVector = Icons.Default.UnfoldMore,
                     contentDescription = "Select Month",
-                    tint = Color.White.copy(alpha = 0.7f),
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -307,14 +307,14 @@ private fun MonthYearSelector(
             ) {
                 Text(
                     text = currentDate.year.toString(),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
                 Icon(
                     imageVector = Icons.Default.UnfoldMore,
                     contentDescription = "Select Year",
-                    tint = Color.White.copy(alpha = 0.7f),
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -400,14 +400,14 @@ private fun YearSelector(
             ) {
                 Text(
                     text = currentDate.year.toString(),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
                 Icon(
                     imageVector = Icons.Default.UnfoldMore,
                     contentDescription = "Select Year",
-                    tint = Color.White.copy(alpha = 0.7f),
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
             }

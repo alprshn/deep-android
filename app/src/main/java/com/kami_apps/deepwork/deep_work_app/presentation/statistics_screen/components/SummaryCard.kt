@@ -3,6 +3,7 @@ package com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen.comp
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -10,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -70,33 +72,33 @@ private fun TotalFocusCard(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF101012)
+            containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp)
-                .animateContentSize(),//Color(0xFF101012),
-            contentAlignment = Alignment.Center
+                .animateContentSize(),
+            contentAlignment = Alignment.Center,
+
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Decorative elements
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
                         // painterResource, otomatik olarak BitmapDrawable veya VectorDrawable'ı tanır.
                         painter = painterResource(id = R.drawable.wreath_left), // Örnek olarak 'ic_wreath_left.xml' oluşturulduğunu varsayalım
                         contentDescription = null, // Varsa daha açıklayıcı bir metin ekleyin
-                        modifier = Modifier.size(60.dp)
+                        modifier = Modifier.size(60.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary) // 🔥 burası rengi belirliyor
                     )
 
                     Column(
@@ -104,7 +106,7 @@ private fun TotalFocusCard(
                     ) {
                         Text(
                             text = "Total Focus",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -112,7 +114,7 @@ private fun TotalFocusCard(
 
                         Text(
                             text = focusTime,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
@@ -122,8 +124,8 @@ private fun TotalFocusCard(
                         // painterResource, otomatik olarak BitmapDrawable veya VectorDrawable'ı tanır.
                         painter = painterResource(id = R.drawable.wreath_right), // Örnek olarak 'ic_wreath_left.xml' oluşturulduğunu varsayalım
                         contentDescription = null, // Varsa daha açıklayıcı bir metin ekleyin
-                        modifier = Modifier.size(60.dp)
-
+                        modifier = Modifier.size(60.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary) // 🔥 burası rengi belirliyor
                     )
                 }
             }
@@ -142,10 +144,9 @@ private fun MetricCard(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF101012)
+            containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
 
         ) {
         Row(
@@ -158,29 +159,31 @@ private fun MetricCard(
 
             Text(
                 text = icon,
-                color = Color.White,
-                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold
             )
 
 
-            Column {
+            Column(
+                modifier = Modifier.weight(1f).padding(start = 10.dp),
+            ) {
                 // Title
                 Text(
                     text = title,
                     color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Left,
                 )
 
                 // Value
                 Text(
                     text = value,
                     color = Color.White,
-                    fontSize = 20.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Left
                 )
             }
 

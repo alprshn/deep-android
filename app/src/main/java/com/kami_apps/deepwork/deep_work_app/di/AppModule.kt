@@ -9,11 +9,14 @@ import com.kami_apps.deepwork.deep_work_app.data.repository.TagsRepositoryImpl
 import com.kami_apps.deepwork.deep_work_app.data.repository.UserPreferencesRepositoryImpl
 import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import com.kami_apps.deepwork.deep_work_app.data.manager.RevenueCatManager
+import com.kami_apps.deepwork.deep_work_app.data.manager.ThemeManager
 import com.kami_apps.deepwork.deep_work_app.domain.repository.AppRepository
 import com.kami_apps.deepwork.deep_work_app.domain.repository.SessionsRepository
 import com.kami_apps.deepwork.deep_work_app.domain.repository.TagsRepository
 import com.kami_apps.deepwork.deep_work_app.domain.repository.UserPreferencesRepository
 import com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.ChangeUserPreferencesUseCase
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetUserPreferencesUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -75,6 +78,15 @@ class AppModule {
         @ApplicationContext context: Context
     ): HapticFeedbackHelper {
         return HapticFeedbackHelper(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideThemeManager(
+        getUserPreferencesUseCase: GetUserPreferencesUseCase,
+        changeUserPreferencesUseCase: ChangeUserPreferencesUseCase
+    ): ThemeManager {
+        return ThemeManager(getUserPreferencesUseCase, changeUserPreferencesUseCase)
     }
 
 }

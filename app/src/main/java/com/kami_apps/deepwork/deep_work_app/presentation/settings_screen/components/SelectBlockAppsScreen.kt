@@ -88,7 +88,7 @@ fun SelectBlockAppsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         // Header
@@ -225,8 +225,8 @@ fun SelectBlockAppsScreen(
                         color = Color.Red.copy(alpha = 0.7f),
                         fontSize = 12.sp
                     )
+                    }
                 }
-            }
             Spacer(modifier = Modifier.height(16.dp))
         }
 

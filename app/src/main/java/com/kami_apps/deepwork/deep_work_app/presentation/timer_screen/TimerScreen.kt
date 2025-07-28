@@ -74,6 +74,7 @@ import com.kami_apps.deepwork.deep_work_app.presentation.components.tag_sheet_ba
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch.StopwatchViewModel
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.timer.TimerViewModel
 import com.kami_apps.deepwork.ui.theme.TagColors
+import androidx.compose.material3.MaterialTheme
 
 data class Snack(
     var name: String,
@@ -228,7 +229,9 @@ fun TimerScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

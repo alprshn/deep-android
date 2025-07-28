@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.outlined.AppBlocking
 import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.rounded.NotificationsNone
@@ -41,6 +43,10 @@ import androidx.compose.material.icons.rounded.Sell
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,9 +84,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -100,6 +109,10 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     
+    // Theme dropdown state
+    var themeDropdownExpanded by remember { mutableStateOf(false) }
+    val availableThemes = viewModel.getAvailableThemes()
+    
     // Show restore message as snackbar
     LaunchedEffect(restoreMessage) {
         restoreMessage?.let { message ->
@@ -112,7 +125,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {
@@ -137,7 +150,17 @@ fun SettingsScreen(
                 val context = LocalContext.current // Composable fonksiyonun başında alınmalı
 
                 Column {
-                    SettingsBoxesItem(text = "App Theme", icon = Icons.Default.Contrast)
+                    // App Theme Dropdown
+                    ThemeDropdownItem(
+                        currentTheme = uiState.currentTheme,
+                        availableThemes = availableThemes,
+                        expanded = themeDropdownExpanded,
+                        onExpandedChange = { themeDropdownExpanded = it },
+                        onThemeSelected = { theme ->
+                            viewModel.changeTheme(theme)
+                            themeDropdownExpanded = false
+                        }
+                    )
                     SettingsBoxesItem(
                         text = "App Icon",
                         icon = Icons.Default.Apps,
@@ -662,3 +685,113 @@ fun SettingsBoxesItem(
         }
     }
 }
+@Composable
+private fun ThemeDropdownItem(
+    currentTheme: String,
+    availableThemes: List<String>,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onThemeSelected: (String) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = { onExpandedChange(true) },
+                    indication = ripple(color = Color.White.copy(alpha = 0.1f)),
+                    interactionSource = remember { MutableInteractionSource() }
+                )
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Contrast,
+                contentDescription = "App Theme",
+                tint = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "App Theme",
+                color = Color.White,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Current theme + dropdown icon
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = currentTheme,
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Normal
+                )
+                Icon(
+                    imageVector = Icons.Default.UnfoldMore,
+                    contentDescription = "Select Theme",
+                    tint = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            
+            // Dropdown Menu
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { onExpandedChange(false) },
+                modifier = Modifier.wrapContentSize(),
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF1C1C1E)
+            ) {
+                availableThemes.forEachIndexed { index, theme ->
+                    val isSelected = theme == currentTheme
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = theme,
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal
+                                )
+                                if (isSelected) {
+                                    Text(
+                                        text = "✓",
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        },
+                        onClick = {
+                            onThemeSelected(theme)
+                        },
+                        colors = MenuDefaults.itemColors(
+                            textColor = Color.White
+                        )
+                    )
+                    if (index < availableThemes.size - 1) {
+                        HorizontalDivider(
+                            color = Color.Gray.copy(alpha = 0.2f),
+                            thickness = 0.5.dp
+                        )
+                    }
+                }
+            }
+        }
+        // Divider after the item
+        Divider(
+            color = Color.Gray.copy(alpha = 0.2f),
+            modifier = Modifier.padding(start = 56.dp)
+        )
+    }
+}
+

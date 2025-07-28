@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kami_apps.deepwork.deep_work_app.domain.repository.AppRepository
 import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
 import com.kami_apps.deepwork.deep_work_app.data.manager.RevenueCatManager
+import com.kami_apps.deepwork.deep_work_app.data.manager.ThemeManager
 import com.kami_apps.deepwork.deep_work_app.domain.data.AppIcon
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetUserPreferencesUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.ChangeUserPreferencesUseCase
@@ -28,6 +29,7 @@ class SettingsViewModel @Inject constructor(
     private val revenueCatManager: RevenueCatManager,
     private val getUserPreferencesUseCase: GetUserPreferencesUseCase,
     private val changeUserPreferencesUseCase: ChangeUserPreferencesUseCase,
+    private val themeManager: ThemeManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -58,6 +60,15 @@ class SettingsViewModel @Inject constructor(
             premiumManager.isPremium.collectLatest { isPremium ->
                 _uiState.update { currentState ->
                     currentState.copy(isPremium = isPremium)
+                }
+            }
+        }
+        
+        // Observe theme changes from ThemeManager
+        viewModelScope.launch {
+            themeManager.currentTheme.collectLatest { theme ->
+                _uiState.update { currentState ->
+                    currentState.copy(currentTheme = theme)
                 }
             }
         }
@@ -330,5 +341,14 @@ class SettingsViewModel @Inject constructor(
                 _isHapticEnabled.value = !_isHapticEnabled.value
             }
         }
+    }
+
+    // Theme Management Functions
+    fun changeTheme(newTheme: String) {
+        themeManager.changeTheme(newTheme)
+    }
+
+    fun getAvailableThemes(): List<String> {
+        return themeManager.getAvailableThemes()
     }
 }

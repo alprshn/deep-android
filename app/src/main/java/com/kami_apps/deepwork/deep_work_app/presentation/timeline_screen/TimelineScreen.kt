@@ -63,60 +63,60 @@ fun TimelineScreen(
     var datePickerCallback by remember { mutableStateOf<((LocalDate) -> Unit)?>(null) }
     var timePickerCallback by remember { mutableStateOf<((LocalTime) -> Unit)?>(null) }
     
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF101012))) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Calendar at the top
-            CalendarApp(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                onDateSelected = { date ->
-                    viewModel.onDateSelected(date)
-                }
-            )
-            
-            // Schedule content
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+        // Calendar at the top
+        CalendarApp(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            onDateSelected = { date ->
+                viewModel.onDateSelected(date)
+            }
+        )
+        
+        // Schedule content
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
                     .padding(top = 16.dp) // Add bottom padding for PremiumCard
-            ) {
-                when {
-                    uiState.isLoading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = Color.White
-                        )
-                    }
-                    
-                    uiState.error != null -> {
-                        Text(
-                            text = uiState.error!!,
-                            color = Color.Red,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(16.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-
-                    
-                    else -> {
-                        // Schedule showing events for selected date
-                        Schedule(
-                            events = uiState.events,
-                            minDate = uiState.selectedDate,
-                            maxDate = uiState.selectedDate,
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White
+                    )
+                }
+                
+                uiState.error != null -> {
+                    Text(
+                        text = uiState.error!!,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                
+                
+                else -> {
+                    // Schedule showing events for selected date
+                    Schedule(
+                        events = uiState.events,
+                        minDate = uiState.selectedDate,
+                        maxDate = uiState.selectedDate,
                             onEventClick = { event ->
                                 selectedSession = mapEventToSessionDetails(event)
                             },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
+        }
         }
         
         // Premium Card Overlay - show only if not premium
