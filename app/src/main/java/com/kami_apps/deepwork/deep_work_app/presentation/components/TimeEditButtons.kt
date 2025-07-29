@@ -36,7 +36,6 @@ fun TimeEditButtons(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(60.dp)
-            .shadow(8.dp, shape = CircleShape)
             .background(
                 brush = Brush.linearGradient(colors = gradientColors),
                 shape = CircleShape

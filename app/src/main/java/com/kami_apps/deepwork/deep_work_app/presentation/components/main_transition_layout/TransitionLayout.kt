@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -321,7 +322,7 @@ fun SnackContents(
             .wrapContentWidth() // Genişliği sınırlandır
             .height(heightButton.dp)
             .clip(RoundedCornerShape(heightButton.dp))
-            .background(Color(0xFF1C1E22))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable {
                 onClick()
             },

@@ -32,7 +32,7 @@ val LightGreen = Color(52 / 255f, 199 / 255f, 89 / 255f)
 val LightMint = Color(0f, 199 / 255f, 190 / 255f)
 val LightTeal = Color(48 / 255f, 176 / 255f, 199 / 255f)
 val LightCyan = Color(50 / 255f, 173 / 255f, 230 / 255f)
-val LightBlue = Color(0f, 122 / 255f, 1f)
+val LightBlue = Color(0f, 136 / 255f, 255 / 255f)
 val LightIndigo = Color(88 / 255f, 86 / 255f, 214 / 255f)
 val LightPurple = Color(175 / 255f, 82 / 255f, 222 / 255f)
 val LightPink = Color(1f, 45 / 255f, 85 / 255f)
@@ -60,7 +60,7 @@ val DarkGreen = Color(48 / 255f, 209 / 255f, 88 / 255f)
 val DarkMint = Color(102 / 255f, 212 / 255f, 207 / 255f)
 val DarkTeal = Color(64 / 255f, 200 / 255f, 224 / 255f)
 val DarkCyan = Color(100 / 255f, 210 / 255f, 1f)
-val DarkBlue = Color(10 / 255f, 132 / 255f, 1f)
+val DarkBlue = Color(0f, 145 / 255f, 255 / 255f)
 val DarkIndigo = Color(94 / 255f, 92 / 255f, 230 / 255f)
 val DarkPurple = Color(191 / 255f, 90 / 255f, 242 / 255f)
 val DarkPink = Color(1f, 55 / 255f, 95 / 255f)
@@ -122,8 +122,8 @@ fun getTagColorsForTheme(isDarkTheme: Boolean): List<Color> {
 // Belirli bir index için theme'e göre renk döndür  
 fun getTagColorByIndex(index: Int, isDarkTheme: Boolean): Color {
     val colors = getTagColorsForTheme(isDarkTheme)
-    return colors.getOrElse(index % colors.size) { 
-        if (isDarkTheme) DarkBlue else LightBlue 
+    return colors.getOrElse(index % colors.size) {
+        if (isDarkTheme) DarkBlue else LightBlue
     }
 }
 

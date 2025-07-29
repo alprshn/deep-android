@@ -41,7 +41,6 @@ fun StartButton(
         modifier = Modifier
             .padding(horizontal = 15.dp)
             .size(80.dp)
-            .shadow(8.dp, shape = CircleShape)
             .background(
                 brush = Brush.linearGradient(colors = gradientColors),
                 shape = CircleShape

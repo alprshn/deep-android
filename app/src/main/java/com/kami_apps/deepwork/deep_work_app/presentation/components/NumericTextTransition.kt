@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +54,7 @@ fun NumericTextTransition(secondCount: String = "00", minuteCount: String = "00"
                         Text(
                             "${digit.digitChar}",
                             textAlign = TextAlign.Center,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 60.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -65,7 +66,7 @@ fun NumericTextTransition(secondCount: String = "00", minuteCount: String = "00"
         Text(
             ":",
             textAlign = TextAlign.Center,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 60.sp
         )
 
@@ -86,7 +87,7 @@ fun NumericTextTransition(secondCount: String = "00", minuteCount: String = "00"
                         Text(
                             "${digit.digitChar}",
                             textAlign = TextAlign.Center,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 60.sp,
                             fontWeight = FontWeight.SemiBold
                         )

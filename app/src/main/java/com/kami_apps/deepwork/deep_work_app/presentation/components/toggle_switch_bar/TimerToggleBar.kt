@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AvTimer
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,7 +46,7 @@ fun TimerToggleBar(
             .wrapContentSize()
             .height(height)
             .clip(RoundedCornerShape(height))
-            .background(Color(0xFF1C1E22))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .animateContentSize( // Animasyonlu küçülme/büyüme
                 animationSpec = androidx.compose.animation.core.tween(
                     durationMillis = 500,
@@ -75,7 +76,7 @@ fun TimerToggleBar(
                     .height(height)
                     .padding(circleButtonPadding)
                     .clip(RoundedCornerShape(50))
-                    .background(if (!selectedState) buttonColor else Color(0xFF1C1E22)) // Active when selectedState is false (Timer mode)
+                    .background(if (!selectedState) buttonColor else MaterialTheme.colorScheme.surfaceContainer) // Active when selectedState is false (Timer mode)
                     .clickable {
                         if (!toggleTimerUiState) { // Only allow change when not running
                             onCheckedChanged(false) // Switch to Timer mode
@@ -91,9 +92,9 @@ fun TimerToggleBar(
                     Icon(
                         Icons.Filled.AvTimer,
                         contentDescription = "Timer",
-                        tint = Color.White
+                        tint = if (!selectedState)Color.White else MaterialTheme.colorScheme.onPrimary
                     )
-                    Text("Timer", color = Color.White)
+                    Text("Timer", color = if (!selectedState)Color.White else MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -119,7 +120,7 @@ fun TimerToggleBar(
                     .height(height)
                     .padding(circleButtonPadding)
                     .clip(RoundedCornerShape(50))
-                    .background(if (selectedState) buttonColor else Color(0xFF1C1E22)) // Active when selectedState is true (Stopwatch mode)
+                    .background(if (selectedState) buttonColor else MaterialTheme.colorScheme.surfaceContainer) // Active when selectedState is true (Stopwatch mode)
                     .clickable {
                         if (!toggleTimerUiState) { // Only allow change when not running
                             onCheckedChanged(true) // Switch to Stopwatch mode
@@ -135,18 +136,12 @@ fun TimerToggleBar(
                     Icon(
                         Icons.Outlined.Timer,
                         contentDescription = "Stopwatch",
-                        tint = Color.White
+                        tint = if (selectedState)Color.White else MaterialTheme.colorScheme.onPrimary
                     )
-                    Text("Stopwatch", color = Color.White)
+                    Text("Stopwatch", color = if (selectedState)Color.White else MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
     }
 }
 
-@Preview
-@Composable
-fun TimerToggleBarPreview() {
-
-
-}

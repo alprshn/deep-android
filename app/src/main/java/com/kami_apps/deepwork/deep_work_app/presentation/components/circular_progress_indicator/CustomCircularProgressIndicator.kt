@@ -58,7 +58,7 @@ fun CustomCircularProgressIndicator(
     minuteCurrentValue: String, // DEĞERİ DIŞARIDAN ALIYORUZ
     maxValue: Int,
     minValue: Int = 0,
-    colorBackgroundGradient: String = "18402806360702976000",
+    colorBackgroundGradient: String = MaterialTheme.colorScheme.inversePrimary.toString(),
     colorBackgroundGradientValue: Float = 0.2f,
     onValueChange: (newValue: Int) -> Unit = {},
     timerState: Boolean = false,// Değer değiştiğinde dışarıya bildirilecek lambda
@@ -85,6 +85,10 @@ fun CustomCircularProgressIndicator(
         ), label = "animatedRadiusValueAlpha"
     )
 
+    val dotGradientColors = listOf(
+        MaterialTheme.colorScheme.background.copy(alpha = 0.4f),
+        Color.Transparent
+    )
     // Calculate radius and thickness based on the available size
     Box(modifier = modifier.padding(10.dp), contentAlignment = Alignment.Center) {
         Canvas(
@@ -208,7 +212,7 @@ fun CustomCircularProgressIndicator(
 
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF000000).copy(alpha = 0.4f), Color.Transparent),
+                        colors = dotGradientColors,
                         center = Offset(dotX, dotY),
                         radius = dotRadius * 3 / 2
                     ),
@@ -287,13 +291,13 @@ fun CustomCircularProgressIndicator(
                     Row(modifier = Modifier.padding(top = 5.dp)) {
                         Text(
                             text = progressTagEmoji,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 20.sp,
                             modifier = Modifier.padding(end = 5.dp)
                         )
                         Text(
                             text = progressTagName,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
