@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +41,7 @@ fun CalendarHeader(
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically),
-            color = Color.White
+            color = MaterialTheme.colorScheme.onPrimary
         )
         IconButton(onClick = {
             // invoke previous callback when its button clicked
@@ -49,7 +50,7 @@ fun CalendarHeader(
             Icon(
                 imageVector = Icons.Filled.ChevronLeft,
                 contentDescription = "Previous",
-                tint = Color.White
+                tint = MaterialTheme.colorScheme.onPrimary
             )
         }
         IconButton(onClick = {
@@ -59,7 +60,7 @@ fun CalendarHeader(
             Icon(
                 imageVector = Icons.Filled.ChevronRight,
                 contentDescription = "Next",
-                tint = Color.White
+                tint = MaterialTheme.colorScheme.onPrimary
 
             )
         }

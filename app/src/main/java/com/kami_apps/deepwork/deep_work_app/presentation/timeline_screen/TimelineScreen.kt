@@ -63,7 +63,7 @@ fun TimelineScreen(
     var datePickerCallback by remember { mutableStateOf<((LocalDate) -> Unit)?>(null) }
     var timePickerCallback by remember { mutableStateOf<((LocalTime) -> Unit)?>(null) }
     
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.scrim)) {
         Column(modifier = Modifier.fillMaxSize()) {
         // Calendar at the top
         CalendarApp(
@@ -86,7 +86,7 @@ fun TimelineScreen(
                 uiState.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
                 

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import android.util.Log
+import com.kami_apps.deepwork.ui.theme.LightGray6
 
 val EventTimeFormatter = DateTimeFormatter.ofPattern("h:mm a")
 
@@ -55,7 +56,7 @@ fun BasicEvent(
         modifier = modifier
             .fillMaxSize()
             .padding(end = 2.dp, bottom = 2.dp)
-            .background(event.color.copy(alpha = 0.35f), shape = RoundedCornerShape(10.dp))
+            .background(event.color.copy(alpha = 0.2f), shape = RoundedCornerShape(10.dp))
             .then(
                 if (onClick != null) {
                     Modifier.clickable(
@@ -89,7 +90,7 @@ fun BasicEvent(
                 text = event.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = Color.White ,
+                color = MaterialTheme.colorScheme.onPrimary ,
                 modifier = Modifier.padding(start = 4.dp),
             )
         }

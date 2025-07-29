@@ -75,7 +75,7 @@ fun ManageTagsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .padding(16.dp)
     ) {
         // Header
@@ -89,14 +89,14 @@ fun ManageTagsScreen(
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
             Text(
                 "Manage Tags",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -148,7 +148,7 @@ fun ManageTagsScreen(
             title = {
                 Text(
                     text = "Delete Tag",
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             },
             text = {
@@ -180,7 +180,7 @@ fun ManageTagsScreen(
                 ) {
                     Text(
                         text = "Cancel",
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             },
@@ -242,7 +242,7 @@ private fun TagItem(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = parseTagColor(tag.tagColor).copy(alpha = 0.15f)
+            containerColor = parseTagColor(tag.tagColor).copy(alpha = 0.2f)
         ),
     ) {
         Row(
@@ -273,7 +273,7 @@ private fun TagItem(
             // Tag Name
             Text(
                 text = tag.tagName,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),

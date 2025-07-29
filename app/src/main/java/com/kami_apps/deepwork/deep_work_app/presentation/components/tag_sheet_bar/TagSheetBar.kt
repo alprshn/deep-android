@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetValue
@@ -42,6 +43,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.emoji2.emojipicker.EmojiPickerView
 import androidx.emoji2.emojipicker.EmojiViewItem
 import com.kami_apps.deepwork.ui.theme.TagColors
+import com.kami_apps.deepwork.ui.theme.darkColorsList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +74,7 @@ fun TagBottomSheet(
     ModalBottomSheet(
         onDismissRequest = addTagDismiss,
         sheetState = tagGeneratorSheetState,
-        containerColor = Color(0xff1d1a1f),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
         dragHandle = null,
 
         ) {
@@ -82,7 +84,7 @@ fun TagBottomSheet(
                 .padding(top = 15.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, color = Color.White, modifier = Modifier.padding(vertical = 5.dp))
+            Text(text = title, color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(vertical = 5.dp))
             Row(
                 modifier = Modifier
                     .padding(10.dp)
@@ -106,7 +108,7 @@ fun TagBottomSheet(
                         .padding(vertical = 25.dp)
                         .padding(start = 10.dp),
                     fontSize = 22.sp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -120,7 +122,7 @@ fun TagBottomSheet(
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(10.dp))
                         .size(55.dp)
-                        .background(Color(0xff29272c))
+                        .background(MaterialTheme.colorScheme.outlineVariant)
                         .clickable {
                             emojiPickerBox()
                         },
@@ -145,10 +147,10 @@ fun TagBottomSheet(
                     placeholder = { Text("Enter Tag Name", color = Color.Gray) },
                     colors = TextFieldDefaults.colors(
                         // arka plan
-                        unfocusedContainerColor = Color(0xFF29272C),
-                        focusedContainerColor = Color(0xFF29272C),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
                         // kenarlıkları şeffaf yap
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
@@ -171,10 +173,10 @@ fun TagBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)   // her öğe arası eşit 12 dp
 
             ) {
-                itemsIndexed(TagColors) { index, color ->
+                itemsIndexed(darkColorsList) { index, color ->
 
                     val borderStroke = if (selectedIndex == index)
-                        BorderStroke(2.dp, Color.White)
+                        BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimary)
                     else
                         BorderStroke(1.dp, Color.Transparent)
 
@@ -211,7 +213,7 @@ fun TagBottomSheet(
         // Emoji picker dialogu
         if (showEmojiPicker) {
             AlertDialog(
-                containerColor = Color(0xFF201e1e),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 onDismissRequest = onDismissRequestAlertDialog,
                 text = {
                     AndroidView(

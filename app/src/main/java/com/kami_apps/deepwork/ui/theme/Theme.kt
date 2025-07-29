@@ -17,7 +17,7 @@ private val DarkColorScheme = darkColorScheme(
     primaryContainer = DarkBlue.copy(alpha = 0.3f),
     onPrimaryContainer = Color.White,
 
-    secondary = DarkGreen,
+    secondary = LightGray6,
     onSecondary = Color.White,
     secondaryContainer = DarkGreen.copy(alpha = 0.3f),
     onSecondaryContainer = Color.White,
@@ -37,14 +37,14 @@ private val DarkColorScheme = darkColorScheme(
 
     outline = DarkGray3,
     outlineVariant = DarkGray5,
-    scrim = Color.Black,
+    scrim = Color.Black.copy(alpha = 0.3f),
 
     inverseSurface = LightSurface,
     inverseOnSurface = LightOnSurface,
     inversePrimary = LightBlue,
 
     surfaceDim = DarkGray6,
-    surfaceBright = DarkGray4,
+    surfaceBright = DarkGray6,
     surfaceContainerLowest = DarkBackground,
     surfaceContainerLow = DarkGray6,
     surfaceContainer = DarkGray5,
@@ -63,7 +63,7 @@ private val LightColorScheme = lightColorScheme(
     primaryContainer = LightBlue.copy(alpha = 0.1f),
     onPrimaryContainer = LightBlue,
 
-    secondary = LightGreen,
+    secondary = DarkGray,
     onSecondary = Color.White,
     secondaryContainer = LightGreen.copy(alpha = 0.1f),
     onSecondaryContainer = LightGreen,
@@ -82,7 +82,8 @@ private val LightColorScheme = lightColorScheme(
 
     outline = LightGray3,
     outlineVariant = LightGray5,
-    scrim = Color.Black,
+    scrim = Color.White,
+
 
     inverseSurface = DarkSurface,
     inverseOnSurface = DarkOnSurface,
@@ -90,7 +91,7 @@ private val LightColorScheme = lightColorScheme(
 
     surfaceDim = LightGray6,
     surfaceBright = Color.White,
-    surfaceContainerLowest = Color.White,
+    surfaceContainerLowest = LightGray6,
     surfaceContainerLow = LightGray6,
     surfaceContainer = LightGray5,
     surfaceContainerHigh = LightGray4,

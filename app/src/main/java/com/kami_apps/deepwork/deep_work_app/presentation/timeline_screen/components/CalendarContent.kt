@@ -45,7 +45,7 @@ fun CalendarContent(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(text = "2025", color = Color.Gray)
-            Text(text = "Jan", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Jan", color = MaterialTheme.colorScheme.onPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         VerticalDivider(
@@ -95,7 +95,7 @@ fun ContentItem(
 
                 .background(
                     if (date.isSelected) {
-                        Color.White
+                        MaterialTheme.colorScheme.onPrimary
                     } else {
                         Color.Transparent
                     }
@@ -109,9 +109,9 @@ fun ContentItem(
                 text = date.date.dayOfMonth.toString(), // date "15", "16"
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (date.isSelected) {
-                    Color.Black
+                    MaterialTheme.colorScheme.background
                 } else {
-                    Color.White
+                    MaterialTheme.colorScheme.onPrimary
                 },
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp

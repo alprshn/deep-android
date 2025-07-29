@@ -48,7 +48,12 @@ import com.kami_apps.deepwork.deep_work_app.data.util.parseTagColor
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.Snack
 
 
-private val shapeForSharedElement = RoundedCornerShape(48.dp)
+private val shapeForSharedElement = RoundedCornerShape(
+    topStart = 48.dp,
+    topEnd = 48.dp,
+    bottomStart = 0.dp,
+    bottomEnd = 0.dp
+)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -102,7 +107,7 @@ fun SharedTransitionScope.SnackEditDetails(
                             clipInOverlayDuringTransition = OverlayClip(shapeForSharedElement),
 
                             )
-                        .background(Color(0xFF1C1E22).copy(alpha = 0.9f), shapeForSharedElement)
+                        .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f), shapeForSharedElement)
                         .graphicsLayer {
                             alpha = 0.9f
                             shadowElevation = 5.dp.toPx()
@@ -126,7 +131,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(50.dp))
-                                    .background(Color(0xFF28303B))
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                                     .clickable {
                                         addTagClick()
                                     },
@@ -136,13 +141,13 @@ fun SharedTransitionScope.SnackEditDetails(
                                 Icon(
                                     Icons.Outlined.Add,
                                     contentDescription = "addButton",
-                                    tint = Color.White, modifier = Modifier
+                                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
                                         .size(20.dp)
                                 )
                             }
                             Text(
                                 text = "Selected Tag",
-                                color = Color(0xFFb6bcc6),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.align(Alignment.CenterVertically),
                                 fontSize = 20.sp
@@ -151,7 +156,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(RoundedCornerShape(50.dp))
-                                    .background(Color(0xFF28303B))
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                                     .clickable {
                                         onCloseClick()
                                     },
@@ -160,7 +165,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                 Icon(
                                     Icons.Outlined.Clear,
                                     contentDescription = "closeButton",
-                                    tint = Color.White, modifier = Modifier.size(20.dp)
+                                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
@@ -198,7 +203,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                 )
                                 Text(
                                     text = selectedTagText,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 38.sp,
                                     modifier = Modifier
                                 )
@@ -227,19 +232,19 @@ fun SharedTransitionScope.SnackEditDetails(
                                             Icon(
                                                 Icons.Outlined.Sell,
                                                 contentDescription = "tagIcon",
-                                                tint = Color(0xFF5c626a),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                                 modifier = Modifier
                                                     .size(60.dp)
                                             )
                                             Text(
                                                 "No Tags Yet",
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onPrimary,
                                                 fontSize = 20.sp,
                                                 modifier = Modifier.padding(top = 15.dp)
                                             )
                                             Text(
                                                 "Tap + to add a tag",
-                                                color = Color(0xFF5c626a),
+                                                color = MaterialTheme.colorScheme.secondary,
                                                 fontSize = 18.sp,
                                                 modifier = Modifier.padding(top = 15.dp)
                                             )
@@ -263,7 +268,7 @@ fun SharedTransitionScope.SnackEditDetails(
                                                             vertical = 5.dp
                                                         )
                                                         .clip(shape = RoundedCornerShape(15.dp))
-                                                        .background(tagColor.copy(alpha = 0.35f))
+                                                        .background(tagColor.copy(alpha = 0.2f))
                                                         .fillMaxWidth()
                                                         .clickable {
                                                             onTagClick(tags)
@@ -361,7 +366,7 @@ fun SnackContentsPreview() {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFF28303B))
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                     .clickable {
 
                     },
@@ -371,12 +376,12 @@ fun SnackContentsPreview() {
                 Icon(
                     Icons.Outlined.Add,
                     contentDescription = "addButton",
-                    tint = Color.White, modifier = Modifier.size(20.dp)
+                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp)
                 )
             }
             Text(
                 text = "Selected Tag",
-                color = Color(0xFFb6bcc6),
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.CenterVertically),
                 fontSize = 20.sp
@@ -385,7 +390,7 @@ fun SnackContentsPreview() {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(50.dp))
-                    .background(Color(0xFF28303B))
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                     .clickable {
                     },
                 contentAlignment = Alignment.Center
@@ -393,7 +398,7 @@ fun SnackContentsPreview() {
                 Icon(
                     Icons.Outlined.Clear,
                     contentDescription = "closeButton",
-                    tint = Color.White, modifier = Modifier.size(20.dp)
+                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp)
                 )
             }
         }

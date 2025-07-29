@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun Schedule(
@@ -34,7 +35,7 @@ fun Schedule(
     val verticalScrollState = rememberScrollState()
     val horizontalScrollState = rememberScrollState()
     
-    Column(modifier = modifier.background(Color(0xFF1C1C1E)).padding(horizontal = 12.dp)) {
+    Column(modifier = modifier.background(MaterialTheme.colorScheme.surfaceDim).padding(horizontal = 12.dp)) {
         BasicSchedule(
             events = events,
             eventContent = { event ->

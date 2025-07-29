@@ -78,6 +78,7 @@ import androidx.core.content.ContextCompat
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.twotone.Vibration
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -125,13 +126,13 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {
             Text(
                 text = "Settings",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -145,7 +146,7 @@ fun SettingsScreen(
                     .padding(vertical = 24.dp)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
             ) {
                 val context = LocalContext.current // Composable fonksiyonun başında alınmalı
 
@@ -180,7 +181,7 @@ fun SettingsScreen(
                             }
                             viewModel.toggleHapticFeedback() 
                         }, 
-                        icon = Icons.Default.Vibration
+                        icon = Icons.TwoTone.Vibration
                     )
                     SettingsBoxesItem(
                         text = "Manage Tags",
@@ -206,7 +207,7 @@ fun SettingsScreen(
                     .padding(top = 5.dp)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
             ) {
                 Column {
                     SettingsBoxesItem(
@@ -233,7 +234,7 @@ fun SettingsScreen(
                     .padding(top = 5.dp)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
             ) {
                 Column {
                     SettingsAppItem(dividerVisible = false)
@@ -252,8 +253,8 @@ fun SettingsScreen(
         ) { data ->
             Snackbar(
                 snackbarData = data,
-                containerColor = Color(0xFF2C2C2E),
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surfaceBright,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
@@ -279,7 +280,7 @@ fun SettingsBoxes(headerVisibility: Boolean, headerName: String, viewModel: Sett
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
         ) {
             Column {
                 SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
@@ -347,7 +348,7 @@ fun SettingsAppItem(
                     text = title,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     text = subtitle,
@@ -392,7 +393,7 @@ fun SettingsScreen_2Preview() {
 fun PremiumStatusCardButton(
     onClick: () -> Unit,
     isPremium: Boolean = false,
-    baseColor: Color = Color(0xFF0A84FF), // Varsayılan mavi ton
+    baseColor: Color = MaterialTheme.colorScheme.primary, // Varsayılan mavi ton
     imageVector: ImageVector = if (isPremium) Icons.Filled.Favorite else Icons.Filled.Bolt,
 ) {
 
@@ -422,7 +423,7 @@ fun PremiumStatusCardButton(
             Icon(
                 imageVector = imageVector,
                 contentDescription = if (isPremium) "Premium User" else "Upgrade",
-                tint = Color.White,
+                tint =Color.White ,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -440,10 +441,10 @@ fun PremiumStatusCardButton(
 fun PremiumStatusCard(
     onClick: () -> Unit,
     isPremium: Boolean = false,
-    baseColor: Color = Color(0xFF0A84FF), // Varsayılan mavi ton
+    baseColor: Color = MaterialTheme.colorScheme.tertiary, // Varsayılan mavi ton
 ) {
 
-    val gradientColors = listOf(
+    val gradientColorsBlue = listOf(
         baseColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
         baseColor.copy(alpha = 1f),                // Orijinal renk
         baseColor.copy(alpha = 1f).darken(0.3f)   // %30 daha koyu ton
@@ -457,7 +458,7 @@ fun PremiumStatusCard(
                 interactionSource = remember { MutableInteractionSource() }
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
     ) {
 
         Column(
@@ -472,13 +473,13 @@ fun PremiumStatusCard(
                     text = if (isPremium) "You are" else "Upgrade to", 
                     fontSize = 20.sp, 
                     fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
                         .background(
-                            brush = Brush.linearGradient(colors = gradientColors),
+                            brush = Brush.linearGradient(colors = gradientColorsBlue),
                             shape = RoundedCornerShape(6.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 2.dp)
@@ -536,7 +537,7 @@ fun SettingsSwitchItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(24.dp)
             )
 
@@ -544,7 +545,7 @@ fun SettingsSwitchItem(
 
             Text(
                 text = title,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
@@ -658,13 +659,13 @@ fun SettingsBoxesItem(
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                tint = Color.White.copy(alpha = 0.8f),
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = text,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
@@ -672,7 +673,7 @@ fun SettingsBoxesItem(
             if (showProgress) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = Color.White.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
                     strokeWidth = 2.dp
                 )
             }
@@ -708,13 +709,13 @@ private fun ThemeDropdownItem(
             Icon(
                 imageVector = Icons.Default.Contrast,
                 contentDescription = "App Theme",
-                tint = Color.White.copy(alpha = 0.8f),
+                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = "App Theme",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
@@ -726,14 +727,14 @@ private fun ThemeDropdownItem(
             ) {
                 Text(
                     text = currentTheme,
-                    color = Color.White.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal
                 )
                 Icon(
                     imageVector = Icons.Default.UnfoldMore,
                     contentDescription = "Select Theme",
-                    tint = Color.White.copy(alpha = 0.7f),
+                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -744,7 +745,7 @@ private fun ThemeDropdownItem(
                 onDismissRequest = { onExpandedChange(false) },
                 modifier = Modifier.wrapContentSize(),
                 shape = RoundedCornerShape(8.dp),
-                containerColor = Color(0xFF1C1C1E)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 availableThemes.forEachIndexed { index, theme ->
                     val isSelected = theme == currentTheme
@@ -757,14 +758,14 @@ private fun ThemeDropdownItem(
                             ) {
                                 Text(
                                     text = theme,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal
                                 )
                                 if (isSelected) {
                                     Text(
                                         text = "✓",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -775,7 +776,7 @@ private fun ThemeDropdownItem(
                             onThemeSelected(theme)
                         },
                         colors = MenuDefaults.itemColors(
-                            textColor = Color.White
+                            textColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                     if (index < availableThemes.size - 1) {
