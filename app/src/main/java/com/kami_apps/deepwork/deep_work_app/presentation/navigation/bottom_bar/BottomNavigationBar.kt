@@ -3,6 +3,7 @@ package com.kami_apps.deepwork.deep_work_app.presentation.navigation.bottom_bar
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -39,47 +41,50 @@ fun BottomBarTabs(
     tabs: List<BottomBarTab>,
     selectedTab: Int,
     onTabSelected: (BottomBarTab) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    CompositionLocalProvider(
-        LocalTextStyle provides LocalTextStyle.current.copy(
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-        ),
-        LocalContentColor provides Color.White
+    Row(
+        modifier = modifier
+            .background(Color.Transparent)
+            .padding(vertical = 4.dp, horizontal = 16.dp)
+            .height(64.dp),
     ) {
-        Row (
-            modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp).height(64.dp),
-        ) {
-            for (tab in tabs) {
-                val alpha by animateFloatAsState(
-                    targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .35f,
-                    label = "alpha"
+        for (tab in tabs) {
+            val alpha by animateFloatAsState(
+                targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .35f,
+                label = "alpha"
+            )
+            val scale by animateFloatAsState(
+                targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .98f,
+                visibilityThreshold = .000001f,
+                animationSpec = spring(
+                    stiffness = Spring.StiffnessLow,
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                ),
+                label = "scale"
+            )
+            Column(
+                modifier = Modifier
+                    .background(Color.Transparent)
+                    .scale(scale)
+                    .alpha(alpha)
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .pointerInput(Unit) {
+                        detectTapGestures {
+                            onTabSelected(tab)
+                        }
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = "tab ${tab.title}",
+                    modifier = Modifier.size(35.dp),
+                    tint = if (selectedTab == tabs.indexOf(tab)) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+
                 )
-                val scale by animateFloatAsState(
-                    targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .98f,
-                    visibilityThreshold = .000001f,
-                    animationSpec = spring(
-                        stiffness = Spring.StiffnessLow,
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                    ),
-                    label = "scale"
-                )
-                Column (
-                    modifier = Modifier
-                        .scale(scale)
-                        .alpha(alpha)
-                        .fillMaxHeight()
-                        .weight(1f)
-                        .pointerInput(Unit) {
-                            detectTapGestures {
-                                onTabSelected(tab)
-                            }
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}", modifier = Modifier.size(35.dp))
-                }
             }
         }
     }

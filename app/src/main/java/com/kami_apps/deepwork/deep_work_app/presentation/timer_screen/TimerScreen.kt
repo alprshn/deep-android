@@ -75,6 +75,8 @@ import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.stopwatch.
 import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.timer.TimerViewModel
 import com.kami_apps.deepwork.ui.theme.TagColors
 import androidx.compose.material3.MaterialTheme
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 
 data class Snack(
     var name: String,
@@ -95,6 +97,9 @@ fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
     timerViewModel: TimerViewModel = hiltViewModel()
 ) {
+    // TimerScreen composable'ın içinde en üst kısma ekle:
+    val hazeState = rememberHazeState()
+
     // Haptic feedback
     val hapticFeedback = LocalHapticFeedback.current
     val isHapticEnabled by timerViewModel.isHapticEnabled.collectAsState()
@@ -229,7 +234,9 @@ fun TimerScreen(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier.fillMaxSize().hazeSource(hazeState) // <-- Eklendi!
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -508,7 +515,9 @@ fun TimerScreen(
                             colorBackgroundGradientValue = 0.2f
                         },
                         keepGoingButtonColor = chosenTagColor,
-                        onClickKeepGoing = { showEndSessionBar = false }
+                        onClickKeepGoing = { showEndSessionBar = false },
+                        hazeState = hazeState // <-- bunu ekle!
+
                     )
                 }
             }

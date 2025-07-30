@@ -34,15 +34,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kami_apps.deepwork.deep_work_app.data.util.parseTagColor
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, )
 @Composable
 fun EndSessionBar(
     endSession: () -> Unit,
     keepGoingButtonColor: String,
     onClickKeepGoing: () -> Unit = {},
+    hazeState: HazeState, // <-- bunu ekle
+
 ) {
 
     var endThisSessionVisibility by remember { mutableStateOf(false) }
@@ -67,13 +72,15 @@ fun EndSessionBar(
     ModalBottomSheet(
         onDismissRequest = {},
         sheetState = endSessionBarSheetState,
-        containerColor = Color(0xFF1C1E22).copy(alpha = 0.9f),
+        containerColor = Color.Transparent,
         dragHandle = null,
 
         ) {
         Column(
             modifier = Modifier
+                .hazeEffect (state = hazeState, style = HazeMaterials.ultraThin())
                 .padding(horizontal = 20.dp)
+
                 .height(300.dp)
                 .animateContentSize(               // boy değişimini yavaşlat
                     animationSpec = tween(

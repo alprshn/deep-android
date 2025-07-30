@@ -20,8 +20,8 @@ android {
         applicationId = "com.kami_apps.deepwork"
         minSdk = 25
         targetSdk = 35
-        versionCode = 93
-        versionName = "0.9.3 (Test)"
+        versionCode = 94
+        versionName = "0.9.4 (Beta)"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -118,9 +118,10 @@ dependencies {
 
 
     //Haze
-    implementation("dev.chrisbanes.haze:haze:1.6.4")
-    implementation("dev.chrisbanes.haze:haze-materials:1.6.4")
+    implementation("dev.chrisbanes.haze:haze:1.6.9")
+    implementation("dev.chrisbanes.haze:haze-materials:1.6.9")
 
+    implementation("com.github.iZakirSheikh:toolkit:3.7.0-dev")
     //Chart Libs
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m2)

@@ -1,9 +1,11 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,7 +24,8 @@ import com.kami_apps.deepwork.deep_work_app.presentation.timer_screen.TimerScree
 fun RootNavigationGraph(
     navController: NavHostController, 
     innerPadding: PaddingValues,
-    onShowPaywall: () -> Unit = {}
+    onShowPaywall: () -> Unit = {},
+    modifier: Modifier = Modifier
 ){
     val context = LocalContext.current
     var startDestination by remember { mutableStateOf("onboarding") }
@@ -41,7 +44,7 @@ fun RootNavigationGraph(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = Modifier.padding(innerPadding)
+        modifier = modifier.padding(innerPadding).background(Color.Transparent)
     ){
         // Onboarding ekranı
         composable("onboarding") {
