@@ -4,7 +4,9 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,47 +47,48 @@ fun BottomBarTabs(
 ) {
     Row(
         modifier = modifier
-            .background(Color.Transparent)
-            .padding(vertical = 4.dp, horizontal = 16.dp)
-            .height(64.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .height(56.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        for (tab in tabs) {
+        tabs.forEachIndexed { index, tab ->
+            val isSelected = selectedTab == index
+
             val alpha by animateFloatAsState(
-                targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .35f,
+                targetValue = if (isSelected) 1f else 0.35f,
                 label = "alpha"
             )
+
             val scale by animateFloatAsState(
-                targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .98f,
-                visibilityThreshold = .000001f,
+                targetValue = if (isSelected) 1f else 0.98f,
+                visibilityThreshold = 0.000001f,
                 animationSpec = spring(
                     stiffness = Spring.StiffnessLow,
                     dampingRatio = Spring.DampingRatioMediumBouncy,
                 ),
                 label = "scale"
             )
-            Column(
+
+            Icon(
+                imageVector = tab.icon,
+                contentDescription = "tab ${tab.title}",
                 modifier = Modifier
-                    .background(Color.Transparent)
+                    .size(32.dp)
                     .scale(scale)
                     .alpha(alpha)
-                    .fillMaxHeight()
-                    .weight(1f)
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            onTabSelected(tab)
-                        }
-                    },
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    imageVector = tab.icon,
-                    contentDescription = "tab ${tab.title}",
-                    modifier = Modifier.size(35.dp),
-                    tint = if (selectedTab == tabs.indexOf(tab)) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-
-                )
-            }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        onTabSelected(tab)
+                    }
+                    .weight(1f),
+                tint = if (isSelected)
+                    MaterialTheme.colorScheme.onPrimary
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -95,12 +98,7 @@ fun BottomBarTabs(
 @Composable
 fun BottomBarTabsPreview() {
     var selectedTabIndex by remember { mutableIntStateOf(2) }
-    Box(
-        modifier = Modifier
-            .padding(vertical = 24.dp, horizontal = 64.dp)
-            .fillMaxWidth()
-            .height(64.dp)
-    ) {
+
         BottomBarTabs(
             tabs,
             selectedTab = selectedTabIndex,
@@ -108,5 +106,5 @@ fun BottomBarTabsPreview() {
                 selectedTabIndex = tabs.indexOf(it)
             }
         )
-    }
+
 }

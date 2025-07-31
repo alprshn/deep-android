@@ -121,7 +121,6 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:1.6.9")
     implementation("dev.chrisbanes.haze:haze-materials:1.6.9")
 
-    implementation("com.github.iZakirSheikh:toolkit:3.7.0-dev")
     //Chart Libs
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m2)

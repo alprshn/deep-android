@@ -31,5 +31,6 @@ data class StatisticsUiState(
     val peakHour: String = "12:00", // Most focused hour of the day
     val peakWeekday: String = "Monday", // Most focused day of the week
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val blurAlpha : Float = 0f
 )

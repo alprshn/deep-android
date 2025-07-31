@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,6 +69,7 @@ fun StatisticsScreen(
         statisticsViewModel.loadStatisticsForSelectedTag()
         statisticsViewModel.loadChartData()
         statisticsViewModel.loadSessionLogs() // Load session logs
+
     }
     
     // Update charts when date or time period changes
@@ -77,6 +79,12 @@ fun StatisticsScreen(
 
 
     val scrollState = rememberScrollState()
+
+
+
+    LaunchedEffect(scrollState.value) {
+        statisticsViewModel.updateBlurAlpha( (scrollState.value / 300f).coerceIn(0f, 1f))
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(

@@ -163,6 +163,11 @@ class StatisticsViewModel @Inject constructor(
         loadChartData()
     }
 
+    // Blur değerini güncelleyen fonksiyon
+    fun updateBlurAlpha(alpha: Float) {
+        _uiState.update { it.copy(blurAlpha = alpha.coerceIn(0f, 1f)) }
+    }
+
     fun loadChartData() {
         viewModelScope.launch {
             val currentState = _uiState.value

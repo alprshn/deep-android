@@ -74,18 +74,9 @@ fun SharedTransitionScope.SnackEditDetails(
         targetState = snack,
         label = "SnackEditDetails",
         transitionSpec = {
-            (fadeIn(
-                tween(
-                    1000,
-                    easing = EaseInOutQuart
-                )
-            ) + slideInVertically(tween(1000))) togetherWith
-                    (fadeOut(
-                        tween(
-                            1000,
-                            easing = EaseInOutQuart
-                        )
-                    ) + slideOutVertically(tween(1000)))
+            fadeIn(tween(500, easing = EaseInOutQuart)) togetherWith
+                    fadeOut(tween(500, easing = EaseInOutQuart))
+
         }
 
     ) { targetSnack ->
