@@ -158,7 +158,7 @@ class MainActivity : ComponentActivity() {
                                                     saveState = true
                                                 }
                                                 launchSingleTop = true
-                                                restoreState = true
+                                                 restoreState = true
                                             }
                                         },
                                         modifier = Modifier

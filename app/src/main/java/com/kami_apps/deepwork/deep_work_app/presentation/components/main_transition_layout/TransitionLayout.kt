@@ -82,7 +82,7 @@ fun SharedTransitionScope.SnackEditDetails(
     ) { targetSnack ->
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            contentAlignment = Alignment.BottomCenter,
         ) {
             if (targetSnack != null) {
                 Column(

@@ -88,8 +88,8 @@ fun SelectBlockAppsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .padding(top = 16.dp).padding(horizontal = 16.dp)
     ) {
         // Header
         Row(
@@ -102,14 +102,14 @@ fun SelectBlockAppsScreen(
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
             Text(
                 "Select Apps to Block", 
                 fontSize = 20.sp, 
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(start = 8.dp)
             )
             
@@ -139,14 +139,14 @@ fun SelectBlockAppsScreen(
             placeholder = {
                 Text(
                     "Search apps...",
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
-                    tint = Color.Gray
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             trailingIcon = {
@@ -157,16 +157,16 @@ fun SelectBlockAppsScreen(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Clear",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Gray,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 focusedBorderColor = Color(0xFF0A84FF),
-                unfocusedTextColor = Color.White,
-                focusedTextColor = Color.White,
+                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
                 cursorColor = Color(0xFF0A84FF)
             ),
             shape = RoundedCornerShape(12.dp),
@@ -177,7 +177,7 @@ fun SelectBlockAppsScreen(
         if (state.blockedApps.isNotEmpty()) {
             Text(
                 "${state.blockedApps.size} apps blocked",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
@@ -188,7 +188,7 @@ fun SelectBlockAppsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
             ) {
                 Column(
                     modifier = Modifier
@@ -208,14 +208,14 @@ fun SelectBlockAppsScreen(
                             "Permissions Required",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
                     
                     Text(
                         "Please grant the required permissions from the onboarding screen to enable app blocking feature.",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
@@ -241,12 +241,12 @@ fun SelectBlockAppsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(48.dp)
                         )
                         Text(
                             "Loading apps...",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(top = 16.dp)
                         )
@@ -295,7 +295,7 @@ fun SelectBlockAppsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator(
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -309,7 +309,7 @@ fun SelectBlockAppsScreen(
                             ) {
                                 Text(
                                     "Loading more apps...",
-                                    color = Color.Gray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 12.sp
                                 )
                             }
@@ -335,7 +335,7 @@ fun AppListItem(
             .clickable(enabled = enabled) { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isBlocked) Color(0xFF2C1D1D) else Color(0xFF1C1C1E)
+            containerColor = if (isBlocked) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceBright
         ),
         border = if (isBlocked) {
             BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f))
@@ -370,7 +370,7 @@ fun AppListItem(
                     Icon(
                         imageVector = Icons.Default.Apps,
                         contentDescription = app.appName,
-                        tint = if (isBlocked) Color.Red else Color.Gray,
+                        tint = if (isBlocked) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -385,7 +385,7 @@ fun AppListItem(
             ) {
                 Text(
                     text = app.appName,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = if (isBlocked) FontWeight.Bold else FontWeight.Medium,
                     maxLines = 1,
@@ -405,7 +405,7 @@ fun AppListItem(
                 Icon(
                     imageVector = Icons.Default.RadioButtonUnchecked,
                     contentDescription = "Not Selected",
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )
             }
