@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -106,7 +107,7 @@ private fun TotalFocusCard(
                     ) {
                         Text(
                             text = "Total Focus",
-                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -171,7 +172,7 @@ private fun MetricCard(
                 // Title
                 Text(
                     text = title,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Left,
@@ -180,7 +181,7 @@ private fun MetricCard(
                 // Value
                 Text(
                     text = value,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Left

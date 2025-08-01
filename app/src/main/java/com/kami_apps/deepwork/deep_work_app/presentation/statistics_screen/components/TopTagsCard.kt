@@ -52,7 +52,8 @@ fun TopTagsCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
+        onClick = { isExpanded = !isExpanded }
     ) {
         Column(
             modifier = Modifier
@@ -62,8 +63,7 @@ fun TopTagsCard(
             // Header - Always visible
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded },
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {

@@ -55,6 +55,9 @@ fun SessionLogsCard(
             containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+    , onClick = {
+            isExpanded = !isExpanded
+        }
     ) {
         Column(
             modifier = Modifier
@@ -64,8 +67,7 @@ fun SessionLogsCard(
             // Header - Always visible
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded },
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {

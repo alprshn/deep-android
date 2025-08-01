@@ -6,6 +6,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -102,11 +103,15 @@ private fun DaySelector(
     onDateChanged: (LocalDate) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { showDatePicker = true },
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { showDatePicker = true },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -250,7 +255,7 @@ private fun MonthYearSelector(
                 onDismissRequest = { monthExpanded = false },
                 modifier = Modifier.wrapContentSize(),
                 shape = RoundedCornerShape(8.dp),
-                containerColor = Color(0xFF1C1C1E)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 availableMonths.forEachIndexed { index, month ->
                     val isSelected = (index + 1) == currentDate.monthValue
@@ -263,14 +268,14 @@ private fun MonthYearSelector(
                             ) {
                                 Text(
                                     text = month,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal
                                 )
                                 if (isSelected) {
                                     Text(
                                         text = "✓",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -283,7 +288,7 @@ private fun MonthYearSelector(
                             monthExpanded = false
                         },
                         colors = MenuDefaults.itemColors(
-                            textColor = Color.White
+                            textColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                     if (index < availableMonths.size - 1) {
@@ -324,7 +329,7 @@ private fun MonthYearSelector(
                 onDismissRequest = { yearExpanded = false },
                 modifier = Modifier.wrapContentSize(),
                 shape = RoundedCornerShape(8.dp),
-                containerColor = Color(0xFF1C1C1E)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 availableYears.forEachIndexed { index, year ->
                     val isSelected = year == currentDate.year
@@ -337,14 +342,14 @@ private fun MonthYearSelector(
                             ) {
                                 Text(
                                     text = year.toString(),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal
                                 )
                                 if (isSelected) {
                                     Text(
                                         text = "✓",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -357,7 +362,7 @@ private fun MonthYearSelector(
                             yearExpanded = false
                         },
                         colors = MenuDefaults.itemColors(
-                            textColor = Color.White
+                            textColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                     if (index < availableYears.size - 1) {
@@ -417,7 +422,7 @@ private fun YearSelector(
                 onDismissRequest = { yearExpanded = false },
                 modifier = Modifier.wrapContentSize(),
                 shape = RoundedCornerShape(8.dp),
-                containerColor = Color(0xFF1C1C1E)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 availableYears.forEachIndexed { index, year ->
                     val isSelected = year == currentDate.year
@@ -430,14 +435,14 @@ private fun YearSelector(
                             ) {
                                 Text(
                                     text = year.toString(),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal
                                 )
                                 if (isSelected) {
                                     Text(
                                         text = "✓",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -450,7 +455,7 @@ private fun YearSelector(
                             yearExpanded = false
                         },
                         colors = MenuDefaults.itemColors(
-                            textColor = Color.White
+                            textColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                     if (index < availableYears.size - 1) {
@@ -478,45 +483,45 @@ private fun YearSelector(
     )
 
     DatePickerDialog(
-        onDismissRequest = onDismiss, colors = DatePickerDefaults.colors(containerColor = Color(0xFF1C1C1E)),
+        onDismissRequest = onDismiss, colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         confirmButton = {
             TextButton(onClick = {
                 onDateSelected(datePickerState.selectedDateMillis)
                 onDismiss()
             }) {
-                Text("OK", color = Color.White)
+                Text("OK", color = MaterialTheme.colorScheme.onPrimary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.White)
+                Text("Cancel", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     ) {
         DatePicker(
             state = datePickerState,
             colors = DatePickerDefaults.colors(
-                containerColor = Color(0xFF1C1C1E),
-                titleContentColor = Color.White,
-                headlineContentColor = Color.White,
-                weekdayContentColor = Color.White.copy(alpha = 0.7f),
-                subheadContentColor = Color.White,
-                yearContentColor = Color.White,
-                currentYearContentColor = Color.White,
-                selectedYearContentColor = Color.Black,
-                selectedYearContainerColor = Color.White,
-                dayContentColor = Color.White,
-                disabledDayContentColor = Color.White.copy(alpha = 0.3f),
-                selectedDayContentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                headlineContentColor = MaterialTheme.colorScheme.onPrimary,
+                weekdayContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                subheadContentColor = MaterialTheme.colorScheme.onPrimary,
+                yearContentColor = MaterialTheme.colorScheme.onPrimary,
+                currentYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                selectedYearContentColor = MaterialTheme.colorScheme.background,
+                selectedYearContainerColor = MaterialTheme.colorScheme.onPrimary,
+                dayContentColor = MaterialTheme.colorScheme.onPrimary,
+                disabledDayContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
+                selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
                 disabledSelectedDayContentColor = Color.Gray,
                 selectedDayContainerColor = Color.Gray,
                 disabledSelectedDayContainerColor = Color.Gray.copy(alpha = 0.3f),
-                todayContentColor = Color.White,
-                todayDateBorderColor = Color.White.copy(alpha = 0.5f),
+                todayContentColor = MaterialTheme.colorScheme.onPrimary,
+                todayDateBorderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
                 dayInSelectionRangeContainerColor = Color.Gray.copy(alpha = 0.2f),
-                dayInSelectionRangeContentColor = Color.White,
+                dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimary,
                 dividerColor = Color.Gray.copy(alpha = 0.2f),
-                navigationContentColor = Color.White,
+                navigationContentColor = MaterialTheme.colorScheme.onPrimary,
             )
         )
     }
@@ -580,7 +585,7 @@ fun DateSelectorPreview() {
                         onDismissRequest = { monthExpanded = false },
                         modifier = Modifier.wrapContentSize(),
                         shape = RoundedCornerShape(8.dp),
-                        containerColor = Color(0xFF1C1C1E)
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         availableMonths.forEachIndexed { index, month ->
                             val isSelected = (index + 1) == currentDate.monthValue

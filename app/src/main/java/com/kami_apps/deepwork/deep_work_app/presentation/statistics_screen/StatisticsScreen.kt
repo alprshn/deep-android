@@ -13,6 +13,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +63,7 @@ fun StatisticsScreen(
     val statisticsState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
     val items = listOf("Day", "Week", "Month", "Year")
     var sampleStatistics by remember { mutableStateOf(FocusStatistics()) } // Örnek
-
+    val interactionSource = remember { MutableInteractionSource() }
     // Load data when screen first loads
     LaunchedEffect(Unit) {
         statisticsViewModel.loadAllTags()
@@ -71,7 +73,7 @@ fun StatisticsScreen(
         statisticsViewModel.loadSessionLogs() // Load session logs
 
     }
-    
+
     // Update charts when date or time period changes
     LaunchedEffect(statisticsState.selectedDate, statisticsState.selectedTimeIndex) {
         statisticsViewModel.loadChartData()
@@ -83,7 +85,7 @@ fun StatisticsScreen(
 
 
     LaunchedEffect(scrollState.value) {
-        statisticsViewModel.updateBlurAlpha( (scrollState.value / 300f).coerceIn(0f, 1f))
+        statisticsViewModel.updateBlurAlpha((scrollState.value / 300f).coerceIn(0f, 1f))
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -119,10 +121,7 @@ fun StatisticsScreen(
 
                         Card(
                             modifier = Modifier
-                                .wrapContentWidth()
-                                .clickable {
-                                    statisticsViewModel.updateTagId(0)
-                                },
+                                .wrapContentWidth(),
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected)
@@ -130,6 +129,9 @@ fun StatisticsScreen(
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                             ),
+                            onClick = {
+                                statisticsViewModel.updateTagId(0)
+                            }
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -138,12 +140,12 @@ fun StatisticsScreen(
                             ) {
                                 Text(
                                     text = "\uD83C\uDFF7\uFE0E",
-                                    fontSize = 20.sp
+                                    fontSize = 18.sp
                                 )
                                 Text(
                                     text = "All Tags",
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 18.sp,
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Normal
                                 )
                             }
@@ -163,27 +165,28 @@ fun StatisticsScreen(
                         Tags(9, "Meditation", "🧘", "18402806360702976000"),  // Cyan
                         Tags(10, "Cooking", "👨‍🍳", "18402806360702976000,,,")   // Yellow
                     )
-                    
-                    val tagsToShow = if (!statisticsState.isPremium) dummyTags else statisticsState.allTags // Show dummy tags for non-premium users
-                    
+
+                    val tagsToShow =
+                        if (!statisticsState.isPremium) dummyTags else statisticsState.allTags // Show dummy tags for non-premium users
+
                     items(tagsToShow) { tags ->
                         val tagColor = parseTagColor(tags.tagColor)
 
                         val isSelected = statisticsState.selectedTagId == tags.tagId
 
                         Card(
-                            modifier = Modifier
-                                .wrapContentWidth()
-                                .clickable {
-                                    statisticsViewModel.updateTagId(tags.tagId)
-                                },
                             shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier
+                                .wrapContentWidth(),
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected)
                                     tagColor
                                 else
                                     tagColor.copy(alpha = 0.2f)
-                            )
+                            ),
+                            onClick = {
+                                statisticsViewModel.updateTagId(tags.tagId)
+                            }
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -192,12 +195,12 @@ fun StatisticsScreen(
                             ) {
                                 Text(
                                     text = tags.tagEmoji,
-                                    fontSize = 20.sp
+                                    fontSize = 18.sp
                                 )
                                 Text(
                                     text = tags.tagName,
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 18.sp,
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Normal
                                 )
                             }
@@ -207,13 +210,13 @@ fun StatisticsScreen(
                 ModernSegmentedControl(
                     items = items,
                     selectedIndex = statisticsState.selectedTimeIndex,
-                    onItemSelected = { timeIndex -> 
+                    onItemSelected = { timeIndex ->
                         statisticsViewModel.updateTimeIndex(timeIndex)
                     },
                     showSeparators = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 3.dp),
                     colors = SegmentedControlColors(
                         containerBackground = Color(0xff767680).copy(alpha = 0.2f),
                         selectedBackground = MaterialTheme.colorScheme.surfaceTint,
@@ -240,10 +243,10 @@ fun StatisticsScreen(
                 )
             } else {
                 FocusStatistics(
-                totalFocusTime = statisticsState.totalFocusTime,
-                totalSessions = statisticsState.totalSessionCount,
-                averageDuration = statisticsState.averageFocusTime
-            )
+                    totalFocusTime = statisticsState.totalFocusTime,
+                    totalSessions = statisticsState.totalSessionCount,
+                    averageDuration = statisticsState.averageFocusTime
+                )
             }
 
 
@@ -259,54 +262,57 @@ fun StatisticsScreen(
                         totalFocusTime = statisticsState.totalFocusTime
                     )
                 }
+
                 1 -> { // Week view
                     DailyFocusChart(
                         dailyFocusData = statisticsState.dailyFocusData,
                         totalFocusTime = statisticsState.totalFocusTime
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     WeeklyPeakChart(
                         hourlyFocusData = statisticsState.hourlyFocusData,
                         peakHour = statisticsState.peakHour
                     )
                 }
+
                 2 -> { // Month view
                     MonthlyFocusChart(
                         monthlyFocusData = statisticsState.monthlyFocusData,
                         totalFocusTime = statisticsState.totalFocusTime
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     WeeklyPeakChart(
                         hourlyFocusData = statisticsState.hourlyFocusData,
                         peakHour = statisticsState.peakHour
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     WeekdayAnalysisChart(
                         weekdayFocusData = statisticsState.weekdayFocusData,
                         peakWeekday = statisticsState.peakWeekday
                     )
                 }
+
                 3 -> { // Year view
                     YearlyFocusChart(
                         yearlyFocusData = statisticsState.yearlyFocusData,
                         totalFocusTime = statisticsState.totalFocusTime
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     WeeklyPeakChart(
                         hourlyFocusData = statisticsState.hourlyFocusData,
                         peakHour = statisticsState.peakHour
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     WeekdayAnalysisChart(
                         weekdayFocusData = statisticsState.weekdayFocusData,
                         peakWeekday = statisticsState.peakWeekday
@@ -359,7 +365,7 @@ fun StatisticsScreen(
                 }
             )
         }
-        
+
         // Premium Card Overlay - show only if not premium
         if (!statisticsState.isPremium) {
             Box(
