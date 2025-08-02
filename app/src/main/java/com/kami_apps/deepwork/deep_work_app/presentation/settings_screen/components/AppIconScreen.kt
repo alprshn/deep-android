@@ -101,13 +101,13 @@ fun AppIconScreen(
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
                 Text(
                     "App Icon",
                     fontSize = 20.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 8.dp)
                 )
@@ -125,12 +125,12 @@ fun AppIconScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             CircularProgressIndicator(
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(48.dp)
                             )
                             Text(
                                 "Loading icons...",
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(top = 16.dp)
                             )
@@ -146,7 +146,7 @@ fun AppIconScreen(
                     ) {
                         Text(
                             "Error loading icons: ${state.iconError}",
-                            color = Color.Red,
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center
                         )
@@ -199,8 +199,8 @@ fun AppIconScreen(
         ) { data ->
             Snackbar(
                 snackbarData = data,
-                containerColor = Color(0xFF2C2C2E),
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surfaceBright,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
@@ -253,13 +253,13 @@ fun AppIconItem(
                 modifier = Modifier
                         .size(80.dp)
                     .clip(RoundedCornerShape(12.dp))
-                        .background(Color.Gray, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(12.dp))
                         .let { if (isLocked) it.alpha(0.5f) else it },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = icon.name.first().toString(),
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -272,7 +272,7 @@ fun AppIconItem(
                     modifier = Modifier
                         .size(80.dp)
                         .background(
-                            Color.Black.copy(alpha = 0.6f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.4f),
                             RoundedCornerShape(12.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -280,7 +280,7 @@ fun AppIconItem(
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "Premium Required",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -288,7 +288,7 @@ fun AppIconItem(
         }
         Text(
             text = if (isLocked) "${icon.name} 🔒" else icon.name,
-            color = if (isLocked) Color.Gray else Color.White,
+            color = if (isLocked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimary,
             fontSize = 14.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.padding(top = 8.dp)
@@ -308,7 +308,7 @@ fun AppIconItemPreview() {
     ) {
         Text(
             "App Icon States",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
@@ -395,7 +395,7 @@ fun AppIconGridPreview() {
     ) {
         Text(
             "Choose your app icon",
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 24.dp)
         )
