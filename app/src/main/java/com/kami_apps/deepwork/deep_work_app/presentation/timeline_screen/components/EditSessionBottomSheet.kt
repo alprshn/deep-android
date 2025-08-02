@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kami_apps.deepwork.deep_work_app.data.util.parseTagColor
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -47,7 +48,7 @@ fun EditSessionBottomSheet(
     var editedStartTime by remember { mutableStateOf(sessionDetails.startTime.toLocalTime()) }
     var editedDurationMinutes by remember { mutableStateOf(parseDurationToMinutes(sessionDetails.duration)) }
     var durationText by remember { mutableStateOf(editedDurationMinutes.toString()) }
-    
+
     // Calculate end time whenever start time or duration changes
     val editedEndTime = remember(editedStartTime, editedDurationMinutes) {
         editedStartTime.plusMinutes(editedDurationMinutes.toLong())
@@ -56,8 +57,8 @@ fun EditSessionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
-        containerColor = Color(0xFF1C1C1E),
-        contentColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
         dragHandle = null // ✅ Bu satırı ekle, çizgiyi kaldırır
 
     ) {
@@ -71,7 +72,10 @@ fun EditSessionBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
-                    .background(Color(0xFF3A3A3C), RoundedCornerShape(12.dp)),
+                    .background(
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
+                        RoundedCornerShape(12.dp)
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
@@ -79,7 +83,9 @@ fun EditSessionBottomSheet(
                 EditFieldItem(
                     icon = sessionDetails.tagEmoji,
                     label = sessionDetails.tagName,
-                    value = ""
+                    value = "",
+                    tagNameBar = true,
+                    tagNameColor = parseTagColor(sessionDetails.tagColor)
                 )
 
                 // Date row
@@ -107,7 +113,6 @@ fun EditSessionBottomSheet(
                 EditFieldItem(
                     label = "End Time",
                     value = editedEndTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                    isClickable = false
                 )
 
                 // Duration
@@ -169,15 +174,21 @@ private fun EditFieldItem(
     value: String,
     modifier: Modifier = Modifier,
     divider: Boolean = true,
-    isClickable: Boolean = true,
     onClick: () -> Unit = {},
     useCard: Boolean = false, // <-- yeni parametre
-
+    tagNameBar: Boolean = false,
+    tagNameColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(enabled = isClickable, onClick = onClick)
+            .background(
+                if (tagNameBar) tagNameColor.copy(alpha = 0.1f) else Color.Transparent,
+                shape = RoundedCornerShape(
+                    topStart = 12.dp,
+                    topEnd = 12.dp,
+                )
+            )
             .padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -190,137 +201,42 @@ private fun EditFieldItem(
                     modifier = Modifier.padding(end = 8.dp)
                 )
             }
-            Text(text = label, color = Color.LightGray, fontSize = 16.sp)
+            Text(text = label, color = if (tagNameBar) tagNameColor else MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
         }
 
         if (useCard) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.Gray),
-                shape = RoundedCornerShape(5.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                shape = RoundedCornerShape(8.dp),
+                onClick = onClick
             ) {
                 Text(
                     text = value,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 16.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+
                 )
             }
         } else {
             Text(
                 text = value,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+
             )
         }
     }
     if (divider) {
         Divider(
-            color = Color.Gray.copy(alpha = 0.2f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
             thickness = 1.dp,
             modifier = Modifier.padding(start = 16.dp)
         )
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DurationEditField(
-    label: String,
-    durationMinutes: Int,
-    onDurationChange: (Int) -> Unit
-) {
-    var showDialog by remember { mutableStateOf(false) }
-    var hours by remember { mutableStateOf(durationMinutes / 60) }
-    var minutes by remember { mutableStateOf(durationMinutes % 60) }
-
-    EditFieldItem(
-        label = label,
-        value = formatDuration(durationMinutes),
-        isClickable = true,
-        onClick = { showDialog = true }
-    )
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            containerColor = Color(0xFF2C2C2E),
-            title = {
-                Text(
-                    text = "Set Duration",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Hours
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Hours", color = Color.Gray, fontSize = 14.sp)
-                        OutlinedTextField(
-                            value = hours.toString(),
-                            onValueChange = {
-                                hours = it.toIntOrNull()?.coerceIn(0, 23) ?: 0
-                            },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.width(80.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF30D158),
-                                unfocusedBorderColor = Color.Gray
-                            )
-                        )
-                    }
-
-                    Text(":", color = Color.White, fontSize = 24.sp)
-
-                    // Minutes
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Minutes", color = Color.Gray, fontSize = 14.sp)
-                        OutlinedTextField(
-                            value = minutes.toString(),
-                            onValueChange = {
-                                minutes = it.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                            },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.width(80.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF30D158),
-                                unfocusedBorderColor = Color.Gray
-                            )
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDurationChange(hours * 60 + minutes)
-                        showDialog = false
-                    }
-                ) {
-                    Text("OK", color = Color(0xFF30D158))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showDialog = false }
-                ) {
-                    Text("Cancel", color = Color.Gray)
-                }
-            }
-        )
-    }
-}
 
 private fun parseDurationToMinutes(duration: String): Int {
     return try {
@@ -403,7 +319,6 @@ fun EditSessionBottomSheetSimplifiedPreview() {
         EditFieldItem(
             label = "End Time",
             value = "13:02",
-            isClickable = true
         )
         SessionDetailTextField(
             value = "0",
@@ -428,7 +343,7 @@ fun SessionDetailTextField(
     ) {
         Text(
             text = "Duration",
-            color = Color.LightGray,
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 16.sp
         )
 
@@ -445,7 +360,7 @@ fun SessionDetailTextField(
                 singleLine = true,
                 textStyle = TextStyle(
                     fontSize = 16.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.End
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -461,7 +376,7 @@ fun SessionDetailTextField(
 
             Text(
                 text = "minutes",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp
             )
         }

@@ -50,19 +50,9 @@ fun SessionDetailsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
-        containerColor = Color(0xFF2C2C2E),
-        contentColor = Color.White,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .size(width = 32.dp, height = 4.dp)
-                    .background(
-                        Color.Gray.copy(alpha = 0.4f),
-                        RoundedCornerShape(2.dp)
-                    )
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        dragHandle = null // ✅ Bu satırı ekle, çizgiyi kaldırır
     ) {
         Column(
             modifier = Modifier
@@ -77,8 +67,8 @@ fun SessionDetailsBottomSheet(
                 text = "Session Details",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 24.dp)
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(bottom = 24.dp,top = 16.dp)
             )
 
             SessionDetailItem(
@@ -125,10 +115,10 @@ fun SessionDetailsBottomSheet(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFFF453A),
-                        containerColor = Color(0xFFFF453A).copy(alpha = 0.1f)
+                        contentColor = MaterialTheme.colorScheme.error,
+                        containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
                     ),
-                    border = BorderStroke(1.dp, Color(0xFFFF453A))
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -149,10 +139,10 @@ fun SessionDetailsBottomSheet(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = Color(0xFF30D158),
-                        containerColor = Color(0xFF30D158).copy(alpha = 0.1f)
+                        contentColor = MaterialTheme.colorScheme.secondaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.1f)
                     ),
-                    border = BorderStroke(1.dp, Color(0xFF30D158))
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
 
                 ) {
                     Icon(
@@ -185,8 +175,8 @@ private fun SessionDetailItem(
         modifier = Modifier
             .fillMaxWidth()
             .border(
-                1.5.dp,
-                Color.Gray.copy(alpha = 0.4f),
+                2.dp,
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                 RoundedCornerShape(12.dp)
             )
     ) {
@@ -194,10 +184,10 @@ private fun SessionDetailItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Color(0xFF3A3A3C),
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
                     RoundedCornerShape(12.dp)
                 )
-                .padding(horizontal = 16.dp, vertical = 5.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (emoji != null) {
@@ -211,7 +201,7 @@ private fun SessionDetailItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = label,
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .size(36.dp)
                         .padding(end = 8.dp)
@@ -226,7 +216,7 @@ private fun SessionDetailItem(
                 ) {
                     Text(
                         text = label,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Medium,
                         fontSize = 16.sp
                     )
@@ -245,14 +235,14 @@ private fun SessionDetailItem(
                         ) {
                             Text(
                                 text = label,
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp,
                                 modifier = Modifier.padding(end = 4.dp)
                             )
                             value?.let {
                                 Text(
                                     text = it,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Normal
                                 )
@@ -265,14 +255,14 @@ private fun SessionDetailItem(
                             ) {
                                 Text(
                                     text = secondaryLabel,
-                                    color = Color.Gray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(end = 6.dp)
 
                                 )
                                 Text(
                                     text = secondaryValue,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Normal
                                 )

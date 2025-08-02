@@ -19,7 +19,7 @@ private val DarkColorScheme = darkColorScheme(
 
     secondary = LightGray6,
     onSecondary = Color.White,
-    secondaryContainer = DarkGreen.copy(alpha = 0.3f),
+    secondaryContainer = DarkGreen,
     onSecondaryContainer = Color.White,
 
     tertiary = DarkPurple,
@@ -65,7 +65,7 @@ private val LightColorScheme = lightColorScheme(
 
     secondary = DarkGray,
     onSecondary = Color.White,
-    secondaryContainer = LightGreen.copy(alpha = 0.1f),
+    secondaryContainer = LightGreen,
     onSecondaryContainer = LightGreen,
 
     tertiary = LightPurple,

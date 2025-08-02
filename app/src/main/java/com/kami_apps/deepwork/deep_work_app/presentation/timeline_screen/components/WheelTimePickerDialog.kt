@@ -24,8 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.commandiron.wheel_picker_compose.WheelTimePicker
 import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
@@ -47,14 +50,13 @@ fun WheelTimePickerDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.4f)) // Arka plan
                 .padding(32.dp),
             contentAlignment = Alignment.Center
         ) {
 
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C2C2E)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
@@ -62,25 +64,32 @@ fun WheelTimePickerDialog(
                 Box(contentAlignment = Alignment.Center) {
                     Box(
                         modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
                             .fillMaxWidth()
-                            .clip(shape = RoundedCornerShape(6.dp))
+                            .clip(shape = RoundedCornerShape(8.dp))
                             .size(28.dp)
-                            .background(Color.Gray)
+                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
                     )
                     WheelTimePicker(
                         startTime = initialTime,
                         onSnappedTime = { snappedTime ->
                             pickedTime = snappedTime
                         },
-                        textStyle = MaterialTheme.typography.titleMedium,
+                        size = DpSize(164.dp, 164.dp),
+                        textStyle = TextStyle(
+                            fontSize = 20.sp
+                        ),
+                        textColor = MaterialTheme.colorScheme.onPrimary,
                         selectorProperties = WheelPickerDefaults.selectorProperties(
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             shape = RoundedCornerShape(10.dp),
                             border = null,
-                            enabled = false
+                            enabled = false,
+
                         ),
+                        rowCount = 5,
                         modifier = Modifier
-                            .padding(16.dp)
+                            .padding(vertical = 28.dp)
                             .fillMaxWidth()
                     )
                 }
@@ -106,14 +115,5 @@ fun WheelTimePickerDialogPreview() {
             }
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WheelTimePickerPreview() {
-    WheelTimePicker(
-        startTime = LocalTime.of(10, 0),
-        onSnappedTime = { println("Snapped: $it") }
-    )
 }
 
