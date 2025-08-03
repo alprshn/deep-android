@@ -31,16 +31,19 @@ fun ShimmerEffectOnImage(
     modifier: Modifier = Modifier,
     widthOfShadowBrush: Int = 300,
     angleOfAxisY: Float = 270f,
-    durationMillis: Int = 1000,
+    durationMillis: Int = 2500,
     baseColor: Color = Color.Transparent,
     shimmerColor: Color = Color.White,
     contentScale: ContentScale = ContentScale.Crop,
-    description: String? = null
+    description: String? = null,
+    shimmerTravelDistance: Float = 600f // daha yavaş hareket için sabit mesafe belirliyoruz
+
 ) {
+
     val transition = rememberInfiniteTransition(label = "shimmer")
     val animatedOffset = transition.animateFloat(
         initialValue = 0f,
-        targetValue = (durationMillis + widthOfShadowBrush).toFloat(),
+        targetValue = shimmerTravelDistance,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = durationMillis, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
