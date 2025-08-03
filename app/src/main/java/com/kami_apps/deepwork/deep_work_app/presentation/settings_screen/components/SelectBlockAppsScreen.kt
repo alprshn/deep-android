@@ -24,6 +24,7 @@ import androidx.compose.foundation.Image
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.kami_apps.deepwork.deep_work_app.domain.data.InstalledApp
 import com.kami_apps.deepwork.deep_work_app.presentation.settings_screen.SettingsViewModel
 import com.kami_apps.deepwork.deep_work_app.util.PermissionHelper
 
@@ -323,7 +324,7 @@ fun SelectBlockAppsScreen(
 
 @Composable
 fun AppListItem(
-    app: com.kami_apps.deepwork.deep_work_app.domain.data.InstalledApp,
+    app: InstalledApp,
     isBlocked: Boolean,
     enabled: Boolean = true,
     onClick: () -> Unit
@@ -331,12 +332,13 @@ fun AppListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp)
-            .clickable(enabled = enabled) { onClick() },
+            .padding(horizontal = 4.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isBlocked) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceBright
         ),
+        enabled = enabled,
+        onClick = onClick,
         border = if (isBlocked) {
             BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f))
         } else null
