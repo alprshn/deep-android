@@ -98,12 +98,12 @@ fun SharedTransitionScope.SnackEditDetails(
                             clipInOverlayDuringTransition = OverlayClip(shapeForSharedElement),
 
                             )
+                        .clip(shapeForSharedElement)
                         .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f), shapeForSharedElement)
                         .graphicsLayer {
                             alpha = 0.9f
-                            shadowElevation = 5.dp.toPx()
                         }
-                        .clip(shapeForSharedElement),
+                       ,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
