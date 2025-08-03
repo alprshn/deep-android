@@ -108,6 +108,8 @@ fun SettingsScreen(
     val restoreMessage by viewModel.restoreMessage.collectAsStateWithLifecycle()
     val isRestoring by viewModel.isRestoring.collectAsStateWithLifecycle()
     val isHapticEnabled by viewModel.isHapticEnabled.collectAsStateWithLifecycle()
+    var notificationsEnabled by remember { mutableStateOf(true) }
+
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -171,7 +173,12 @@ fun SettingsScreen(
                             navController?.navigate("AppIcon")
                         }
                     )
-                    SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
+                    SettingsSwitchItem(
+                        title = "Notification",
+                        isChecked = notificationsEnabled,
+                        onCheckedChange = { notificationsEnabled = it },
+                        icon = Icons.Rounded.NotificationsNone
+                    )
                     SettingsSwitchItem(
                         title = "Haptic Feedback",
                         isChecked = isHapticEnabled,
