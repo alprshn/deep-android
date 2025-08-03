@@ -180,7 +180,7 @@ fun AppIconScreen(
                                                     )
                                                 }
                                             } else {
-                                            viewModel.changeAppIcon(icon.id)
+                                                viewModel.changeAppIcon(icon.id)
                                             }
                                         }
                                     }
@@ -216,7 +216,6 @@ fun AppIconItem(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val borderColor = if (isSelected) Color(0xFF0A84FF) else Color.Transparent
     val isLocked = !isPremium && icon.id != "original"
 
     // Convert mipmap resource to bitmap
@@ -234,38 +233,36 @@ fun AppIconItem(
             .clickable(enabled = !isLoading) { onClick() }
     ) {
         Box {
-        iconBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap,
-                contentDescription = icon.name,
-                modifier = Modifier
-                    .border(
-                        width = if (isSelected) 2.dp else 0.dp,
-                        color = borderColor,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .size(80.dp)
-                        .let { if (isLocked) it.alpha(0.5f) else it }
-            )
-        } ?: run {
-            // Fallback in case bitmap conversion fails
-            Box(
-                modifier = Modifier
+            iconBitmap?.let { bitmap ->
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = icon.name,
+                    modifier = Modifier
                         .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(12.dp))
-                        .let { if (isLocked) it.alpha(0.5f) else it },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = icon.name.first().toString(),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                        .let { if (isLocked) it.alpha(0.5f) else it }
                 )
+            } ?: run {
+                // Fallback in case bitmap conversion fails
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .let { if (isLocked) it.alpha(0.5f) else it },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon.name.first().toString(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
-            
+
             // Lock overlay for premium icons
             if (isLocked) {
                 Box(
@@ -286,9 +283,21 @@ fun AppIconItem(
                 }
             }
         }
+
+
+
+
         Text(
-            text = if (isLocked) "${icon.name} 🔒" else icon.name,
-            color = if (isLocked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimary,
+            text = when {
+                isLocked -> "${icon.name} 🔒" // Yeşil renk (Material green A700)
+                isSelected -> "${icon.name} ✔"
+                else -> icon.name
+            },
+            color = when {
+                isSelected -> MaterialTheme.colorScheme.secondaryContainer // Yeşil renk (Material green A700)
+                isLocked -> MaterialTheme.colorScheme.onSurfaceVariant
+                else -> MaterialTheme.colorScheme.onPrimary
+            },
             fontSize = 14.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.padding(top = 8.dp)
