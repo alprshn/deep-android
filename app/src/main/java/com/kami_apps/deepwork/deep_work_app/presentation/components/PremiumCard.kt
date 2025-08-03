@@ -32,30 +32,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kami_apps.deepwork.deep_work_app.data.util.darken
+import com.kami_apps.deepwork.deep_work_app.data.util.lighten
 
 @Composable
 fun PremiumCard(
     modifier: Modifier = Modifier,
-    onTryFreeClick: () -> Unit
+    onTryFreeClick: () -> Unit,
+    cardColor: Color = MaterialTheme.colorScheme.tertiary
+
 ) {
     // Gradient arka plan için fırça
     val gradient = Brush.horizontalGradient(
         colors = listOf(Color(0xFFB64EF9), Color(0xFFC063FF))
     )
 
-    ShimmerEffect(
-        modifier = Modifier.clip(
-            shape = RoundedCornerShape(16.dp)
+    val gradientColors = listOf(
+        cardColor.copy(alpha = 1f).lighten(0.3f),  // %30 daha açık ton
+        cardColor.copy(alpha = 1f),                // Orijinal renk
+        cardColor.copy(alpha = 1f).darken(0.3f)   // %30 daha koyu ton
+    )
 
-        )
+
+    ShimmerEffect(
+        shimmerShape = RoundedCornerShape(20.dp)
+
     ) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
                 .height(72.dp)
                 .background(
-                    color = Color(0xFFB11BFF).copy(alpha = 0.9f),
-                    shape = RoundedCornerShape(16.dp)
+                    brush = Brush.linearGradient(colors = gradientColors),
+                    shape = RoundedCornerShape(20.dp),
+                    alpha = 0.8f
                 )
                 .padding(horizontal = 22.dp),
             contentAlignment = Alignment.CenterStart

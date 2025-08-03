@@ -96,14 +96,11 @@ class MainActivity : ComponentActivity() {
             // Theme management
             val userTheme by themeManager.currentTheme.collectAsState()
 
-            val timerUiState by stopWatchViewModel.timerUIState.collectAsState()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
             val hazeState = rememberHazeState(HazeDefaults.blurEnabled())
 
 
-            val statisticsViewModel: StatisticsViewModel = hiltViewModel()
-            val statisticsState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
 
             val isTimerOrStopwatchRunning =
                 stopwatchState?.isPlaying == true || timerState?.isPlaying == true
@@ -116,7 +113,7 @@ class MainActivity : ComponentActivity() {
             ) {
 
                 val style =
-                    HazeMaterials.ultraThin(containerColor = MaterialTheme.colorScheme.background)
+                    HazeMaterials.ultraThin(MaterialTheme.colorScheme.background)
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -124,12 +121,7 @@ class MainActivity : ComponentActivity() {
                         // Onboarding ekranında bottom bar'ı gösterme
                         if (currentRoute != "onboarding") {
                             Box(
-                                modifier = Modifier .hazeEffect(state = hazeState, style = style) {
-                                    progressive = HazeProgressive.verticalGradient(
-                                        startIntensity = 1f,
-                                        endIntensity = 0f
-                                    )
-                                }
+                                modifier = Modifier
                                     .animateContentSize(
                                         animationSpec = tween(
                                             durationMillis = 500
@@ -163,7 +155,9 @@ class MainActivity : ComponentActivity() {
                                         },
                                         modifier = Modifier
 
-                                            .fillMaxWidth(),
+                                            .fillMaxWidth()
+                                            .hazeEffect(state = hazeState, style = style),
+
                                     )
                                 }
                             }
