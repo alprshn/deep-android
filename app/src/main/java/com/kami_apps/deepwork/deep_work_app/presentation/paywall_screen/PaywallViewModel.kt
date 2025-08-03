@@ -217,7 +217,7 @@ class PaywallViewModel @Inject constructor(
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("https://your-privacy-policy-url.com") // TODO: Update with actual URL
+                Uri.parse("https://www.kamiapps.com/page/privacy-policy") // TODO: Update with actual URL
             ).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
@@ -234,7 +234,7 @@ class PaywallViewModel @Inject constructor(
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("https://your-terms-of-service-url.com") // TODO: Update with actual URL
+                Uri.parse("https://www.kamiapps.com/page/terms-conditions") // TODO: Update with actual URL
             ).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }

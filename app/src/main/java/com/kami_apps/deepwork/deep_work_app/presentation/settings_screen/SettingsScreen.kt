@@ -1,4 +1,5 @@
 package com.kami_apps.deepwork.deep_work_app.presentation.settings_screen
+
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -109,11 +110,12 @@ fun SettingsScreen(
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+    val context = LocalContext.current
+
     // Theme dropdown state
     var themeDropdownExpanded by remember { mutableStateOf(false) }
     val availableThemes = viewModel.getAvailableThemes()
-    
+
     // Show restore message as snackbar
     LaunchedEffect(restoreMessage) {
         restoreMessage?.let { message ->
@@ -148,7 +150,6 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
             ) {
-                val context = LocalContext.current // Composable fonksiyonun başında alınmalı
 
                 Column {
                     // App Theme Dropdown
@@ -171,16 +172,19 @@ fun SettingsScreen(
                     )
                     SettingsSwitchItem("Notification", true, {}, Icons.Rounded.NotificationsNone)
                     SettingsSwitchItem(
-                        title = "Haptic Feedback", 
-                        isChecked = isHapticEnabled, 
-                        onCheckedChange = { 
+                        title = "Haptic Feedback",
+                        isChecked = isHapticEnabled,
+                        onCheckedChange = {
                             // Haptic feedback when toggling ON (not OFF)
                             if (!isHapticEnabled) {
-                                val hapticHelper = com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper(context)
+                                val hapticHelper =
+                                    com.kami_apps.deepwork.deep_work_app.util.helper.HapticFeedbackHelper(
+                                        context
+                                    )
                                 hapticHelper.performButtonClick()
                             }
-                            viewModel.toggleHapticFeedback() 
-                        }, 
+                            viewModel.toggleHapticFeedback()
+                        },
                         icon = Icons.TwoTone.Vibration
                     )
                     SettingsBoxesItem(
@@ -220,7 +224,13 @@ fun SettingsScreen(
                     )
                 }
             }
-            SettingsBoxes(headerVisibility = false, headerName = "", isRestoring = isRestoring, viewModel = viewModel)
+            SettingsBoxes(
+                headerVisibility = false,
+                headerName = "",
+                isRestoring = isRestoring,
+                viewModel = viewModel,
+                context = context
+            )
 
             Text(
                 "MORE APPS",
@@ -245,7 +255,7 @@ fun SettingsScreen(
             AppInfoSection()
 
         }
-        
+
         // Snackbar Host
         SnackbarHost(
             hostState = snackbarHostState,
@@ -261,7 +271,13 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsBoxes(headerVisibility: Boolean, headerName: String, viewModel: SettingsViewModel = hiltViewModel(), isRestoring: Boolean = false) {
+fun SettingsBoxes(
+    headerVisibility: Boolean,
+    headerName: String,
+    viewModel: SettingsViewModel = hiltViewModel(),
+    isRestoring: Boolean = false,
+    context: Context = LocalContext.current
+) {
     Column(
         modifier = Modifier
             .padding(vertical = 24.dp)
@@ -282,9 +298,31 @@ fun SettingsBoxes(headerVisibility: Boolean, headerName: String, viewModel: Sett
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
         ) {
+            val appLink = "https://play.google.com/store/apps/details?id=com.kami_apps.deepwork"
+
             Column {
-                SettingsBoxesItem(text = "Share App", icon = Icons.Default.Upload)
-                SettingsBoxesItem(text = "Rate Us", icon = Icons.Rounded.StarBorder)
+                SettingsBoxesItem(
+                    text = "Share App", icon = Icons.Default.Upload,
+                    onClickSettingsBoxesItem = {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, "Check out this app!")
+                            putExtra(Intent.EXTRA_TEXT, appLink)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share via"))
+                    },
+                )
+                SettingsBoxesItem(
+                    text = "Rate Us", icon = Icons.Rounded.StarBorder,
+                    onClickSettingsBoxesItem = {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse(appLink)
+                        )
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                    },
+                )
                 SettingsBoxesItem(
                     text = "Restore Purchases",
                     icon = Icons.Default.Refresh,
@@ -300,8 +338,6 @@ fun SettingsBoxes(headerVisibility: Boolean, headerName: String, viewModel: Sett
         }
     }
 }
-
-
 
 
 @Composable
@@ -423,14 +459,14 @@ fun PremiumStatusCardButton(
             Icon(
                 imageVector = imageVector,
                 contentDescription = if (isPremium) "Premium User" else "Upgrade",
-                tint =Color.White ,
+                tint = Color.White,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (isPremium) "Thank You" else "Upgrade", 
-                fontSize = 20.sp, 
-                fontWeight = FontWeight.Bold, 
+                text = if (isPremium) "Thank You" else "Upgrade",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         }
@@ -470,8 +506,8 @@ fun PremiumStatusCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isPremium) "You are" else "Upgrade to", 
-                    fontSize = 20.sp, 
+                    text = if (isPremium) "You are" else "Upgrade to",
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -686,6 +722,7 @@ fun SettingsBoxesItem(
         }
     }
 }
+
 @Composable
 private fun ThemeDropdownItem(
     currentTheme: String,
@@ -719,7 +756,7 @@ private fun ThemeDropdownItem(
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
-            
+
             // Current theme + dropdown icon
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -738,7 +775,7 @@ private fun ThemeDropdownItem(
                     modifier = Modifier.size(16.dp)
                 )
             }
-            
+
             // Dropdown Menu
             DropdownMenu(
                 expanded = expanded,
