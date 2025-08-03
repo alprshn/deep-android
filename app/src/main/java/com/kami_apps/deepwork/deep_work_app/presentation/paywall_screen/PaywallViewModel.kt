@@ -265,7 +265,7 @@ class PaywallViewModel @Inject constructor(
                 if (numericMatch != null) {
                     val numericPart = numericMatch.value
                     val numericValue = numericPart.replace(",", ".").toFloat()
-                    val discountedValue = numericValue * 52f // 88% off
+                    val discountedValue = numericValue/(0.12)
                     
                     val originalDecimals = if (numericPart.contains(".") || numericPart.contains(",")) {
                         val parts = numericPart.replace(",", ".").split(".")
