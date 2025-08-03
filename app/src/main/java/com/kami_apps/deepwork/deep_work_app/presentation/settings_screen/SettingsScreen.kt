@@ -92,6 +92,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -250,9 +251,9 @@ fun SettingsScreen(
                     SettingsAppItem(dividerVisible = false)
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            AppInfoSection()
+            AppInfoSection(context = context)
 
         }
 
@@ -345,7 +346,7 @@ fun SettingsAppItem(
     dividerVisible: Boolean = true,
     icon: Painter = painterResource(id = R.drawable.ic_futurebaby), // örnek ikon
     title: String = "Future Baby Generate AI",
-    subtitle: String = "Face Swapper & Deepfake Reface",
+    subtitle: String = "What My Baby look Like",
     link: String = "https://play.google.com/store/apps/details?id=com.babyai.futurebaby"
 
 
@@ -487,15 +488,10 @@ fun PremiumStatusCard(
     )
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                onClick = onClick,
-                indication = ripple(color = Color.White.copy(alpha = 0.1f)),
-                interactionSource = remember { MutableInteractionSource() }
-            ),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
-    ) {
+    ) { 
 
         Column(
             modifier = Modifier
@@ -610,17 +606,14 @@ fun SettingsSwitchItem(
 @Composable
 fun AppInfoSection(
     context: Context = LocalContext.current,
-    //icon: Painter = painterResource(id = R.mipmap.ic_launcher), // örnek ikon
-    appName: String = "Future Baby",
-    privacyPolicyUrl: String = "https://kamiapp.framer.website/page/privacy-policy",
-    termsUrl: String = "https://kamiapp.framer.website/page/terms-conditions"
+    privacyPolicyUrl: String = "https://www.kamiapps.com/page/privacy-policy",
+    termsUrl: String = "https://www.kamiapps.com/page/terms-conditions"
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-// Resim eklenecek
-        // App version
+
         val appVersion = try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             packageInfo.versionName ?: "Unknown"
@@ -628,14 +621,31 @@ fun AppInfoSection(
             "Unknown"
         }
 
+        val iconBitmap = remember(R.mipmap.ic_launcher) {
+            try {
+                ContextCompat.getDrawable(context, R.mipmap.ic_launcher)?.toBitmap()?.asImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        iconBitmap?.let {
+            Image(
+                bitmap = it,
+                contentDescription = "Current App Icon",
+                modifier = Modifier
+                    .size(70.dp)
+                    .padding(top = 16.dp)
+            )
+        }
+
         Text(
             text = appVersion,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Links row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -645,23 +655,18 @@ fun AppInfoSection(
         ) {
             Text(
                 text = "Privacy policy",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
-                modifier = Modifier.clickable {
+                modifier = Modifier.padding(end = 8.dp).clickable {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl))
                     context.startActivity(intent)
                 }
             )
 
-            Text(
-                text = "     ",
-                color = Color.Gray,
-                fontSize = 14.sp
-            )
 
             Text(
                 text = "Terms of service",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 modifier = Modifier.clickable {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(termsUrl))

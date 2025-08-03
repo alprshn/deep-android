@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,10 +51,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -111,6 +114,16 @@ class MainActivity : ComponentActivity() {
                 userTheme = userTheme,
                 dynamicColor = false  // Disable dynamic color to use our custom colors
             ) {
+                val isDarkTheme = when (userTheme) {
+                    "Dark" -> true
+                    "Light" -> false
+                    else -> isSystemInDarkTheme() // "Default" ise sistem temasına bak
+                }
+                val view = LocalView.current
+                SideEffect {
+                    val window = (view.context as ComponentActivity).window
+                    WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = !isDarkTheme
+                }
 
                 val style =
                     HazeMaterials.ultraThin(MaterialTheme.colorScheme.background)
