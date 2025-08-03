@@ -76,18 +76,13 @@ fun OnboardingScreen(
         // Permission verilmezse kullanıcı manuel olarak settings'den verebilir
     }
 
-    // Notification Permission Launcher
+// Notification Permission Launcher
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        // Notification permission sonrası overlay permission iste
-        requestOverlayPermission(context) {
-            // Overlay permission sonrası battery optimization iste
-            requestBatteryOptimization(context) {
-                // Tüm permissionlar tamamlandıktan sonra onboarding'i bitir
-            viewModel.handleAction(OnboardingActions.CompleteOnboarding)
-            }
-        }
+        // Notification permission sonrası ne olursa olsun bir sonraki sayfaya geç
+        // İzin verilmese bile kullanıcı manuel olarak ayarlardan verebilir
+        viewModel.handleAction(OnboardingActions.NextPage)
     }
 
     // UI state değişikliklerini pager state ile senkronize et
@@ -145,16 +140,12 @@ fun OnboardingScreen(
                     },
                     onRequestNotificationPermission = {
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                            // Android 13+ için permission iste
                             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         } else {
                             // Android 13 altında notification permission otomatik verilir
-                            // Direkt olarak diğer permissionları iste
-                            requestOverlayPermission(context) {
-                                requestBatteryOptimization(context) {
-                                    // Continue onboarding after all permissions
-                                    viewModel.handleAction(OnboardingActions.NextPage)
-                                }
-                            }
+                            // Bu durumda direkt olarak sonraki sayfaya geç
+                            viewModel.handleAction(OnboardingActions.NextPage)
                         }
                     },
                     onMaybeLater = {

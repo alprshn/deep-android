@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 data class OnboardingUiState(
     val currentPage: Int = 0,
-    val totalPages: Int = 4, // Increased to 4 for permissions page
+    val totalPages: Int = 5, // Increased to 4 for permissions page
     val showButtons: Boolean = false, // ilk sayfa için button animasyonu
     val isOnboardingCompleted: Boolean = false,
     val isLoading: Boolean = true,

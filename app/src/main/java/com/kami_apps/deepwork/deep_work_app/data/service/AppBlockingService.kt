@@ -339,7 +339,7 @@ class AppBlockingService : Service() {
         // İçeriği ayarla
         appNameText.text = appName
 
-    
+
 
         homeButton.setOnClickListener {
             removeBlockOverlay()

@@ -35,7 +35,7 @@ fun RootNavigationGraph(
         val sharedPrefs = context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
         val isOnboardingCompleted = sharedPrefs.getBoolean("onboarding_completed", false)
         startDestination = if (isOnboardingCompleted) {
-            BottomBarTab.Statistics.title
+            BottomBarTab.Timer.title
         } else {
             "onboarding"
         }
@@ -50,7 +50,7 @@ fun RootNavigationGraph(
         composable("onboarding") {
             OnboardingScreen(
                 onNavigateToHome = {
-                    navController.navigate(BottomBarTab.Statistics.title) {
+                    navController.navigate(BottomBarTab.Timer.title) {
                         popUpTo("onboarding") { inclusive = true }
                     }
                 }
@@ -58,8 +58,8 @@ fun RootNavigationGraph(
         }
         
         // Ana uygulama ekranları
-        composable(BottomBarTab.Statistics.title){StatisticsScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Timer.title){TimerScreen()}
+        composable(BottomBarTab.Statistics.title){StatisticsScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Timeline.title){TimelineScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Settings.title){SettingsScreen(navController, onShowPaywall)}
         composable("SelectBlockApps") { SelectBlockAppsScreen(navController) }

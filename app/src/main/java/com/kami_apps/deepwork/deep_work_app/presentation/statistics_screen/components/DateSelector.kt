@@ -43,7 +43,10 @@ fun DateSelector(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+            .background(
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
+                RoundedCornerShape(12.dp)
+            )
             .border(
                 shape = RoundedCornerShape(12.dp),
                 width = 1.dp,
@@ -107,11 +110,7 @@ private fun DaySelector(
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { showDatePicker = true },
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -127,6 +126,10 @@ private fun DaySelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) { showDatePicker = true }
                 .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
             Text(
@@ -473,7 +476,7 @@ private fun YearSelector(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-    fun DatePickerModal(
+fun DatePickerModal(
     onDateSelected: (Long?) -> Unit,
     onDismiss: () -> Unit,
     initialSelectedDateMillis: Long? = null
@@ -483,7 +486,8 @@ private fun YearSelector(
     )
 
     DatePickerDialog(
-        onDismissRequest = onDismiss, colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        onDismissRequest = onDismiss,
+        colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         confirmButton = {
             TextButton(onClick = {
                 onDateSelected(datePickerState.selectedDateMillis)
@@ -538,7 +542,7 @@ fun DateSelectorPreview() {
         "July", "August", "September", "October", "November", "December"
     )
     val availableMonths = months.take(currentDate.monthValue)
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -579,7 +583,7 @@ fun DateSelectorPreview() {
                             modifier = Modifier.size(16.dp)
                         )
                     }
-                    
+
                     DropdownMenu(
                         expanded = monthExpanded,
                         onDismissRequest = { monthExpanded = false },
