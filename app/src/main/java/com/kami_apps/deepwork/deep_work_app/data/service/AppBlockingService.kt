@@ -258,8 +258,13 @@ class AppBlockingService : Service() {
                 WindowManager.LayoutParams.MATCH_PARENT,
                 overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN or
+                        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT
+
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
             }
@@ -267,6 +272,10 @@ class AppBlockingService : Service() {
             // Overlay'i ekle
             windowManager?.addView(overlayView, params)
             Log.i("AppBlockingService", "Block overlay added successfully for $packageName")
+
+
+            // Overlay ekledikten sonra immersive mode'u ayarla
+            setImmersiveMode()
 
         } catch (e: Exception) {
             Log.e("AppBlockingService", "Failed to show block overlay", e)
@@ -294,16 +303,21 @@ class AppBlockingService : Service() {
         preCreatedOverlay = LayoutInflater.from(this).inflate(R.layout.overlay_block_screen, null)
 
         // Button listeners'ı ayarla
-        val returnButton = preCreatedOverlay?.findViewById<Button>(R.id.return_button)
         val homeButton = preCreatedOverlay?.findViewById<Button>(R.id.home_button)
 
-        returnButton?.setOnClickListener {
-            removeBlockOverlay()
-        }
 
         homeButton?.setOnClickListener {
             removeBlockOverlay()
             goToHomeScreen()
+
+        }
+        preCreatedOverlay?.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                // System UI görünür hale gelirse tekrar gizle
+                handler.postDelayed({
+                    setImmersiveMode()
+                }, 500)
+            }
         }
     }
 
@@ -319,17 +333,13 @@ class AppBlockingService : Service() {
 
         // View'ları bul ve içeriği ayarla
         val appNameText = overlayView.findViewById<TextView>(R.id.app_name_text)
-        val returnButton = overlayView.findViewById<Button>(R.id.return_button)
         val homeButton = overlayView.findViewById<Button>(R.id.home_button)
         val focusTimeText = overlayView.findViewById<TextView>(R.id.focus_time_text)
 
         // İçeriği ayarla
         appNameText.text = appName
 
-        // Buton click listeners
-        returnButton.setOnClickListener {
-            removeBlockOverlay()
-        }
+    
 
         homeButton.setOnClickListener {
             removeBlockOverlay()
@@ -338,7 +348,15 @@ class AppBlockingService : Service() {
 
         // Focus time bilgisini ayarla (isteğe bağlı)
         focusTimeText.text = "Focus session active"
-
+// Overlay'in tam ekran olması için sistem UI'yi gizle
+        overlayView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                // System UI görünür hale gelirse tekrar gizle
+                handler.postDelayed({
+                    setImmersiveMode()
+                }, 500)
+            }
+        }
         return overlayView
     }
 
@@ -403,5 +421,31 @@ class AppBlockingService : Service() {
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
+    }
+
+    private fun setImmersiveMode() {
+        try {
+            overlayView?.let { view ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    // Android 11+ için yeni API
+                    view.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                            View.SYSTEM_UI_FLAG_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                } else {
+                    // Eski Android sürümleri için
+                    view.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                            View.SYSTEM_UI_FLAG_FULLSCREEN or
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AppBlockingService", "Error setting immersive mode", e)
+        }
     }
 }

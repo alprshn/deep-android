@@ -83,17 +83,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Ana buton: Return to Focus -->
-                <Button
-                    android:id="@+id/return_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginBottom="12dp"
-                    android:background="@drawable/button_primary"
-                    android:text="Return to Focus"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    android:textSize="16sp" />
+
 
                 <!-- İkincil buton: Go to Home -->
                 <Button
