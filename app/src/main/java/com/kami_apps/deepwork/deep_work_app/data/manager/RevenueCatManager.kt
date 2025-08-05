@@ -27,9 +27,9 @@ import kotlin.coroutines.resume
 private const val TAG = "RevenueCatManager"
 
 // Define the Pro subscription entitlement ID and product IDs
-const val ENTITLEMENT_PRO = "deepwork_premium"
-const val WEEKLY_PRODUCT_ID = "deepwork_premium:deepwork-premium-weekly"
-const val YEARLY_PRODUCT_ID = "deepwork_premium:deepwork-premium-yearly"
+const val ENTITLEMENT_PRO = "Premium"
+const val WEEKLY_PRODUCT_ID = "deep_premium:deep-premium-weekly"
+const val YEARLY_PRODUCT_ID = "deep_premium:deep-premium-yearly"
 
 /**
  * Represents the subscription state
@@ -103,17 +103,40 @@ class RevenueCatManager(context: Context) : UpdatedCustomerInfoListener {
     /**
      * Updates subscription state based on customer info
      */
+    /**
+     * Updates subscription state based on customer info
+     */
     private fun processCustomerInfo(customerInfo: CustomerInfo) {
+        // Entitlement kontrolü
         val isPremium = customerInfo.entitlements.active.containsKey(ENTITLEMENT_PRO)
-        
-        Log.d(TAG, "Customer info updated. Premium: $isPremium")
-        
+
+        Log.d(TAG, "=== PROCESSING CUSTOMER INFO ===")
+        Log.d(TAG, "Customer ID: ${customerInfo.originalAppUserId}")
+        Log.d(TAG, "Active entitlements: ${customerInfo.entitlements.active.keys}")
+        Log.d(TAG, "All entitlements: ${customerInfo.entitlements.all.keys}")
+        Log.d(TAG, "Calculated premium status: $isPremium")
+
+        // Eğer premium değilse, tüm entitlement'ları kontrol et
+        if (!isPremium) {
+            Log.d(TAG, "Premium false, checking all entitlements:")
+            customerInfo.entitlements.all.forEach { (key, entitlement) ->
+                Log.d(TAG, "Entitlement: $key, Active: ${entitlement.isActive}, Product: ${entitlement.productIdentifier}")
+            }
+        }
+
+        // Active purchases da kontrol et
+        Log.d(TAG, "Active purchases: ${customerInfo.activeSubscriptions}")
+        Log.d(TAG, "All purchased product IDs: ${customerInfo.allPurchasedProductIds}")
+
         _subscriptionState.value = _subscriptionState.value.copy(
             isPremium = isPremium,
             isLoading = false,
             error = null,
             customerInfo = customerInfo
         )
+
+        Log.d(TAG, "Subscription state updated. Premium: $isPremium")
+        Log.d(TAG, "=== END PROCESSING ===")
     }
     
     /**

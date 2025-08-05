@@ -26,7 +26,8 @@ class DeepWorkApp : Application(), Configuration.Provider {
         
         // Initialize PremiumManager after RevenueCat is ready
         premiumManager.initialize()
-        
+        Log.d("DeepWorkApp", "Application initialized with Premium and RevenueCat")
+
         // Manuel initialize etmeyin - sadece Configuration.Provider implement edin
         // WorkManager kendi kendine başlatılacak ve sizin configuration'ınızı kullanacak
     }
