@@ -13,15 +13,15 @@ plugins {
 }
 
 android {
-    namespace = "com.kamiapps.deep"
+    namespace = "com.kami_apps.deepwork"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kamiapps.deep"
+        applicationId = "com.kami_apps.deepwork"
         minSdk = 25
         targetSdk = 35
-        versionCode = 94
-        versionName = "0.9.4 (Beta)"
+        versionCode = 96
+        versionName = "0.9.6 (Beta)"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
