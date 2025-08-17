@@ -89,7 +89,8 @@ private val shapeForSharedElement = RoundedCornerShape(16.dp)
 @Composable
 fun TimerScreen(
     stopWatchViewModel: StopwatchViewModel = hiltViewModel(),
-    timerViewModel: TimerViewModel = hiltViewModel()
+    timerViewModel: TimerViewModel = hiltViewModel(),
+    onShowPaywall: () -> Unit = {} // <--- eklendi
 ) {
     // TimerScreen composable'ın içinde en üst kısma ekle:
     val hazeState = rememberHazeState()
@@ -201,11 +202,7 @@ fun TimerScreen(
 
                     // Premium kontrolü
                     if (!isPremium && currentTagCount >= 1) {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
-                                "⭐ Premium required! Free users can only create 1 tag. Upgrade to create unlimited tags."
-                            )
-                        }
+                        onShowPaywall()
                         return@TagBottomSheet
                     }
 

@@ -1,5 +1,7 @@
 package com.kamiapps.deep.deep.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -20,6 +22,7 @@ import com.kamiapps.deep.deep.presentation.statistics_screen.StatisticsScreen
 import com.kamiapps.deep.deep.presentation.timeline_screen.TimelineScreen
 import com.kamiapps.deep.deep.presentation.timer_screen.TimerScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RootNavigationGraph(
     navController: NavHostController, 
@@ -58,7 +61,7 @@ fun RootNavigationGraph(
         }
         
         // Ana uygulama ekranları
-        composable(BottomBarTab.Timer.title){TimerScreen()}
+        composable(BottomBarTab.Timer.title){TimerScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Statistics.title){StatisticsScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Timeline.title){TimelineScreen(onShowPaywall = onShowPaywall)}
         composable(BottomBarTab.Settings.title){SettingsScreen(navController, onShowPaywall)}

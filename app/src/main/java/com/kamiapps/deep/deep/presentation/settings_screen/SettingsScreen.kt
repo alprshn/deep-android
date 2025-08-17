@@ -132,7 +132,7 @@ fun SettingsScreen(
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             PremiumStatusCard(
-                onClick = onShowPaywall,
+                onClick = (if (!isPremium)onShowPaywall else {}) as () -> Unit,
                 isPremium = isPremium
             )
             Card(
