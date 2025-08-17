@@ -4,7 +4,6 @@ package com.kami_apps.deepwork.deep_work_app.presentation.statistics_screen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kami_apps.deepwork.deep_work_app.data.local.entities.Tags
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAllTagsUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAverageFocusTimeByTagUseCase
 import com.kami_apps.deepwork.deep_work_app.domain.usecases.GetAverageFocusTimeUseCase
@@ -24,7 +23,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -32,9 +30,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 import com.kami_apps.deepwork.deep_work_app.data.manager.PremiumManager
+import com.kami_apps.deepwork.deep_work_app.domain.usecases.HourlyFocusData
+import kotlinx.coroutines.flow.first
 
+import java.util.Locale
+import java.time.temporal.WeekFields
 // TODO: Set to false when real data is ready
-private const val USE_DUMMY_DATA = true
 
 
 @HiltViewModel
@@ -65,16 +66,22 @@ class StatisticsViewModel @Inject constructor(
     )
 
     init {
-        // Observe premium status
         viewModelScope.launch {
             premiumManager.isPremium.collectLatest { isPremium ->
-                _uiState.update { currentState ->
-                    currentState.copy(isPremium = isPremium)
+                _uiState.update { it.copy(isPremium = isPremium) }
+
+                // Premium açıldıysa gerçek verileri, değilse dummy'yi yükle
+                if (isPremium) {
+                    loadStatisticsForSelectedTag()
+                    loadChartData()
+                    loadSessionLogs()
+                } else {
+                    loadDummyChartData(_uiState.value.selectedTimeIndex)
                 }
             }
         }
     }
-
+    private fun shouldUseDummy(): Boolean = !_uiState.value.isPremium
 
 
     fun loadTopTags() {
@@ -168,115 +175,141 @@ class StatisticsViewModel @Inject constructor(
         _uiState.update { it.copy(blurAlpha = alpha.coerceIn(0f, 1f)) }
     }
 
+
     fun loadChartData() {
         viewModelScope.launch {
-            val currentState = _uiState.value
-            val tagId = if (currentState.selectedTagId == 0) null else currentState.selectedTagId
-            
-            // TODO: Remove dummy data when real data is ready
-            if (USE_DUMMY_DATA) {
-                loadDummyChartData(currentState.selectedTimeIndex)
-                return@launch
-            }
-            
-            when (currentState.selectedTimeIndex) {
-                0 -> { // Day view
-                    getHourlyFocusDataUseCase(currentState.selectedDate, tagId).collectLatest { hourlyData ->
-                        _uiState.value = _uiState.value.copy(
-                            hourlyFocusData = hourlyData,
-                            peakHour = findPeakHour(hourlyData)
-                        )
-                    }
+            val s = _uiState.value
+            val tagId = if (s.selectedTagId == 0) null else s.selectedTagId
+
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            try {
+                if (shouldUseDummy()) {
+                    loadDummyChartData(s.selectedTimeIndex)
+                    return@launch
                 }
-                1 -> { // Week view
-                    coroutineScope {
-                        // Load daily data for column chart
-                        launch {
-                            getDailyFocusDataUseCase(currentState.selectedDate, tagId).collectLatest { dailyData ->
-                                _uiState.value = _uiState.value.copy(dailyFocusData = dailyData)
-                            }
-                        }
-                        // Load hourly data for line chart (peak analysis) - aggregate for the whole week
-                        launch {
-                            // For week view, we want to show the overall weekly peak pattern
-                            // So we load hourly data for each day of the week and combine them
-                            val weekFields = java.time.temporal.WeekFields.of(java.util.Locale.getDefault())
-                            val startOfWeek = currentState.selectedDate.with(weekFields.dayOfWeek(), 1)
-                            
-                            // For now, just use the first day of the week to show peak pattern
-                            // TODO: Could be improved to aggregate across all days of the week
-                            getHourlyFocusDataUseCase(startOfWeek, tagId).collectLatest { hourlyData ->
-                                _uiState.value = _uiState.value.copy(
-                                    hourlyFocusData = hourlyData,
-                                    peakHour = findPeakHour(hourlyData)
+
+                when (s.selectedTimeIndex) {
+                    // === 0) GÜN ===
+                    0 -> {
+                        // Seçili gün için SAATLİK dağılım
+                        getHourlyFocusDataUseCase(s.selectedDate, tagId).collectLatest { hourly ->
+                            _uiState.update {
+                                it.copy(
+                                    hourlyFocusData = hourly,
+                                    peakHour = findPeakHour(hourly)
                                 )
                             }
                         }
                     }
-                }
-                2 -> { // Month view
-                    coroutineScope {
-                        // Load monthly data for column chart
-                        launch {
-                            getMonthlyFocusDataUseCase(currentState.selectedDate, tagId).collectLatest { monthlyData ->
-                                _uiState.value = _uiState.value.copy(monthlyFocusData = monthlyData)
+
+                    // === 1) HAFTA ===
+                    1 -> {
+                        coroutineScope {
+                            // 1a) Haftanın GÜNLERİ (sütun grafiği)
+                            launch {
+                                getDailyFocusDataUseCase(s.selectedDate, tagId).collectLatest { daily ->
+                                    _uiState.update { it.copy(dailyFocusData = daily) }
+                                }
+                            }
+                            // 1b) Haftanın tamamı için SAATLİK (çizgi + peak)
+                            launch {
+                                val wf = WeekFields.of(Locale.getDefault())
+                                val start = s.selectedDate.with(wf.dayOfWeek(), 1)
+                                val end = start.plusDays(6)
+
+                                val hourly = aggregateHourlyOverRange(start, end, tagId)
+                                _uiState.update {
+                                    it.copy(
+                                        hourlyFocusData = hourly,
+                                        peakHour = findPeakHour(hourly)
+                                    )
+                                }
                             }
                         }
-                        // Load hourly data for peak analysis
-                        launch {
-                            getHourlyFocusDataUseCase(currentState.selectedDate, tagId).collectLatest { hourlyData ->
-                                _uiState.value = _uiState.value.copy(
-                                    hourlyFocusData = hourlyData,
-                                    peakHour = findPeakHour(hourlyData)
-                                )
-                            }
-                        }
-                        // Load weekday data for weekday analysis
-                        launch {
-                            val startOfMonth = currentState.selectedDate.withDayOfMonth(1)
+                    }
+
+                    // === 2) AY ===
+                    2 -> {
+                        coroutineScope {
+                            val startOfMonth = s.selectedDate.withDayOfMonth(1)
                             val endOfMonth = startOfMonth.plusMonths(1).minusDays(1)
-                            getWeekdayFocusDataUseCase(startOfMonth, endOfMonth, tagId).collectLatest { weekdayData ->
-                                _uiState.value = _uiState.value.copy(
-                                    weekdayFocusData = weekdayData,
-                                    peakWeekday = findPeakWeekday(weekdayData)
-                                )
+
+                            // 2a) Günlere göre AYLIK (sütun)
+                            launch {
+                                getMonthlyFocusDataUseCase(s.selectedDate, tagId).collectLatest { monthly ->
+                                    _uiState.update { it.copy(monthlyFocusData = monthly) }
+                                }
+                            }
+                            // 2b) Ayın tamamı için SAATLİK toplam (çizgi + peak)
+                            launch {
+                                val hourly = aggregateHourlyOverRange(startOfMonth, endOfMonth, tagId)
+                                _uiState.update {
+                                    it.copy(
+                                        hourlyFocusData = hourly,
+                                        peakHour = findPeakHour(hourly)
+                                    )
+                                }
+                            }
+                            // 2c) Ay içinde HAFTANIN GÜNÜNE göre (weekday)
+                            launch {
+                                getWeekdayFocusDataUseCase(startOfMonth, endOfMonth, tagId).collectLatest { weekday ->
+                                    _uiState.update {
+                                        it.copy(
+                                            weekdayFocusData = weekday,
+                                            peakWeekday = findPeakWeekday(weekday)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
-                }
-                3 -> { // Year view
-                    coroutineScope {
-                        // Load yearly data for column chart
-                        launch {
-                            getYearlyFocusDataUseCase(currentState.selectedDate, tagId).collectLatest { yearlyData ->
-                                _uiState.value = _uiState.value.copy(yearlyFocusData = yearlyData)
-                            }
-                        }
-                        // Load hourly data for peak analysis
-                        launch {
-                            getHourlyFocusDataUseCase(currentState.selectedDate, tagId).collectLatest { hourlyData ->
-                                _uiState.value = _uiState.value.copy(
-                                    hourlyFocusData = hourlyData,
-                                    peakHour = findPeakHour(hourlyData)
-                                )
-                            }
-                        }
-                        // Load weekday data for weekday analysis  
-                        launch {
-                            val startOfYear = currentState.selectedDate.withDayOfYear(1)
+
+                    // === 3) YIL ===
+                    3 -> {
+                        coroutineScope {
+                            val startOfYear = s.selectedDate.withDayOfYear(1)
                             val endOfYear = startOfYear.plusYears(1).minusDays(1)
-                            getWeekdayFocusDataUseCase(startOfYear, endOfYear, tagId).collectLatest { weekdayData ->
-                                _uiState.value = _uiState.value.copy(
-                                    weekdayFocusData = weekdayData,
-                                    peakWeekday = findPeakWeekday(weekdayData)
-                                )
+
+                            // 3a) Aylara göre YILLIK (sütun)
+                            launch {
+                                getYearlyFocusDataUseCase(s.selectedDate, tagId).collectLatest { yearly ->
+                                    _uiState.update { it.copy(yearlyFocusData = yearly) }
+                                }
+                            }
+                            // 3b) Yılın tamamı için SAATLİK toplam (çizgi + peak)
+                            launch {
+                                val hourly = aggregateHourlyOverRange(startOfYear, endOfYear, tagId)
+                                _uiState.update {
+                                    it.copy(
+                                        hourlyFocusData = hourly,
+                                        peakHour = findPeakHour(hourly)
+                                    )
+                                }
+                            }
+                            // 3c) Yıl içinde HAFTANIN GÜNÜNE göre (weekday)
+                            launch {
+                                getWeekdayFocusDataUseCase(startOfYear, endOfYear, tagId).collectLatest { weekday ->
+                                    _uiState.update {
+                                        it.copy(
+                                            weekdayFocusData = weekday,
+                                            peakWeekday = findPeakWeekday(weekday)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            } catch (e: Exception) {
+                Log.e("StatisticsViewModel", "Error loading chart data", e)
+                _uiState.update { it.copy(errorMessage = e.localizedMessage ?: "Unknown error") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
+
 
     private fun findPeakHour(hourlyData: List<com.kami_apps.deepwork.deep_work_app.domain.usecases.HourlyFocusData>): String {
         val peakData = hourlyData.maxByOrNull { it.totalMinutes }
@@ -517,38 +550,21 @@ class StatisticsViewModel @Inject constructor(
 
 
 
-
-
-
-
-    fun InitializeTotalSessionCount() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true, errorMessage = null
-                )
-            } // Yükleme başladı, hata yok
-            try {
-                _uiState.update { it.copy(totalSessionCount = getTotalSessionCountUseCase.invoke()) }
-
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isLoading = false, // Yükleme bitti
-                        errorMessage = null
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isLoading = false, // Yükleme bitti
-                        errorMessage = "Etiketler yüklenirken bir hata oluştu: ${e.localizedMessage}"
-                    )
-                }
-
-            }
-
+    private suspend fun aggregateHourlyOverRange(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        tagId: Int?
+    ): List<HourlyFocusData> {
+        val totals = IntArray(24) { 0 }
+        var d = startDate
+        while (!d.isAfter(endDate)) {
+            val day = getHourlyFocusDataUseCase(d, tagId).first()
+            day.forEach { totals[it.hour] += it.totalMinutes }
+            d = d.plusDays(1)
         }
+        return (0..23).map { hour -> HourlyFocusData(hour, totals[hour]) }
     }
+
 
 
 }
