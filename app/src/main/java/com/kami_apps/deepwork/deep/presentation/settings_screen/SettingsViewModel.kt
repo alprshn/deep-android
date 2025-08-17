@@ -41,7 +41,7 @@ class SettingsViewModel @Inject constructor(
     val isRestoring: StateFlow<Boolean> = _isRestoring.asStateFlow()
     
     // Haptic feedback state
-    private val _isHapticEnabled = MutableStateFlow(false)
+    private val _isHapticEnabled = MutableStateFlow(true)
     val isHapticEnabled: StateFlow<Boolean> = _isHapticEnabled.asStateFlow()
     
     // Premium status
@@ -329,7 +329,7 @@ class SettingsViewModel @Inject constructor(
                 
                 // Update user preferences with current theme and new haptic setting
                 val currentPrefs = getUserPreferencesUseCase()
-                val currentTheme = currentPrefs?.theme ?: "default"
+                val currentTheme = currentPrefs?.theme ?: "Default"
                 changeUserPreferencesUseCase(currentTheme, newHapticEnabled)
                 
                 Log.d(TAG, "Haptic feedback toggled to: $newHapticEnabled")
