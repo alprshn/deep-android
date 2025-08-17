@@ -1021,6 +1021,24 @@ private fun FourthPageAnimatedContent(
         onShowButtons()
     }
 
+    // YENİ: izin durumları + hata vurgusu
+    val context = LocalContext.current
+    var isOverlayPermissionGranted by remember { mutableStateOf(PermissionHelper.hasOverlayPermission(context)) }
+    var isBatteryOptimizationDisabled by remember { mutableStateOf(PermissionHelper.isBatteryOptimizationDisabled(context)) }
+    var highlightErrors by remember { mutableStateOf(false) }
+
+    // İzinleri periyodik kontrol et (kullanıcı ayarlardan dönünce güncellensin)
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(1000)
+            isOverlayPermissionGranted = PermissionHelper.hasOverlayPermission(context)
+            isBatteryOptimizationDisabled = PermissionHelper.isBatteryOptimizationDisabled(context)
+            if (isOverlayPermissionGranted && isBatteryOptimizationDisabled) {
+                highlightErrors = false // hepsi tamamlanınca kırmızıyı kaldır
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1111,9 +1129,13 @@ private fun FourthPageAnimatedContent(
             )
         ) {
             PermissionsChecklistSection(
+                isOverlayPermissionGranted = isOverlayPermissionGranted,
+                isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
+                highlightErrors = highlightErrors,
                 onRequestOverlayPermission = onRequestOverlayPermission,
                 onRequestBatteryOptimization = onRequestBatteryOptimization
             )
+
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -1131,8 +1153,12 @@ private fun FourthPageAnimatedContent(
         ) {
             Button(
                 onClick = {
-                    onConnectScreenTime()
-                },
+                    val allGranted = isOverlayPermissionGranted && isBatteryOptimizationDisabled
+                    if (allGranted) {
+                        onConnectScreenTime()   // usage access launcher'ı burada çağrılacak
+                    } else {
+                        highlightErrors = true  // eksik izin(ler)i kırmızı göster
+                    }                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -1434,45 +1460,32 @@ private fun FifthPageAnimatedContent(
 
 @Composable
 private fun PermissionsChecklistSection(
+    isOverlayPermissionGranted: Boolean,
+    isBatteryOptimizationDisabled: Boolean,
+    highlightErrors: Boolean,
     onRequestOverlayPermission: () -> Unit,
     onRequestBatteryOptimization: () -> Unit
 ) {
-    val context = LocalContext.current
-    
-    // Permission states
-    var isOverlayPermissionGranted by remember { mutableStateOf(PermissionHelper.hasOverlayPermission(context)) }
-    var isBatteryOptimizationDisabled by remember { mutableStateOf(PermissionHelper.isBatteryOptimizationDisabled(context)) }
-    
-    // Check permissions periodically
-    LaunchedEffect(Unit) {
-        while (true) {
-            kotlinx.coroutines.delay(1000) // Check every second
-            isOverlayPermissionGranted = PermissionHelper.hasOverlayPermission(context)
-            isBatteryOptimizationDisabled = PermissionHelper.isBatteryOptimizationDisabled(context)
-        }
-    }
-    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Display Over Other Apps Permission
         PermissionChecklistItem(
             title = "Display Over Other Apps",
             icon = Icons.Default.Security,
             isGranted = isOverlayPermissionGranted,
+            highlightError = highlightErrors,
             onClick = {
                 if (!isOverlayPermissionGranted) {
                     onRequestOverlayPermission()
                 }
             }
         )
-        
-        // Battery Optimization Permission
         PermissionChecklistItem(
             title = "Battery Optimization",
             icon = Icons.Default.BatteryAlert,
             isGranted = isBatteryOptimizationDisabled,
+            highlightError = highlightErrors,
             onClick = {
                 if (!isBatteryOptimizationDisabled) {
                     onRequestBatteryOptimization()
@@ -1485,17 +1498,40 @@ private fun PermissionsChecklistSection(
 @Composable
 private fun PermissionChecklistItem(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     isGranted: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    highlightError: Boolean = false // YENİ
 ) {
+    // Arka plan ve border renklerini duruma göre belirle
+    val bgColor = when {
+        isGranted -> Color(0xFF1E3A2E)
+        highlightError -> Color(0xFF5A1A1A) // kırmızı ton
+        else -> Color(0xFF2C2C2E)
+    }
+    val borderColor = if (!isGranted && highlightError) Color(0xFFFF3B30) else Color.Transparent
+    val badgeBg = when {
+        isGranted -> Color(0xFF30D158)
+        highlightError -> Color(0xFFFF453A)
+        else -> Color(0xFF48484A)
+    }
+    val statusTextColor = when {
+        isGranted -> Color(0xFF30D158)
+        highlightError -> Color(0xFFFF3B30)
+        else -> Color(0xFF0A84FF)
+    }
+    val statusText = when {
+        isGranted -> "✓"
+        highlightError -> "Required"
+        else -> "Tap"
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
             .clickable { if (!isGranted) onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = if (isGranted) Color(0xFF1E3A2E) else Color(0xFF2C2C2E)
-        ),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -1505,14 +1541,11 @@ private fun PermissionChecklistItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Icon
+            // Sol rozet
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
-                        if (isGranted) Color(0xFF30D158) else Color(0xFF48484A),
-                        CircleShape
-                    ),
+                    .background(badgeBg, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -1522,8 +1555,8 @@ private fun PermissionChecklistItem(
                     modifier = Modifier.size(18.dp)
                 )
             }
-            
-            // Content
+
+            // Başlık
             Text(
                 text = title,
                 fontSize = 14.sp,
@@ -1531,25 +1564,15 @@ private fun PermissionChecklistItem(
                 color = Color.White,
                 modifier = Modifier.weight(1f)
             )
-            
-            // Status
-            if (isGranted) {
-                Text(
-                    text = "✓",
-                    fontSize = 16.sp,
-                    color = Color(0xFF30D158),
-                    fontWeight = FontWeight.Bold
-                )
-            } else {
-                Text(
-                    text = "Tap",
-                    fontSize = 12.sp,
-                    color = Color(0xFF0A84FF),
-                    fontWeight = FontWeight.Medium
-                )
-            }
+
+            // Sağ durum metni
+            Text(
+                text = statusText,
+                fontSize = if (isGranted) 16.sp else 12.sp,
+                color = statusTextColor,
+                fontWeight = FontWeight.Bold.takeIf { isGranted } ?: FontWeight.Medium
+            )
         }
     }
 }
-
 
