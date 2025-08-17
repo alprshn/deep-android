@@ -117,7 +117,25 @@ class StatisticsViewModel @Inject constructor(
         }
     }
 
+    fun setDayDate(date: LocalDate) {
+        _uiState.update { it.copy(selectedDayDate = date) }
+        loadChartData()
+    }
 
+    fun setWeekDate(date: LocalDate) {
+        _uiState.update { it.copy(selectedWeekDate = date) }
+        loadChartData()
+    }
+
+    fun setMonthDate(date: LocalDate) {
+        _uiState.update { it.copy(selectedMonthDate = date) }
+        loadChartData()
+    }
+
+    fun setYearDate(date: LocalDate) {
+        _uiState.update { it.copy(selectedYearDate = date) }
+        loadChartData()
+    }
 
     fun updateTagId(tagId: Int) {
         _uiState.update { it.copy(selectedTagId = tagId) }
@@ -131,17 +149,11 @@ class StatisticsViewModel @Inject constructor(
         loadChartData()
     }
 
-    fun updateSelectedDate(date: LocalDate) {
-        _uiState.update { it.copy(selectedDate = date) }
-        // Only reload chart data when date changes, not basic statistics
-        loadChartData()
-    }
 
     // Blur değerini güncelleyen fonksiyon
     fun updateBlurAlpha(alpha: Float) {
         _uiState.update { it.copy(blurAlpha = alpha.coerceIn(0f, 1f)) }
     }
-
 
     fun loadChartData() {
         viewModelScope.launch {
@@ -157,10 +169,11 @@ class StatisticsViewModel @Inject constructor(
                 }
 
                 when (s.selectedTimeIndex) {
-                    // === 0) GÜN ===
+
+                    // ---- DAY ----
                     0 -> {
-                        // Seçili gün için SAATLİK dağılım
-                        getHourlyFocusDataUseCase(s.selectedDate, tagId).collectLatest { hourly ->
+                        val dayDate = s.selectedDayDate
+                        getHourlyFocusDataUseCase(dayDate, tagId).collectLatest { hourly ->
                             _uiState.update {
                                 it.copy(
                                     hourlyFocusData = hourly,
@@ -170,19 +183,20 @@ class StatisticsViewModel @Inject constructor(
                         }
                     }
 
-                    // === 1) HAFTA ===
+                    // ---- WEEK ----
                     1 -> {
+                        val weekDate = s.selectedWeekDate
                         coroutineScope {
-                            // 1a) Haftanın GÜNLERİ (sütun grafiği)
+                            // Günlere göre hafta
                             launch {
-                                getDailyFocusDataUseCase(s.selectedDate, tagId).collectLatest { daily ->
+                                getDailyFocusDataUseCase(weekDate, tagId).collectLatest { daily ->
                                     _uiState.update { it.copy(dailyFocusData = daily) }
                                 }
                             }
-                            // 1b) Haftanın tamamı için SAATLİK (çizgi + peak)
+                            // Haftanın tamamı için saatlik toplam
                             launch {
                                 val wf = WeekFields.of(Locale.getDefault())
-                                val start = s.selectedDate.with(wf.dayOfWeek(), 1)
+                                val start = weekDate.with(wf.dayOfWeek(), 1)
                                 val end = start.plusDays(6)
 
                                 val hourly = aggregateHourlyOverRange(start, end, tagId)
@@ -196,19 +210,20 @@ class StatisticsViewModel @Inject constructor(
                         }
                     }
 
-                    // === 2) AY ===
+                    // ---- MONTH ----
                     2 -> {
+                        val monthDate = s.selectedMonthDate
                         coroutineScope {
-                            val startOfMonth = s.selectedDate.withDayOfMonth(1)
+                            val startOfMonth = monthDate.withDayOfMonth(1)
                             val endOfMonth = startOfMonth.plusMonths(1).minusDays(1)
 
-                            // 2a) Günlere göre AYLIK (sütun)
+                            // Günlere göre aylık
                             launch {
-                                getMonthlyFocusDataUseCase(s.selectedDate, tagId).collectLatest { monthly ->
+                                getMonthlyFocusDataUseCase(monthDate, tagId).collectLatest { monthly ->
                                     _uiState.update { it.copy(monthlyFocusData = monthly) }
                                 }
                             }
-                            // 2b) Ayın tamamı için SAATLİK toplam (çizgi + peak)
+                            // Ayın tamamı için saatlik toplam
                             launch {
                                 val hourly = aggregateHourlyOverRange(startOfMonth, endOfMonth, tagId)
                                 _uiState.update {
@@ -218,33 +233,35 @@ class StatisticsViewModel @Inject constructor(
                                     )
                                 }
                             }
-                            // 2c) Ay içinde HAFTANIN GÜNÜNE göre (weekday)
+                            // Ay içi weekday dağılımı
                             launch {
-                                getWeekdayFocusDataUseCase(startOfMonth, endOfMonth, tagId).collectLatest { weekday ->
-                                    _uiState.update {
-                                        it.copy(
-                                            weekdayFocusData = weekday,
-                                            peakWeekday = findPeakWeekday(weekday)
-                                        )
+                                getWeekdayFocusDataUseCase(startOfMonth, endOfMonth, tagId)
+                                    .collectLatest { weekday ->
+                                        _uiState.update {
+                                            it.copy(
+                                                weekdayFocusData = weekday,
+                                                peakWeekday = findPeakWeekday(weekday)
+                                            )
+                                        }
                                     }
-                                }
                             }
                         }
                     }
 
-                    // === 3) YIL ===
+                    // ---- YEAR ----
                     3 -> {
+                        val yearDate = s.selectedYearDate
                         coroutineScope {
-                            val startOfYear = s.selectedDate.withDayOfYear(1)
+                            val startOfYear = yearDate.withDayOfYear(1)
                             val endOfYear = startOfYear.plusYears(1).minusDays(1)
 
-                            // 3a) Aylara göre YILLIK (sütun)
+                            // Aylara göre yıllık
                             launch {
-                                getYearlyFocusDataUseCase(s.selectedDate, tagId).collectLatest { yearly ->
+                                getYearlyFocusDataUseCase(yearDate, tagId).collectLatest { yearly ->
                                     _uiState.update { it.copy(yearlyFocusData = yearly) }
                                 }
                             }
-                            // 3b) Yılın tamamı için SAATLİK toplam (çizgi + peak)
+                            // Yılın tamamı için saatlik toplam
                             launch {
                                 val hourly = aggregateHourlyOverRange(startOfYear, endOfYear, tagId)
                                 _uiState.update {
@@ -254,16 +271,17 @@ class StatisticsViewModel @Inject constructor(
                                     )
                                 }
                             }
-                            // 3c) Yıl içinde HAFTANIN GÜNÜNE göre (weekday)
+                            // Yıl içi weekday dağılımı
                             launch {
-                                getWeekdayFocusDataUseCase(startOfYear, endOfYear, tagId).collectLatest { weekday ->
-                                    _uiState.update {
-                                        it.copy(
-                                            weekdayFocusData = weekday,
-                                            peakWeekday = findPeakWeekday(weekday)
-                                        )
+                                getWeekdayFocusDataUseCase(startOfYear, endOfYear, tagId)
+                                    .collectLatest { weekday ->
+                                        _uiState.update {
+                                            it.copy(
+                                                weekdayFocusData = weekday,
+                                                peakWeekday = findPeakWeekday(weekday)
+                                            )
+                                        }
                                     }
-                                }
                             }
                         }
                     }

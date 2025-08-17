@@ -17,7 +17,6 @@ data class StatisticsUiState(
     val sessionLogs: List<SessionLog> = emptyList(), // Real session logs
     val selectedTagId: Int = 0, // 0 = All Tags
     val selectedTimeIndex: Int = 0, // 0 = Day, 1 = Week, 2 = Month, 3 = Year
-    val selectedDate: LocalDate = LocalDate.now(),
     val totalSessionCount: Int = 0,
     val totalFocusTimeOverall: String = "0h 0m", // Genel odaklanma süresi
     val totalFocusTime: String = "0h 0m", // Seçili taga özel odaklanma süresi
@@ -32,5 +31,10 @@ data class StatisticsUiState(
     val peakWeekday: String = "Monday", // Most focused day of the week
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val blurAlpha : Float = 0f
-)
+    val blurAlpha : Float = 0f,
+    val selectedDayDate: LocalDate = LocalDate.now(),
+    val selectedWeekDate: LocalDate = LocalDate.now(),
+    val selectedMonthDate: LocalDate = LocalDate.now(),
+    val selectedYearDate: LocalDate = LocalDate.now(),
+
+    )

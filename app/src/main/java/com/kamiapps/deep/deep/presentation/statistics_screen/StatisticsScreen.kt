@@ -70,10 +70,6 @@ fun StatisticsScreen(
 
     }
 
-    // Update charts when date or time period changes
-    LaunchedEffect(statisticsState.selectedDate, statisticsState.selectedTimeIndex) {
-        statisticsViewModel.loadChartData()
-    }
 
 
     val scrollState = rememberScrollState()
@@ -225,8 +221,12 @@ fun StatisticsScreen(
                 DateSelector(
                     selectedTimeIndex = statisticsState.selectedTimeIndex,
                     onDateChanged = { selectedDate ->
-                        // This triggers chart data updates for the selected date
-                        statisticsViewModel.updateSelectedDate(selectedDate)
+                        when (statisticsState.selectedTimeIndex) {
+                            0 -> statisticsViewModel.setDayDate(selectedDate)
+                            1 -> statisticsViewModel.setWeekDate(selectedDate)
+                            2 -> statisticsViewModel.setMonthDate(selectedDate)
+                            3 -> statisticsViewModel.setYearDate(selectedDate)
+                        }
                     },
                 )
             }
