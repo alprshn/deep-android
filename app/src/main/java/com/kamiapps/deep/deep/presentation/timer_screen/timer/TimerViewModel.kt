@@ -280,6 +280,13 @@ class TimerViewModel @Inject constructor(
     }
 
 
+    // TimerViewModel.kt
+    fun setSelectedTag(tag: Tags) {
+        _timerUIState.value = _timerUIState.value.copy(
+            tagId = tag.tagId,
+            selectedTagEmoji = tag.tagEmoji
+        )
+    }
 
     // App Blocking Helper Methods
     private fun startAppBlocking() {

@@ -475,18 +475,15 @@ fun TimerScreen(
                     addTagClick = { showBottomSheet = true },
                     tagContent = tagContent,
                     onTagClick = { tag ->
-                        if (isStopwatchMode) {
-                            stopwatchUiState.selectedTagEmoji = tag.tagEmoji
-                            stopwatchUiState.tagId = tag.tagId
-                        } else {
-                            timerUiState.selectedTagEmoji = tag.tagEmoji
-                            timerUiState.tagId = tag.tagId
-                        }
+                        // 1) Her iki modele de aynı anda yaz
+                        timerViewModel.setSelectedTag(tag)
+                        stopWatchViewModel.setSelectedTag(tag)
+
+                        // 2) UI’da görünen yerel metin/emoji/renkleri güncelle
                         selectedTagText = tag.tagName
                         listSnacks[0].name = selectedTagText
                         chosenTagColor = tag.tagColor
                         selectedEmoji = tag.tagEmoji
-                        Log.e("chosenTagColor", "TimerScreen: $chosenTagColor")
                     },
                     selectedTagEmoji = currentUiState.selectedTagEmoji,
                     selectedTagText = selectedTagText,
