@@ -20,6 +20,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Deep Work"
+rootProject.name = "Deep"
 include(":app")
  

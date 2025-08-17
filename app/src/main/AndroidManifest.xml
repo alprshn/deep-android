@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
 <application
-        android:name=".deep_work_app.di.DeepWorkApp"
+        android:name=".deep.di.DeepApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -41,7 +41,7 @@
     
     <!-- App Blocking Service -->
     <service
-        android:name=".deep_work_app.data.service.AppBlockingService"
+        android:name=".deep.data.service.AppBlockingService"
         android:exported="false"
         android:foregroundServiceType="specialUse">
         <property
@@ -51,11 +51,11 @@
     
     <!-- Broadcast Receivers -->
     <receiver
-        android:name=".deep_work_app.data.receiver.StopwatchNotificationBroadcastReceiver"
+        android:name=".deep.data.receiver.StopwatchNotificationBroadcastReceiver"
         android:exported="false" />
         
     <receiver
-        android:name=".deep_work_app.data.receiver.TimerNotificationBroadcastReceiver"
+        android:name=".deep.data.receiver.TimerNotificationBroadcastReceiver"
         android:exported="false" />
         <provider
             android:name="androidx.startup.InitializationProvider"
