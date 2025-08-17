@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController: NavHostController = rememberNavController()
-            var selectedIndex by remember { mutableIntStateOf(0) }
+            var selectedIndex by remember { mutableIntStateOf(1) }
             var showPaywall by remember { mutableStateOf(false) }
             val stopWatchViewModel: StopwatchViewModel = hiltViewModel()
             val timerViewModel: TimerViewModel = hiltViewModel()
