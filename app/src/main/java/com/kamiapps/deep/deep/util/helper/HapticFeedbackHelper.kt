@@ -57,41 +57,50 @@ class HapticFeedbackHelper @Inject constructor(
         hapticFeedback?.performHapticFeedback(HapticFeedbackType.LongPress)
         performVibration(VibrationPattern.IMPORTANT_ACTION)
     }
-    
+    // YENİ: Timer tamamlandığında uzun titreşim
+    fun performTimerCompletionVibration() {
+        performVibration(VibrationPattern.TIMER_COMPLETION_LONG)
+    }
+
+
     private fun performVibration(pattern: VibrationPattern) {
         if (!vibrator.hasVibrator()) return
-        
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val effect = when (pattern) {
-                    VibrationPattern.BUTTON_CLICK -> 
-                        VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE) // 25 -> 40
-                    VibrationPattern.MODE_SELECTION -> 
-                        VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE) // 50 -> 80
-                    VibrationPattern.SLIDER_TICK -> 
-                        VibrationEffect.createOneShot(25, 80) // 15, 50 -> 25, 80
-                    VibrationPattern.IMPORTANT_ACTION -> 
-                        VibrationEffect.createWaveform(longArrayOf(0, 150, 80, 150), -1) // 100, 50, 100 -> 150, 80, 150
+                    VibrationPattern.BUTTON_CLICK ->
+                        VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationPattern.MODE_SELECTION ->
+                        VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationPattern.SLIDER_TICK ->
+                        VibrationEffect.createOneShot(25, 80)
+                    VibrationPattern.IMPORTANT_ACTION ->
+                        VibrationEffect.createWaveform(longArrayOf(0, 150, 80, 150), -1)
+                    // YENİ: ~1 sn tek atım (uzun)
+                    VibrationPattern.TIMER_COMPLETION_LONG ->
+                        VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE)
                 }
                 vibrator.vibrate(effect)
             } else {
                 @Suppress("DEPRECATION")
                 when (pattern) {
-                    VibrationPattern.BUTTON_CLICK -> vibrator.vibrate(40) // 25 -> 40
-                    VibrationPattern.MODE_SELECTION -> vibrator.vibrate(80) // 50 -> 80
-                    VibrationPattern.SLIDER_TICK -> vibrator.vibrate(25) // 15 -> 25
-                    VibrationPattern.IMPORTANT_ACTION -> vibrator.vibrate(longArrayOf(0, 150, 80, 150), -1) // Updated pattern
+                    VibrationPattern.BUTTON_CLICK -> vibrator.vibrate(40)
+                    VibrationPattern.MODE_SELECTION -> vibrator.vibrate(80)
+                    VibrationPattern.SLIDER_TICK -> vibrator.vibrate(25)
+                    VibrationPattern.IMPORTANT_ACTION -> vibrator.vibrate(longArrayOf(0, 150, 80, 150), -1)
+                    VibrationPattern.TIMER_COMPLETION_LONG -> vibrator.vibrate(1000)
                 }
             }
-        } catch (e: Exception) {
-            // Vibration permission might not be granted
-        }
+        } catch (_: Exception) { /* permission yoksa sessizce geç */ }
     }
-    
+
+
     private enum class VibrationPattern {
         BUTTON_CLICK,
         MODE_SELECTION,
         SLIDER_TICK,
-        IMPORTANT_ACTION
+        IMPORTANT_ACTION,
+        TIMER_COMPLETION_LONG
     }
+
 } 

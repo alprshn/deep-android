@@ -8,6 +8,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.kamiapps.deep.deep.data.manager.TimerManager
+import com.kamiapps.deep.deep.util.helper.HapticFeedbackHelper
 import com.kamiapps.deep.deep.util.helper.MediaPlayerHelper
 import com.kamiapps.deep.deep.util.helper.TIMER_COMPLETED_NOTIFICATION_ID
 import com.kamiapps.deep.deep.util.helper.TimerNotificationHelper
@@ -18,35 +19,41 @@ import kotlinx.coroutines.flow.collectLatest
 
 @HiltWorker
 class TimerCompletedWorker @AssistedInject constructor(
-     private val mediaPlayerHelper: MediaPlayerHelper,
-     private val timerNotificationHelper: TimerNotificationHelper,
-     private val timerManager: TimerManager,
+    // ESKİ: private val mediaPlayerHelper: MediaPlayerHelper,  <-- KALDIR
+    private val timerNotificationHelper: TimerNotificationHelper,
+    private val timerManager: TimerManager,
+    // YENİ: uzun titreşim için helper
+    private val hapticFeedbackHelper: HapticFeedbackHelper,
     @Assisted ctx: Context,
     @Assisted params: WorkerParameters,
 ) : CoroutineWorker(ctx, params) {
+
     override suspend fun doWork(): Result {
         return try {
-            mediaPlayerHelper.prepare()
-            mediaPlayerHelper.start()
+            // 🔇 Ses yok, sadece uzun titreşim
+            hapticFeedbackHelper.performTimerCompletionVibration()
 
             val foregroundInfo = ForegroundInfo(
                 TIMER_COMPLETED_NOTIFICATION_ID,
                 timerNotificationHelper.showTimerCompletedNotification(),
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK // İstersen 0 bırakabilirsin; işlevi etkilemez.
+                else 0
             )
             setForeground(foregroundInfo)
 
-            // Ensure the work lasts at least 5 seconds for the notification to be shown
-            // because shorter durations may not provide enough time for the notification to be visible.
-            timerManager.timerState.collectLatest {}
+            // Bildirim görünür kalsın diye kısa bekleme yeterli
+            // (daha önce sonsuza kadar collect ediyordu, gereksiz)
+            kotlinx.coroutines.delay(5000)
 
             Result.success()
         } catch (e: CancellationException) {
-            mediaPlayerHelper.release()
+            // güvenlik: herhangi bir şey çalıyorsa dursun, bildirim kalksın
             timerNotificationHelper.removeTimerCompletedNotification()
             Result.failure()
         }
     }
 }
+
 
 const val TIMER_COMPLETED_TAG = "timerCompletedTag"
