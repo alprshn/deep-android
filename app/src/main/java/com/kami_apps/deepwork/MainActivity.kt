@@ -40,6 +40,7 @@ import com.kami_apps.deepwork.ui.theme.DeepWorkTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.kami_apps.deepwork.deep.data.manager.ThemeManager
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -82,7 +83,6 @@ class MainActivity : ComponentActivity() {
             val hazeState = rememberHazeState(HazeDefaults.blurEnabled())
 
 
-
             val isTimerOrStopwatchRunning =
                 stopwatchState?.isPlaying == true || timerState?.isPlaying == true
 
@@ -100,7 +100,10 @@ class MainActivity : ComponentActivity() {
                 val view = LocalView.current
                 SideEffect {
                     val window = (view.context as ComponentActivity).window
-                    WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = !isDarkTheme
+                    WindowInsetsControllerCompat(
+                        window,
+                        window.decorView
+                    ).isAppearanceLightStatusBars = !isDarkTheme
                 }
 
                 val style =
@@ -141,13 +144,14 @@ class MainActivity : ComponentActivity() {
                                                     saveState = true
                                                 }
                                                 launchSingleTop = true
-                                                 restoreState = true
+                                                restoreState = true
                                             }
                                         },
                                         modifier = Modifier
 
                                             .fillMaxWidth()
-                                            .hazeEffect(state = hazeState, style = style),
+                                            .hazeEffect(state = hazeState, style = style)
+                                            .navigationBarsPadding(),
 
                                     )
                                 }
